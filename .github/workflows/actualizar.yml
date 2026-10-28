@@ -1,0 +1,50 @@
+name: Actualizar y publicar
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install openpyxl requests
+      - run: python scripts/excel_a_json.py
+      - run: python scripts/actualizar_posiciones.py
+      - name: Guardar datos
+        id: guardar
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add data
+          if ! git diff --cached --quiet; then
+            git commit -m "Actualizar datos" && git push
+            echo "cambio=1" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Preparar sitio
+        if: github.event_name != 'schedule' || steps.guardar.outputs.cambio == '1'
+        run: mkdir _site && cp index.html _site/ && cp -r data _site/data
+      - uses: actions/configure-pages@v5
+        if: github.event_name != 'schedule' || steps.guardar.outputs.cambio == '1'
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'schedule' || steps.guardar.outputs.cambio == '1'
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
+        if: github.event_name != 'schedule' || steps.guardar.outputs.cambio == '1'
