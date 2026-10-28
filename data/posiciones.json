@@ -1,5 +1,5 @@
 {
- "actualizado": "",
+ "actualizado": "2026-10-28T20:34:23Z",
  "torneos": {
   "sony-open": {
    "robertmacintyre": "4",
@@ -297,6 +297,17 @@
    "tomkim": "1",
    "chrisgotterup": "11",
    "wyndhamclark": "13"
+  },
+  "vidantaworld-mexico-open": {
+   "austineckroat": "T1",
+   "bengriffin": "T1",
+   "christolamprecht": "T1",
+   "camerontankersley": "T1",
+   "adamhadwin": "T1",
+   "andrewnovak": "T1",
+   "haotongli": "T1",
+   "mackenziehughes": "T1",
+   "davidlipsky": "T1"
   }
  }
 }

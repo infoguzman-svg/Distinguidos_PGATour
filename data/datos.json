@@ -101,7 +101,7 @@
    2
   ]
  },
- "actual": "genesis-scottish",
+ "actual": "vidantaworld-mexico-open",
  "torneos": [
   {
    "id": "sony-open",
@@ -1052,6 +1052,46 @@
      "Chris Gotterup",
      "Wyndham Clark",
      "J.J. Spaun"
+    ]
+   }
+  },
+  {
+   "id": "vidantaworld-mexico-open",
+   "n": "VidantaWorld Mexico Open",
+   "c": "Top 2",
+   "ini": "2026-10-29",
+   "fin": "2026-11-01",
+   "m": "Nov",
+   "sel": {
+    "Cristóbal": [
+     "Austin Eckroat",
+     "Ben Griffin",
+     "Christo Lamprecht",
+     "Cameron Tankersley"
+    ],
+    "Sebastián": [
+     "Adam Hadwin",
+     "Andrew Novak",
+     "Adam Hadwin",
+     "Haotong Li"
+    ],
+    "Cafeta": [
+     "Haotong Li",
+     "Christo Lamprecht",
+     "Haotong Li",
+     "Mackenzie Hughes"
+    ],
+    "Pedro": [
+     "Mackenzie Hughes",
+     "Cameron Tankersley",
+     "Mackenzie Hughes",
+     "David Lipsky"
+    ],
+    "José Miguel": [
+     "David Lipsky",
+     "Adam Hadwin",
+     "David Lipsky",
+     "Adam Hadwin"
     ]
    }
   }
