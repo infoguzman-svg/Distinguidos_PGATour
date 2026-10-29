@@ -45,6 +45,13 @@ Ejemplo ilustrativo: el *Butterfield Bermuda Championship*, clase Top 2, del 22 
    - `no encontré el evento`: el nombre del torneo no coincide con el de la fuente. Ajusta el nombre en la planilla o usa el plan B.
    - `no se pudo leer la fuente`: la fuente falló o cambió. Usa el plan B.
 
+## 3b. Qué esperar durante los 4 días del torneo
+- Al subir tu Excel con el torneo marcado como **Actual** (con Inicio y Fin), la tarea corre de inmediato y luego cada 10 minutos. Puede retrasarse unos minutos: GitHub no garantiza la hora exacta.
+- Cada vez que cambian las posiciones, se vuelve a publicar la página. La página abierta se refresca sola cada 5 minutos. En total, cuenta con un retraso de unos 10 a 20 minutos respecto al leaderboard.
+- No tienes que hacer nada más. Si quieres forzar una actualización: *Actions → Actualizar y publicar → Run workflow*.
+- Primer día: abre el registro (sección 3) y confirma que diga "20 jugadores con posición". Si hay jugadores "no encontrado", corrige la ortografía en el Excel según el leaderboard.
+- Cuando termine el torneo y el resultado final esté cargado, no hace falta hacer nada. Al pasar al torneo siguiente, mueves el "Sí" de *Actual*.
+
 ## 4. Plan B: escribir posiciones a mano
 Abre `data\manual.json` con el Bloc de notas y escribe (el `id` del torneo es el nombre en minúsculas, sin tildes y con guiones; míralo en `data\datos.json`):
 ```json
@@ -56,6 +63,8 @@ Guarda y publica. Lo escrito aquí tiene prioridad sobre lo automático y aparec
 - **Un torneo sin jugadores, solo puestos finales:** hoja `Puestos manuales` (torneo, participante, puesto 1 a 5). Así se cargaron RBC Canadian y Travelers en 2026.
 - **Cambiar el torneo que se ve al abrir la página:** mueve el `Sí` de la columna *Actual*.
 - **Cambiar los puntos de las clases o de las posiciones:** hojas `Clases` y `Puntos`.
+- **Cambiar el icono de un participante:** hoja `Participantes`, columna `Icono` (un emoji de animal). Hoy: Cristóbal 🐐, Sebastián 🦖, Pedro 🦈, Cafeta 🦌 y José Miguel 🦕. Si queda vacío, la página usa las 2 primeras letras del nombre.
+- **Empates en un torneo:** queda primero quien tenga el jugador mejor ubicado en ese torneo; si sigue igual, decide el lugar en el torneo anterior (por eso los torneos van en orden de calendario).
 
 ## 6. Problemas frecuentes
 | Síntoma | Qué hacer |
