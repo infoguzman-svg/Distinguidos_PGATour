@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-10-29T14:56:16Z",
+ "actualizado": "2026-10-29T15:39:39Z",
  "torneos": {
   "sony-open": {
    "robertmacintyre": "4",
@@ -299,15 +299,15 @@
    "wyndhamclark": "13"
   },
   "vidantaworld-mexico-open": {
-   "austineckroat": "T3",
-   "bengriffin": "T8",
-   "christolamprecht": "T19",
-   "camerontankersley": "T113",
-   "adamhadwin": "T19",
-   "andrewnovak": "T19",
-   "haotongli": "T19",
-   "mackenziehughes": "T19",
-   "davidlipsky": "T8"
+   "austineckroat": "T1",
+   "bengriffin": "T5",
+   "christolamprecht": "T99",
+   "camerontankersley": "T108",
+   "adamhadwin": "T27",
+   "andrewnovak": "T27",
+   "haotongli": "T27",
+   "mackenziehughes": "T27",
+   "davidlipsky": "T108"
   }
  }
 }
