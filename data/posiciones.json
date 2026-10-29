@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-10-29T20:21:48Z",
+ "actualizado": "2026-10-29T20:43:54Z",
  "torneos": {
   "sony-open": {
    "robertmacintyre": "4",
@@ -299,26 +299,26 @@
    "wyndhamclark": "13"
   },
   "vidantaworld-mexico-open": {
-   "kevinroy": "T17",
+   "kevinroy": "T19",
    "trentphillips": "T5",
-   "andrewnovak": "T9",
-   "bricegarnett": "T9",
-   "tylerduncan": "T17",
-   "dennymccarthy": "T9",
-   "joeldahmen": "T9",
-   "jacksonsuber": "T5",
-   "chadramey": "T17",
-   "jeremypaul": "T9",
-   "gordonsargent": "T9",
-   "austineckroat": "T17",
-   "isaiahsalinda": "T17",
-   "stevenfisk": "T9",
-   "tracecrowe": "T9",
-   "beauhossler": "T17",
-   "camerontankersley": "T69",
-   "davidford": "T69",
-   "santiagodelafuente": "T69",
-   "christolamprecht": "T53"
+   "andrewnovak": "T8",
+   "bricegarnett": "T8",
+   "tylerduncan": "T19",
+   "dennymccarthy": "T8",
+   "joeldahmen": "T8",
+   "jacksonsuber": "T8",
+   "chadramey": "T19",
+   "jeremypaul": "T8",
+   "gordonsargent": "T8",
+   "austineckroat": "T19",
+   "isaiahsalinda": "T19",
+   "stevenfisk": "T8",
+   "tracecrowe": "T8",
+   "beauhossler": "T19",
+   "camerontankersley": "T72",
+   "davidford": "T72",
+   "santiagodelafuente": "T72",
+   "christolamprecht": "T57"
   }
  }
 }
