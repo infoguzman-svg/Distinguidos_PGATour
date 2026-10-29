@@ -101,7 +101,7 @@
    2
   ]
  },
- "actual": null,
+ "actual": "vidantaworld-mexico-open",
  "torneos": [
   {
    "id": "sony-open",
@@ -1052,6 +1052,46 @@
      "Chris Gotterup",
      "Wyndham Clark",
      "J.J. Spaun"
+    ]
+   }
+  },
+  {
+   "id": "vidantaworld-mexico-open",
+   "n": "VidantaWorld Mexico Open",
+   "c": "Top 2",
+   "ini": "2026-10-29",
+   "fin": "2026-11-01",
+   "m": "Nov",
+   "sel": {
+    "Cristóbal": [
+     "Kevin Roy",
+     "Trent Phillips",
+     "Andrew Novak",
+     "Brice Garnett"
+    ],
+    "Sebastián": [
+     "Tyler Duncan",
+     "Denny McCarthy",
+     "Joel Dahmen",
+     "Jackson Suber"
+    ],
+    "Pedro": [
+     "Chad Ramey",
+     "Jeremy Paul",
+     "Gordon Sargent",
+     "Austin Eckroat"
+    ],
+    "Cafeta": [
+     "Isaiah Salinda",
+     "Steven Fisk",
+     "Trace Crowe",
+     "Beau Hossler"
+    ],
+    "José Miguel": [
+     "Cameron Tankersley",
+     "David Ford",
+     "Santiago de la Fuente",
+     "Christo Lamprecht"
     ]
    }
   }
