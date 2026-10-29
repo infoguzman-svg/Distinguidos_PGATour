@@ -32,11 +32,22 @@ tr:last-child td{border-bottom:0}
 .av{display:inline-flex;width:32px;height:32px;border-radius:50%;align-items:center;justify-content:center;color:var(--ink);font-weight:700;font-size:1.05rem;line-height:1;margin-right:9px;vertical-align:middle;flex:none}
 .who{display:flex;align-items:center}
 .cb{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:99px;color:#fff;background:var(--c)}
-.pod{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:10px;align-items:end;margin-bottom:6px}
-.pod .p{background:var(--card);border:1px solid var(--line);border-radius:16px;text-align:center;padding:14px 6px}
-.pod .p1{background:linear-gradient(180deg,#fff7d6,#fff);border-color:#e8d27a;padding-top:20px;padding-bottom:22px}
-.pod .m{font-size:1.7rem}.pod .nm{font-weight:700;margin:6px 0 2px}.pod .pt{font-size:1.5rem;font-weight:800}.pod small{color:var(--mut)}
-.pod .av{width:50px;height:50px;font-size:1.7rem;margin:0}
+.stage{position:relative;overflow:hidden;border-radius:20px;padding:22px 12px 0;color:#fff;background:radial-gradient(500px 220px at 50% 0,rgba(255,224,130,.28),transparent 70%),linear-gradient(170deg,#0a2a1c,#14523a)}
+.stage:before{content:"✨";position:absolute;left:8%;top:14px;font-size:1.1rem;opacity:.8}.stage:after{content:"✨";position:absolute;right:9%;top:34px;font-size:.9rem;opacity:.7}
+.podio{display:grid;grid-template-columns:1fr 1.18fr 1fr;gap:8px;align-items:end;max-width:640px;margin:0 auto}
+.pl{display:flex;flex-direction:column;align-items:center;text-align:center;animation:sube .7s ease both}
+.pl.p1{animation-delay:.15s}.pl.p2{animation-delay:.3s}.pl.p3{animation-delay:.45s}
+@keyframes sube{from{transform:translateY(34px);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.pl{animation:none}}
+.pl .crown{font-size:1.9rem;line-height:1;margin-bottom:2px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+.pl .av{width:60px;height:60px;font-size:2rem;margin:0 0 6px;background:#fff!important;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.pl.p1 .av{width:76px;height:76px;font-size:2.6rem;box-shadow:0 0 0 4px rgba(255,214,102,.45),0 6px 20px rgba(0,0,0,.4)}
+.pl .nm{font-weight:700;font-size:1.02rem}
+.pl .pt{font-size:1.7rem;font-weight:800;line-height:1.1}.pl .pt small{font-size:.8rem;font-weight:600;opacity:.8}
+.pl .df{font-size:.74rem;opacity:.75;margin-bottom:8px}
+.pl .base{width:100%;border-radius:14px 14px 0 0;display:flex;justify-content:center;align-items:flex-start;padding-top:6px;font-size:2.5rem;font-weight:900;color:rgba(255,255,255,.92);text-shadow:0 2px 3px rgba(0,0,0,.25);box-shadow:inset 0 2px 0 rgba(255,255,255,.35)}
+.b1{height:128px;background:linear-gradient(180deg,#f6d96b,#bf9520)}.b2{height:92px;background:linear-gradient(180deg,#dfe4e8,#8e99a3)}.b3{height:68px;background:linear-gradient(180deg,#e6ae78,#a2622a)}
+@media(max-width:560px){.pl .av{width:48px;height:48px;font-size:1.6rem}.pl.p1 .av{width:60px;height:60px;font-size:2rem}.pl .nm{font-size:.88rem}.pl .pt{font-size:1.3rem}.b1{height:104px}.b2{height:76px}.b3{height:56px}.pl .base{font-size:2rem}}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:thin}
 .chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:7px 13px;font:inherit;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:7px}
@@ -59,7 +70,7 @@ tr:last-child td{border-bottom:0}
 .rules span{background:var(--soft);border-radius:8px;padding:3px 9px}
 .leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.8rem;margin-top:6px}
 .leg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
-@media(max-width:560px){.pod .pt{font-size:1.2rem}.hero h1{font-size:1.35rem}th,td{padding:8px 5px}.dif{display:none}.card .av{width:27px;height:27px;font-size:.9rem;margin-right:5px}.cb{padding:2px 6px}.pod .av{width:44px;height:44px;font-size:1.45rem}}
+@media(max-width:560px){.hero h1{font-size:1.35rem}th,td{padding:8px 5px}.dif{display:none}.card .av{width:27px;height:27px;font-size:.9rem;margin-right:5px}.cb{padding:2px 6px}}
 </style>
 </head>
 <body>
@@ -132,8 +143,8 @@ function renderGral(){
   const a=season(),ps=D.participantes,cl=Object.keys(D.clases);
   const tl=ps.map((_,i)=>cl.reduce((s,c)=>s+a[c][i].p,0)),o=ord(ps.length,i=>tl[i]),top=tl[o[0]];
   const pl=i=>1+tl.filter(v=>v>tl[i]).length;
-  const pd=k=>{const i=o[k];return i===undefined?"":`<div class="p p${k+1}"><div class="m">${MED[k]}</div>${av(i).replace('class="av"','class="av" ')}<div class="nm">${esc(ps[i])}</div><div class="pt">${tl[i]}</div><small>puntos</small></div>`;};
-  let h=`<div class="pod">${pd(1)}${pd(0)}${pd(2)}</div>`;
+  const pd=k=>{const i=o[k];if(i===undefined)return"";return `<div class="pl p${k+1}">${k===0?'<div class="crown">👑</div>':""}${av(i)}<div class="nm">${esc(ps[i])}</div><div class="pt">${tl[i]}<small> pts</small></div><div class="df">${k===0?"Líder":"−"+(top-tl[i])+" pts"}</div><div class="base b${k+1}">${pl(i)}</div></div>`;};
+  let h=`<div class="stage"><div class="podio">${pd(1)}${pd(0)}${pd(2)}</div></div>`;
   h+=`<h2>Clasificación de la temporada</h2><div class="card scroll"><table><tr><th>#</th><th>Participante</th><th class="n">Total</th>`+cl.map(c=>`<th class="n"><span class="cb" style="--c:${ccol(c)}">${esc(c)}</span></th>`).join("")+`<th class="n dif">Dif.</th></tr>`;
   o.forEach(i=>{h+=`<tr class="${pl(i)===1&&tl[i]>0?'lead':''}"><td>${pl(i)<=3&&tl[i]>0?MED[pl(i)-1]:pl(i)}</td><td><div class="who">${av(i)}${esc(ps[i])}</div></td><td class="n tot">${tl[i]}</td>`+cl.map(c=>`<td class="n">${a[c][i].p}</td>`).join("")+`<td class="n dif" style="color:var(--mut)">${tl[i]===top?"–":tl[i]-top}</td></tr>`;});
   h+=`</table></div><p class="hint">Cada torneo reparte puntos a los 3 primeros de la polla según su clase. Si hay empate en puntos, queda primero quien tenga el jugador mejor ubicado en ese torneo; si sigue igual, decide el lugar en el torneo anterior.</p>`;
