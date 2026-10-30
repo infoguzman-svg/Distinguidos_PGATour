@@ -111,6 +111,7 @@ def main():
     if cambio:
         actual["actualizado"] = dt.datetime.now(dt.timezone.utc).replace(microsecond=0, tzinfo=None).isoformat() + "Z"
         PF.write_text(json.dumps(actual, ensure_ascii=False, indent=1), encoding="utf-8")
+        (RAIZ / "data" / "posiciones.js").write_text("window.__P=" + json.dumps(actual, ensure_ascii=False) + ";", encoding="utf-8")
         print("posiciones.json actualizado")
     else:
         print("sin cambios")

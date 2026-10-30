@@ -4,15 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Distinguidos PGA Tour</title>
+<link rel="icon" href="logo.png">
 <style>
 :root{--g1:#0a2a1c;--g2:#14523a;--gold:#c9a227;--bg:#f3f1e8;--card:#fff;--ink:#14201a;--mut:#667268;--line:#e3dfcf;--soft:#f7f5ec}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
 .hero{background:radial-gradient(1200px 300px at 80% -50%,#1d7a55 0,transparent 60%),linear-gradient(160deg,var(--g1),var(--g2));color:#fff;padding:22px 16px 0}
 .wrap{max-width:980px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:18px;margin-bottom:14px}
+.logo{height:104px;width:auto;flex:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))}
 .hero h1{margin:0;font-size:1.7rem;letter-spacing:.2px}
 .hero h1 b{color:var(--gold)}
-.sub{opacity:.8;font-size:.85rem;margin:4px 0 16px}
+.sub{opacity:.8;font-size:.85rem;margin:4px 0 0}
 nav{display:flex;gap:6px}
 nav button{flex:1;max-width:220px;border:0;background:rgba(255,255,255,.1);color:#fff;font:inherit;font-weight:600;font-size:.92rem;padding:11px 10px;border-radius:12px 12px 0 0;cursor:pointer}
 nav button.on{background:var(--bg);color:var(--g1)}
@@ -47,7 +50,7 @@ tr:last-child td{border-bottom:0}
 .pl .df{font-size:.74rem;opacity:.75;margin-bottom:8px}
 .pl .base{width:100%;border-radius:14px 14px 0 0;display:flex;justify-content:center;align-items:flex-start;padding-top:6px;font-size:2.5rem;font-weight:900;color:rgba(255,255,255,.92);text-shadow:0 2px 3px rgba(0,0,0,.25);box-shadow:inset 0 2px 0 rgba(255,255,255,.35)}
 .b1{height:128px;background:linear-gradient(180deg,#f6d96b,#bf9520)}.b2{height:92px;background:linear-gradient(180deg,#dfe4e8,#8e99a3)}.b3{height:68px;background:linear-gradient(180deg,#e6ae78,#a2622a)}
-@media(max-width:560px){.pl .av{width:48px;height:48px;font-size:1.6rem}.pl.p1 .av{width:60px;height:60px;font-size:2rem}.pl .nm{font-size:.88rem}.pl .pt{font-size:1.3rem}.b1{height:104px}.b2{height:76px}.b3{height:56px}.pl .base{font-size:2rem}}
+@media(max-width:560px){.logo{height:68px}.brand{gap:12px}.pl .av{width:48px;height:48px;font-size:1.6rem}.pl.p1 .av{width:60px;height:60px;font-size:2rem}.pl .nm{font-size:.88rem}.pl .pt{font-size:1.3rem}.b1{height:104px}.b2{height:76px}.b3{height:56px}.pl .base{font-size:2rem}}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:thin}
 .chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:7px 13px;font:inherit;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:7px}
@@ -76,8 +79,13 @@ tr:last-child td{border-bottom:0}
 </head>
 <body>
 <header class="hero"><div class="wrap">
-  <h1>⛳ Distinguidos <b>PGA Tour</b> <span id="año"></span></h1>
-  <p class="sub" id="status">Cargando…</p>
+  <div class="brand">
+    <img class="logo" src="logo.png" alt="Distinguidos Tour" onerror="this.style.display='none'">
+    <div>
+      <h1>Distinguidos <b>PGA Tour</b> <span id="año"></span></h1>
+      <p class="sub" id="status">Cargando…</p>
+    </div>
+  </div>
   <nav>
     <button data-v="t" class="on">⛳ Torneo actual</button>
     <button data-v="l">📅 Torneos</button>
@@ -103,10 +111,13 @@ const CCOL=["#b8860b","#7c3aed","#2563eb","#0d9488","#be185d","#475569"];
 let D=null,POS={},MAN={},memo={},cur=null;
 
 const ccol=c=>CCOL[Math.max(0,Object.keys(D.clases).indexOf(c))%CCOL.length];
-const ico=i=>(D.iconos||{})[D.participantes[i]]||D.participantes[i].slice(0,2);
+const ICO0={cr:"🐐",ca:"🦌",pe:"🦈",se:"🦖",jo:"🦕",be:"⚰️"};
+const ico=i=>(D.iconos||{})[D.participantes[i]]||ICO0[norm(D.participantes[i]).slice(0,2)]||D.participantes[i].slice(0,2);
 const av=i=>`<span class="av" style="background:${COL[i%COL.length]}22;border:2px solid ${COL[i%COL.length]}">${esc(ico(i))}</span>`;
 const get=id=>D.torneos.find(t=>t.id===id);
 async function jget(u){const r=await fetch(u+"?t="+Date.now());if(!r.ok)throw new Error(u);return r.json();}
+function cargarJs(n,v){return new Promise((ok,no)=>{const s=document.createElement("script");s.src="data/"+n+".js?t="+Date.now();s.onload=()=>window[v]?ok(window[v]):no(new Error(n));s.onerror=()=>no(new Error(n));document.head.appendChild(s);});}
+async function dato(n,v){try{return await jget("data/"+n+".json");}catch(e){return await cargarJs(n,v);}}
 function pts(p){if(p<1)return 0;for(const [a,b,v] of D.escalaPos)if(p>=a&&p<=b)return v;return 0;}
 function pos(t,name){
   const k=norm(name),m=(MAN.torneos||{})[t.id]||{};
@@ -227,12 +238,12 @@ function estado(){
 }
 async function cargar(inicial){
   if(window.__DATOS__){POS=window.__DATOS__.POS||{};MAN=window.__DATOS__.MAN||{};}
-  else{try{POS=await jget("data/posiciones.json");}catch(e){POS={};}try{MAN=await jget("data/manual.json");}catch(e){MAN={};}}
+  else{try{POS=await dato("posiciones","__P");}catch(e){POS={};}try{MAN=await dato("manual","__M");}catch(e){MAN={};}}
   memo={};estado();if(!inicial)show(vista());
 }
 async function iniciar(){
-  try{D=window.__DATOS__?window.__DATOS__.D:await jget("data/datos.json");}
-  catch(e){$("status").textContent="No se pudo cargar data/datos.json (ábrelo desde tu página publicada, no con doble clic).";return;}
+  try{D=window.__DATOS__?window.__DATOS__.D:await dato("datos","__D");}
+  catch(e){$("status").textContent="No se pudieron cargar los datos. Abre la página publicada en GitHub Pages, o espera a que Actions genere data/datos.js y haz Pull.";return;}
   document.title="Distinguidos PGA Tour "+(D.temporada||"");$("año").textContent=D.temporada||"";
   cur=elegir();
   document.querySelector("nav").addEventListener("click",e=>{const b=e.target.closest("button");if(b)show(b.dataset.v);});

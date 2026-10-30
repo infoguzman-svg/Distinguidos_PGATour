@@ -38,6 +38,7 @@ def filas(hoja):
             yield list(r) + [None] * 8
 
 participantes = [txt(r[0]) for r in filas("Participantes") if txt(r[0])]
+iconos = {txt(r[0]): txt(r[1]) for r in filas("Participantes") if txt(r[0]) and txt(r[1])}
 escala = [[int(r[0]), int(r[1]), int(r[2])] for r in filas("Puntos") if isinstance(r[0], (int, float)) and isinstance(r[1], (int, float))]
 clases = {txt(r[0]): [int(r[1] or 0), int(r[2] or 0), int(r[3] or 0)] for r in filas("Clases") if txt(r[0]) and isinstance(r[1], (int, float))}
 
@@ -76,7 +77,15 @@ for r in filas("Puestos manuales"):
     t["puestos"][participantes.index(part)] = int(r[2] or 0)
 
 temporada = (re.search(r"(\d{4})", XLSX.stem) or [None, str(dt.date.today().year)])[1]
-datos = {"temporada": temporada, "participantes": participantes, "escalaPos": escala, "clases": clases, "actual": actual, "torneos": torneos}
+datos = {"temporada": temporada, "participantes": participantes, "iconos": iconos, "escalaPos": escala, "clases": clases, "actual": actual, "torneos": torneos}
 (RAIZ / "data").mkdir(exist_ok=True)
 (RAIZ / "data" / "datos.json").write_text(json.dumps(datos, ensure_ascii=False, indent=1), encoding="utf-8")
 print(f"datos.json listo: {len(torneos)} torneos, {len(participantes)} participantes ({XLSX.name})")
+
+def escribir_js(nombre, var, obj):
+    (RAIZ / "data" / f"{nombre}.js").write_text(f"window.{var}=" + json.dumps(obj, ensure_ascii=False) + ";", encoding="utf-8")
+
+escribir_js("datos", "__D", datos)
+for nombre, var, vacio in (("manual", "__M", {"torneos": {}}), ("posiciones", "__P", {"actualizado": "", "torneos": {}})):
+    f = RAIZ / "data" / f"{nombre}.json"
+    escribir_js(nombre, var, json.loads(f.read_text(encoding="utf-8")) if f.exists() else vacio)
