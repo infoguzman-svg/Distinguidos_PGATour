@@ -5,7 +5,8 @@
   "Sebastián",
   "Pedro",
   "Cafeta",
-  "José Miguel"
+  "José Miguel",
+  "Benjamín"
  ],
  "escalaPos": [
   [
@@ -916,7 +917,8 @@
     2,
     0,
     0,
-    3
+    3,
+    0
    ]
   },
   {
@@ -972,7 +974,8 @@
     0,
     0,
     3,
-    1
+    1,
+    0
    ]
   },
   {
@@ -1092,6 +1095,12 @@
      "David Ford",
      "Santiago de la Fuente",
      "Christo Lamprecht"
+    ],
+    "Benjamín": [
+     "Vince Whaley",
+     "Jeremy Paul",
+     "Gordon Sargent",
+     "Haotong Li"
     ]
    }
   }
