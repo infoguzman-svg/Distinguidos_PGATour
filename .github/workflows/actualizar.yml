@@ -38,7 +38,7 @@ jobs:
           fi
       - name: Preparar sitio
         if: github.event_name != 'schedule' || steps.guardar.outputs.cambio == '1'
-        run: mkdir _site && cp index.html _site/ && cp -r data _site/data
+        run: mkdir _site && cp index.html logo.png _site/ && cp -r data _site/data
       - uses: actions/configure-pages@v5
         if: github.event_name != 'schedule' || steps.guardar.outputs.cambio == '1'
       - uses: actions/upload-pages-artifact@v3
