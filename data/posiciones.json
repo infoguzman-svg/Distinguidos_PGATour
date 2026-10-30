@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-10-30T21:13:34Z",
+ "actualizado": "2026-10-30T21:14:49Z",
  "torneos": {
   "sony-open": {
    "robertmacintyre": "4",
@@ -300,19 +300,19 @@
   },
   "vidantaworld-mexico-open": {
    "kevinroy": "T54",
-   "trentphillips": "T31",
+   "trentphillips": "T32",
    "andrewnovak": "T4",
    "bricegarnett": "T17",
    "tylerduncan": "T47",
-   "dennymccarthy": "T31",
+   "dennymccarthy": "T32",
    "joeldahmen": "T47",
    "jacksonsuber": "T9",
    "chadramey": "T54",
-   "jeremypaul": "T31",
+   "jeremypaul": "T32",
    "gordonsargent": "T22",
    "austineckroat": "T47",
    "isaiahsalinda": "T71",
-   "stevenfisk": "T31",
+   "stevenfisk": "T32",
    "tracecrowe": "T22",
    "beauhossler": "T63",
    "camerontankersley": "T71",
@@ -320,7 +320,7 @@
    "santiagodelafuente": "T86",
    "christolamprecht": "T86",
    "vincewhaley": "T47",
-   "haotongli": "T31"
+   "haotongli": "T32"
   }
  }
 }
