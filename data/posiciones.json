@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-10-31T00:30:17Z",
+ "actualizado": "2026-10-31T16:24:03Z",
  "torneos": {
   "sony-open": {
    "robertmacintyre": "4",
@@ -305,9 +305,9 @@
    "bricegarnett": "T20",
    "tylerduncan": "T34",
    "dennymccarthy": "T34",
-   "joeldahmen": "T49",
+   "joeldahmen": "T46",
    "jacksonsuber": "T11",
-   "chadramey": "T49",
+   "chadramey": "T46",
    "jeremypaul": "T20",
    "gordonsargent": "T7",
    "austineckroat": "T34",
@@ -315,12 +315,12 @@
    "stevenfisk": "T11",
    "tracecrowe": "T20",
    "beauhossler": "T59",
-   "camerontankersley": "T49",
+   "camerontankersley": "T46",
    "davidford": "T69",
    "santiagodelafuente": "T91",
    "christolamprecht": "T97",
-   "vincewhaley": "T49",
-   "haotongli": "T34"
+   "vincewhaley": "T46",
+   "haotongli": "T46"
   }
  }
 }
