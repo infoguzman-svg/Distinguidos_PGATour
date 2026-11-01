@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-01T16:50:07Z",
+ "actualizado": "2026-11-01T17:16:51Z",
  "torneos": {
   "sony-open": {
    "robertmacintyre": "4",
@@ -302,25 +302,25 @@
    "kevinroy": "T63",
    "trentphillips": "T63",
    "andrewnovak": "1",
-   "bricegarnett": "T45",
-   "tylerduncan": "T45",
-   "dennymccarthy": "T37",
-   "joeldahmen": "T37",
-   "jacksonsuber": "T17",
-   "chadramey": "T45",
+   "bricegarnett": "T49",
+   "tylerduncan": "T49",
+   "dennymccarthy": "T42",
+   "joeldahmen": "T42",
+   "jacksonsuber": "T34",
+   "chadramey": "T49",
    "jeremypaul": "T89",
-   "gordonsargent": "T25",
-   "austineckroat": "T45",
+   "gordonsargent": "T18",
+   "austineckroat": "T42",
    "isaiahsalinda": "T76",
-   "stevenfisk": "T13",
-   "tracecrowe": "T25",
+   "stevenfisk": "T14",
+   "tracecrowe": "T18",
    "beauhossler": "T55",
-   "camerontankersley": "T17",
+   "camerontankersley": "T27",
    "davidford": "T63",
    "santiagodelafuente": "T89",
    "christolamprecht": "T96",
-   "vincewhaley": "T37",
-   "haotongli": "T45"
+   "vincewhaley": "T34",
+   "haotongli": "T49"
   }
  }
 }
