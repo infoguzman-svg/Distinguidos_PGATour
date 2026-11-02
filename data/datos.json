@@ -9,6 +9,30 @@
   "Benjamín"
  ],
  "iconos": {},
+ "pagos": {
+  "premios": {
+   "Major": [
+    15000,
+    5000
+   ],
+   "Elite": [
+    10000,
+    5000
+   ],
+   "Top 1": [
+    4000,
+    3000
+   ],
+   "Top 2": [
+    3000,
+    2000
+   ]
+  },
+  "corte": {
+   "cuota": 2000,
+   "redondeo": 100
+  }
+ },
  "escalaPos": [
   [
    1,
@@ -463,6 +487,17 @@
      "Chris Gotterup",
      "Sahith Theegala"
     ]
+   },
+   "corte": {
+    "pagan": [
+     "Sebastián",
+     "Cafeta"
+    ],
+    "ganan": [
+     "Cristóbal",
+     "Pedro",
+     "José Miguel"
+    ]
    }
   },
   {
@@ -502,6 +537,17 @@
      "Justin Thomas",
      "Jordan Spieth",
      "Austin Smotherman"
+    ]
+   },
+   "corte": {
+    "pagan": [
+     "Sebastián",
+     "Pedro",
+     "José Miguel",
+     "Cafeta"
+    ],
+    "ganan": [
+     "Cristóbal"
     ]
    }
   },
@@ -543,6 +589,17 @@
      "Rickie Fowler",
      "Shane Lowry"
     ]
+   },
+   "corte": {
+    "pagan": [
+     "Cristóbal",
+     "Pedro",
+     "José Miguel"
+    ],
+    "ganan": [
+     "Sebastián",
+     "Cafeta"
+    ]
    }
   },
   {
@@ -583,6 +640,17 @@
      "Ryo Hisatsune",
      "J.J. Spaun"
     ]
+   },
+   "corte": {
+    "pagan": [
+     "Sebastián",
+     "Cristóbal",
+     "José Miguel",
+     "Cafeta"
+    ],
+    "ganan": [
+     "Pedro"
+    ]
    }
   },
   {
@@ -622,6 +690,17 @@
      "Collin Morikawa",
      "Robert MacIntyre",
      "J.J. Spaun"
+    ]
+   },
+   "corte": {
+    "pagan": [
+     "Sebastián",
+     "Pedro",
+     "José Miguel",
+     "Cafeta"
+    ],
+    "ganan": [
+     "Cristóbal"
     ]
    }
   },
@@ -823,6 +902,17 @@
      "Eric Cole",
      "Rasmus Højgaard"
     ]
+   },
+   "corte": {
+    "pagan": [
+     "Sebastián",
+     "Cristóbal",
+     "Pedro",
+     "Cafeta"
+    ],
+    "ganan": [
+     "José Miguel"
+    ]
    }
   },
   {
@@ -903,6 +993,17 @@
      "Chris Gotterup",
      "Tommy Fleetwood"
     ]
+   },
+   "corte": {
+    "pagan": [
+     "Sebastián",
+     "Pedro"
+    ],
+    "ganan": [
+     "Cristóbal",
+     "Cafeta",
+     "José Miguel"
+    ]
    }
   },
   {
@@ -920,7 +1021,18 @@
     0,
     3,
     0
-   ]
+   ],
+   "corte": {
+    "pagan": [
+     "José Miguel",
+     "Cristóbal",
+     "Pedro",
+     "Cafeta"
+    ],
+    "ganan": [
+     "Sebastián"
+    ]
+   }
   },
   {
    "id": "u-s-open",
@@ -960,6 +1072,17 @@
      "Bryson Dechambeau",
      "Wyndham Clark"
     ]
+   },
+   "corte": {
+    "pagan": [
+     "José Miguel",
+     "Pedro",
+     "Cafeta"
+    ],
+    "ganan": [
+     "Sebastián",
+     "Cristóbal"
+    ]
    }
   },
   {
@@ -977,6 +1100,9 @@
     3,
     1,
     0
+   ],
+   "campeones": [
+    "José Miguel"
    ]
   },
   {
@@ -1056,6 +1182,17 @@
      "Chris Gotterup",
      "Wyndham Clark",
      "J.J. Spaun"
+    ]
+   },
+   "corte": {
+    "pagan": [
+     "Sebastián",
+     "Cristóbal",
+     "José Miguel",
+     "Pedro"
+    ],
+    "ganan": [
+     "Cafeta"
     ]
    }
   },
