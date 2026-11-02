@@ -127,7 +127,7 @@
    2
   ]
  },
- "actual": "vidantaworld-mexico-open",
+ "actual": "world-wide-technology-championship",
  "torneos": [
   {
    "id": "sony-open",
@@ -1253,6 +1253,15 @@
      "Cafeta"
     ]
    }
+  },
+  {
+   "id": "world-wide-technology-championship",
+   "n": "World Wide Technology Championship",
+   "c": "Top 2",
+   "ini": "2026-11-05",
+   "fin": "2026-11-08",
+   "m": "Nov",
+   "sel": {}
   }
  ]
 }
