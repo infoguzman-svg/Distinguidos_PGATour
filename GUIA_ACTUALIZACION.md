@@ -52,6 +52,16 @@ Ejemplo ilustrativo: el *Butterfield Bermuda Championship*, clase Top 2, del 22 
 - Primer día: abre el registro (sección 3) y confirma que diga "20 jugadores con posición". Si hay jugadores "no encontrado", corrige la ortografía en el Excel según el leaderboard.
 - Cuando termine el torneo y el resultado final esté cargado, no hace falta hacer nada. Al pasar al torneo siguiente, mueves el "Sí" de *Actual*.
 
+## 3c. Pestaña Pagos (Pagos_2026.xlsx)
+La pestaña **Pagos** calcula sola cuánto recibe y cuánto debe pagar cada participante, mes a mes. Se alimenta de `Selecciones_2026.xlsx` (posiciones) y del archivo `Pagos_2026.xlsx` (reglas y corte), que va en la carpeta principal del repositorio.
+- **Premios automáticos:** en cada torneo con resultados, el **Ganador** (1° de la polla) y el **Campeón** (dueño del jugador que ganó el torneo real) reciben el premio de la clase (hoja `Premios`). Si son la misma persona, recibe ambos. Cada premio lo pagan en partes iguales los demás participantes.
+- **Corte (manual):** ya está cargado el historial de marzo a julio de 2026. Después de cada torneo con corte, anota en la hoja `Corte` de `Pagos_2026.xlsx` quién **Paga** (no pasó el corte) y quién **Gana** (una fila por participante, con el nombre del torneo igual al de `Selecciones_2026.xlsx`). La página aplica la cuota de $2.000 repartida entre los ganadores (partes redondeadas hacia arriba a $100, por eso a veces se pagan $2.100) o, si nadie gana, la manda a la beneficencia. Si nadie paga (todos pasaron el corte) o el torneo no tiene corte, no anotes nada. El corte se suma a los premios como otro ítem: Premios + Corte = Total.
+- **Torneos sin jugadores cargados:** si solo tienes los puestos, anota al campeón en `Campeones manuales`.
+- **Mes cerrado:** son los meses anteriores al mes del torneo marcado como *Actual*. El mes en curso se muestra como provisorio (⏳) porque las posiciones pueden cambiar.
+- **Seis o más participantes:** la regla es la misma; cada premio lo pagan en partes iguales todos los demás.
+- **Liquidación:** en cada mes, la página muestra el neto de cada uno y la lista de quién le paga a quién con el menor número de transferencias.
+- Para cambiar los montos de los premios o la cuota del corte, edita las hojas `Premios` de `Pagos_2026.xlsx` y sube el archivo como siempre.
+
 ## 4. Plan B: escribir posiciones a mano
 Abre `data\manual.json` con el Bloc de notas y escribe (el `id` del torneo es el nombre en minúsculas, sin tildes y con guiones; míralo en `data\datos.json`):
 ```json

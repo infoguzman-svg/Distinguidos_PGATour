@@ -76,8 +76,39 @@ for r in filas("Puestos manuales"):
     t.setdefault("puestos", [0] * len(participantes))
     t["puestos"][participantes.index(part)] = int(r[2] or 0)
 
+# --- Pagos (opcional): archivo aparte Pagos_AAAA.xlsx con Premios, Corte y Campeones manuales ---
+pagos = {"premios": {"Major": [15000, 5000], "Elite": [10000, 5000], "Top 1": [4000, 3000], "Top 2": [3000, 2000]},
+         "corte": {"cuota": 2000, "redondeo": 100}}
+archivos_pagos = sorted(RAIZ.glob("Pagos_*.xlsx"))
+if archivos_pagos:
+    wp = openpyxl.load_workbook(archivos_pagos[-1], data_only=True)
+    def filas_p(hoja):
+        if hoja not in wp.sheetnames: return
+        for r in wp[hoja].iter_rows(min_row=2, values_only=True):
+            if any(c is not None and txt(c) for c in r):
+                yield list(r) + [None] * 6
+    prem = {txt(r[0]): [int(r[1] or 0), int(r[2] or 0)] for r in filas_p("Premios") if txt(r[0]) and isinstance(r[1], (int, float))}
+    if prem: pagos["premios"] = prem
+    if "Premios" in wp.sheetnames:
+        for fila in range(1, 10):
+            etiqueta, valor = txt(wp["Premios"].cell(fila, 5).value).lower(), wp["Premios"].cell(fila, 6).value
+            if isinstance(valor, (int, float)) and "cuota" in etiqueta: pagos["corte"]["cuota"] = int(valor)
+            if isinstance(valor, (int, float)) and "redondeo" in etiqueta: pagos["corte"]["redondeo"] = int(valor)
+    por_id = {t["id"]: t for t in torneos}
+    for r in filas_p("Corte"):
+        t = por_id.get(slug(txt(r[0]))); rol = txt(r[2]).lower()
+        if not t or not txt(r[1]) or rol[:3] not in ("pag", "gan"):
+            print(f"ADVERTENCIA: fila de Corte no reconocida: {txt(r[0])} / {txt(r[1])} / {rol}"); continue
+        t.setdefault("corte", {"pagan": [], "ganan": []})["pagan" if rol.startswith("pag") else "ganan"].append(txt(r[1]))
+    for r in filas_p("Campeones manuales"):
+        t = por_id.get(slug(txt(r[0])))
+        if not t or not txt(r[1]):
+            print(f"ADVERTENCIA: fila de Campeones manuales no reconocida: {txt(r[0])} / {txt(r[1])}"); continue
+        t.setdefault("campeones", []).append(txt(r[1]))
+    print(f"pagos cargados desde {archivos_pagos[-1].name}")
+
 temporada = (re.search(r"(\d{4})", XLSX.stem) or [None, str(dt.date.today().year)])[1]
-datos = {"temporada": temporada, "participantes": participantes, "iconos": iconos, "escalaPos": escala, "clases": clases, "actual": actual, "torneos": torneos}
+datos = {"temporada": temporada, "participantes": participantes, "iconos": iconos, "pagos": pagos, "escalaPos": escala, "clases": clases, "actual": actual, "torneos": torneos}
 (RAIZ / "data").mkdir(exist_ok=True)
 (RAIZ / "data" / "datos.json").write_text(json.dumps(datos, ensure_ascii=False, indent=1), encoding="utf-8")
 print(f"datos.json listo: {len(torneos)} torneos, {len(participantes)} participantes ({XLSX.name})")
