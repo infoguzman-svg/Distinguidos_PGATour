@@ -74,6 +74,19 @@ tr:last-child td{border-bottom:0}
 .cerr{font-size:.7rem;padding:2px 8px;border-radius:99px;background:#e5e7e0;color:#555;margin-left:6px}.cerr.ok{background:#dcefe3;color:#14523a}
 .xfer{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}.xfer:last-child{border:0}.xfer b{margin-left:auto;font-size:1.05rem}
 details.calc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-top:12px;font-size:.88rem}details.calc summary{cursor:pointer;font-weight:700}
+.gm{min-width:640px}
+.gm th,.gm td{text-align:center;padding:7px 9px;font-size:.84rem;white-space:normal}
+.gm thead th.tc{background:var(--c);color:#fff;font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;border-radius:0}
+.gm .tn{font-weight:700;background:var(--soft);color:var(--ink);font-size:.82rem;text-transform:none;letter-spacing:0}
+.gm .wr{color:#1d4ed8;font-weight:700}
+.gm .sk{position:sticky;left:0;z-index:2;background:var(--card);text-align:left;min-width:132px}
+.gm thead .sk{background:#111;color:#fff;font-size:.7rem;letter-spacing:.04em}
+.gm .mut{color:#a3a89d}
+.gm tbody td,.gm tfoot td{white-space:nowrap}.gm tbody td:first-child{white-space:normal}
+.gm .tt{background:#eef3ec;font-weight:700}
+.gm .nt{background:#f6f3dc;font-weight:800;font-size:.95rem}
+.gm tfoot td{background:#111;color:#fff;font-weight:700;border-color:#111}
+.gm tfoot .sk{background:#111}
 .hint{font-size:.8rem;color:var(--mut);margin-top:10px}
 .rules{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.84rem}
 .rules span{background:var(--soft);border-radius:8px;padding:3px 9px}
@@ -253,8 +266,8 @@ function pagosTorneo(t){
 function meses(){
   const o=[],mp={},ps=D.participantes,z=()=>ps.map(()=>0);
   D.torneos.forEach(t=>{if(!t.m)return;if(!mp[t.m]){mp[t.m]={m:t.m,ts:[]};o.push(mp[t.m]);}mp[t.m].ts.push(t);});
-  o.forEach(x=>{x.netP=z();x.netC=z();x.benef=0;x.jug=0;
-    x.det=x.ts.map(t=>{const p=pagosTorneo(t);if(p){x.jug++;ps.forEach((_,i)=>{x.netP[i]+=p.recP[i]-p.payP[i];x.netC[i]+=p.recC[i]-p.payC[i];});x.benef+=p.benef;}return{t,p};});
+  o.forEach(x=>{x.netP=z();x.netC=z();x.gP=z();x.pP=z();x.benef=0;x.jug=0;
+    x.det=x.ts.map(t=>{const p=pagosTorneo(t);if(p){x.jug++;ps.forEach((_,i)=>{x.netP[i]+=p.recP[i]-p.payP[i];x.netC[i]+=p.recC[i]-p.payC[i];x.gP[i]+=p.recP[i];x.pP[i]+=p.payP[i];});x.benef+=p.benef;}return{t,p};});
     x.net=x.netP.map((v,i)=>v+x.netC[i]);});
   const act=D.actual&&get(D.actual)?get(D.actual).m:(o.filter(x=>x.jug).slice(-1)[0]||{}).m;
   o.forEach(x=>{x.cerrado=x.jug>0&&mi(x.m)<mi(act);});
@@ -270,36 +283,39 @@ function tablaTransf(net){
   const ps=D.participantes,tr=transferencias(net);
   return tr.length?tr.map(([a,b,m])=>`<div class="xfer">${av(a)}<span><b style="margin:0;font-size:1rem">${esc(ps[a])}</b> paga a</span>${av(b)}<span><b style="margin:0;font-size:1rem">${esc(ps[b])}</b></span><b class="pos">${CLP(m)}</b></div>`).join(""):"<span class='hint'>Sin pagos pendientes.</span>";
 }
+const MESN={Ene:"Enero",Feb:"Febrero",Mar:"Marzo",Abr:"Abril",May:"Mayo",Jun:"Junio",Jul:"Julio",Ago:"Agosto",Sep:"Septiembre",Oct:"Octubre",Nov:"Noviembre",Dic:"Diciembre"};
 function renderPagos(){
   const ps=D.participantes,{lista,act}=meses(),pg=D.pagos||{};
-  const con=lista.filter(x=>x.jug);
-  if(!con.length){$("pagos").innerHTML="<p class='hint'>Aún no hay torneos con resultados para calcular pagos.</p>";return;}
-  if(!mesSel||!con.some(x=>x.m===mesSel))mesSel=(con.find(x=>x.m===act)||con[con.length-1]).m;
-  const sum=k=>ps.map((_,i)=>con.reduce((s,x)=>s+x[k][i],0)),tp=sum("netP"),tc=sum("netC"),tot=sum("net");
-  let h=`<h2>Acumulado de la temporada</h2><div class="card scroll"><table><tr><th>Participante</th><th class="n">Premios</th><th class="n">Corte</th><th class="n">Total</th></tr>`;
-  ord(ps.length,i=>tot[i]).forEach(i=>{h+=`<tr><td><div class="who">${av(i)}${esc(ps[i])}</div></td><td class="n ${cls(tp[i])}">${CLP(tp[i])}</td><td class="n ${cls(tc[i])}">${CLP(tc[i])}</td><td class="n tot ${cls(tot[i])}">${CLP(tot[i])}</td></tr>`;});
-  h+=`</table></div><p class="hint">Verde: recibe. Rojo: debe pagar. Suma de todos los meses con resultados.</p>`;
-  h+=`<h2>Neto por mes</h2><div class="card scroll"><table><tr><th>Participante</th>`+con.map(x=>`<th class="n">${esc(x.m)} ${x.cerrado?"🔒":"⏳"}</th>`).join("")+`</tr>`;
-  ord(ps.length,i=>tot[i]).forEach(i=>{h+=`<tr><td><div class="who">${av(i)}${esc(ps[i])}</div></td>`+con.map(x=>`<td class="n ${cls(x.net[i])}">${x.net[i]?CLP(x.net[i]):"·"}</td>`).join("")+`</tr>`;});
-  h+=`</table></div><p class="hint">🔒 mes cerrado · ⏳ mes en curso (provisorio).</p>`;
-  h+=`<div class="chips" style="margin-top:14px">`+con.map(x=>`<button class="chip${x.m===mesSel?" on":""}" data-mes="${esc(x.m)}"><i style="--c:#c6f613"></i>${esc(x.m)}${x.cerrado?" 🔒":" ⏳"}</button>`).join("")+`</div>`;
-  const x=con.find(y=>y.m===mesSel),cerr=x.cerrado;
-  h+=`<h2>${esc(x.m)} <span class="cerr ${cerr?"ok":""}">${cerr?"Mes cerrado":"Mes en curso (provisorio)"}</span></h2>`;
-  h+=`<div class="card scroll"><table><tr><th>Torneo</th><th>Clase</th><th>Ganador</th><th>Campeón</th><th class="n">Corte</th></tr>`;
-  x.det.forEach(({t,p})=>{
-    if(!p){h+=`<tr><td>${esc(t.n)}</td><td><span class="cb" style="--c:${ccol(t.c)}">${esc(t.c)}</span></td><td colspan="3" style="color:var(--mut)">Sin resultados aún</td></tr>`;return;}
-    const nm=a=>a.length?a.map(i=>esc(ps[i])).join(", "):"–";
-    const ct=p.corte&&p.corte.pagan.length?(p.corte.ganan.length?`${p.corte.pagan.length} pagan · ${p.corte.ganan.length} ganan`:"A beneficencia"):"·";
-    h+=`<tr><td>${esc(t.n)}</td><td><span class="cb" style="--c:${ccol(t.c)}">${esc(t.c)}</span></td><td>${nm(p.gan)} <small>${p.gan.length?CLP(p.pr[0]):""}</small></td><td>${nm(p.cam)} <small>${p.cam.length?CLP(p.pr[1]):""}</small></td><td class="n">${ct}</td></tr>`;});
-  h+=`</table></div>`;
-  h+=`<h2>Balance de ${esc(x.m)}</h2><div class="card scroll"><table><tr><th>Participante</th><th class="n">Premios</th><th class="n">Corte</th><th class="n">Total</th></tr>`;
-  ord(ps.length,i=>x.net[i]).forEach(i=>{h+=`<tr><td><div class="who">${av(i)}${esc(ps[i])}</div></td><td class="n ${cls(x.netP[i])}">${x.netP[i]?CLP(x.netP[i]):"·"}</td><td class="n ${cls(x.netC[i])}">${x.netC[i]?CLP(x.netC[i]):"·"}</td><td class="n tot ${cls(x.net[i])}">${CLP(x.net[i])}</td></tr>`;});
-  h+=`</table></div>`+(x.benef?`<p class="hint">A beneficencia este mes: <b>${CLP(x.benef)}</b> (ya incluido en lo que paga cada perdedor).</p>`:"");
-  h+=`<h2>Quién le paga a quién en ${esc(x.m)}</h2><div class="card">${tablaTransf(x.net)}</div>`;
-  h+=`<p class="hint">Es la liquidación con menos transferencias posible para dejar a todos en cero.${cerr?"":" Como el mes sigue en curso, los montos pueden cambiar."}</p>`;
+  const vis=lista.filter(x=>x.jug||x.m===act);
+  if(!vis.length){$("pagos").innerHTML="<p class='hint'>Aún no hay torneos con resultados para calcular pagos.</p>";return;}
+  if(!mesSel||!vis.some(x=>x.m===mesSel))mesSel=(vis.find(x=>x.m===act)||vis[vis.length-1]).m;
+  const x=vis.find(y=>y.m===mesSel),cerr=x.cerrado,N=ps.length;
+  const sum=k=>ps.map((_,i)=>lista.reduce((s,y)=>s+y[k][i],0)),tp=sum("netP"),tc=sum("netC"),tot=sum("net");
+  const sg=a=>a.reduce((s,v)=>s+v,0);
+  // 1) módulo del mes: botonera + tabla como tu Excel
+  let h=`<h2>Pagos de ${esc(MESN[x.m]||x.m)} <span class="cerr ${cerr?"ok":""}">${cerr?"Mes cerrado":"Mes en curso · se acumula con cada torneo"}</span></h2>`;
+  h+=`<div class="chips">`+vis.map(y=>`<button class="chip${y.m===mesSel?" on":""}" data-mes="${esc(y.m)}"><i style="--c:#c6f613"></i>${esc(y.m)}${y.cerrado?" 🔒":" ⏳"}</button>`).join("")+`</div>`;
+  h+=`<div class="card scroll"><table class="gm"><thead><tr><th class="sk">TORNEO</th>`+x.det.map(({t})=>`<th class="tc" style="--c:${ccol(t.c)}">${esc(t.c)}</th>`).join("")+`<th rowspan="4" class="tt">Premios<br>ganados</th><th rowspan="4" class="tt">Premios<br>que paga</th><th rowspan="4" class="tt">Corte</th><th rowspan="4" class="nt">Neto<br>del mes</th></tr>`;
+  h+=`<tr><th class="sk" style="background:var(--soft);color:var(--ink)"></th>`+x.det.map(({t})=>`<th class="tn">${esc(t.n)}</th>`).join("")+`</tr>`;
+  const nm=a=>a.length?a.map(i=>esc(ps[i])).join(", "):"–";
+  h+=`<tr><th class="sk" style="background:var(--card);color:var(--ink)">⛳ Ganador</th>`+x.det.map(({p})=>`<td class="wr">${p?nm(p.gan):"·"}</td>`).join("")+`</tr>`;
+  h+=`<tr><th class="sk" style="background:var(--card);color:var(--ink)">👑 Campeón</th>`+x.det.map(({p})=>`<td class="wr">${p?nm(p.cam):"·"}</td>`).join("")+`</tr></thead><tbody>`;
+  ps.forEach((_,i)=>{
+    h+=`<tr><td class="sk"><div class="who">${av(i)}${esc(ps[i])}</div></td>`+x.det.map(({p})=>`<td>${p&&p.recP[i]>0?`<b class="pos">${CLP(p.recP[i])}</b>`:`<span class="mut">${p?"$0":"·"}</span>`}</td>`).join("");
+    h+=`<td class="tt">${x.gP[i]?CLP(x.gP[i]):"$0"}</td><td class="tt ${x.pP[i]?"neg":""}">${x.pP[i]?CLP(-x.pP[i]):"$0"}</td><td class="tt ${cls(x.netC[i])}">${x.netC[i]?CLP(x.netC[i]):"$0"}</td><td class="nt ${cls(x.net[i])}">${CLP(x.net[i])}</td></tr>`;});
+  h+=`</tbody><tfoot><tr><td class="sk">REPARTO</td>`+x.det.map(({p})=>`<td>${p?CLP(sg(p.recP)):"·"}</td>`).join("")+`<td>${CLP(sg(x.gP))}</td><td>${sg(x.pP)?CLP(-sg(x.pP)):"$0"}</td><td>${sg(x.netC)?CLP(sg(x.netC)):"$0"}</td><td>${CLP(sg(x.net))}</td></tr></tfoot></table></div>`;
+  h+=`<p class="hint">Cada torneo muestra lo que gana cada participante. A la derecha se acumula el mes: <b>Neto = Premios ganados − Premios que paga ± Corte</b>. Verde: recibe · Rojo: debe pagar.${cerr?"":" Mientras el mes sigue en curso, los montos son provisorios."}${x.benef?` A beneficencia este mes: <b>${CLP(x.benef)}</b> (incluido en el Corte).`:""}</p>`;
+  const cortes=x.det.filter(({p})=>p&&p.corte&&p.corte.pagan.length);
+  if(cortes.length)h+=`<p class="hint"><b>Corte del mes:</b> `+cortes.map(({t,p})=>`${esc(t.n)} (${p.corte.ganan.length?`${p.corte.pagan.length} pagan · ${p.corte.ganan.length} ganan`:"a beneficencia"})`).join(" · ")+`.</p>`;
+  h+=`<h2>Quién le paga a quién en ${esc(MESN[x.m]||x.m)}</h2><div class="card">${tablaTransf(x.net)}</div>`;
+  h+=`<p class="hint">Es la liquidación con menos transferencias posible para dejar a todos en cero.${cerr?"":" Como el mes sigue en curso, puede cambiar."}</p>`;
+  // 2) acumulado de la temporada
+  h+=`<h2>Acumulado de la temporada</h2><div class="card scroll"><table><tr><th>Participante</th><th class="n">Premios</th><th class="n">Corte</th><th class="n">Total</th></tr>`;
+  ord(N,i=>tot[i]).forEach(i=>{h+=`<tr><td><div class="who">${av(i)}${esc(ps[i])}</div></td><td class="n ${cls(tp[i])}">${CLP(tp[i])}</td><td class="n ${cls(tc[i])}">${CLP(tc[i])}</td><td class="n tot ${cls(tot[i])}">${CLP(tot[i])}</td></tr>`;});
+  h+=`</table></div><p class="hint">Suma de todos los meses con resultados.</p>`;
   h+=`<details class="calc"><summary>Liquidación acumulada de la temporada (todos los meses)</summary><div style="margin-top:8px">${tablaTransf(tot)}</div><p class="hint">Úsala solo si no has liquidado mes a mes; si ya pagaron algún mes, descuéntalo.</p></details>`;
   const pr=pg.premios||{},cu=((pg.corte||{}).cuota||2000);
-  h+=`<details class="calc"><summary>Cómo se calcula</summary><p>En cada torneo se pagan dos premios: <b>Ganador</b> (1° de la polla) y <b>Campeón</b> (dueño del jugador que ganó el torneo real). Si es la misma persona recibe ambos; si son distintas, cada una recibe el suyo. Cada premio lo pagan en partes iguales todos los demás participantes.</p><table><tr><th>Clase</th><th class="n">Ganador</th><th class="n">Campeón</th></tr>`+Object.keys(pr).map(c=>`<tr><td><span class="cb" style="--c:${ccol(c)}">${esc(c)}</span></td><td class="n">${CLP(pr[c][0])}</td><td class="n">${CLP(pr[c][1])}</td></tr>`).join("")+`</table><p><b>Corte:</b> cada participante que no pasa el corte paga ${CLP(cu)}, repartidos entre quienes sí pasaron; cada parte se redondea hacia arriba a ${CLP((pg.corte||{}).redondeo||100)} (por eso a veces se pagan ${CLP(cu+100)}). Si nadie pasa, cada uno abona la cuota a la beneficencia.</p><p><b>Neto del mes = premios recibidos − premios que le toca pagar + cortes recibidos − cuotas del corte.</b> Es un ítem más de la tabla: Premios + Corte = Total.</p></details>`;
+  h+=`<details class="calc"><summary>Cómo se calcula</summary><p>En cada torneo se pagan dos premios: <b>Ganador</b> (1° de la polla) y <b>Campeón</b> (dueño del jugador que ganó el torneo real). Si es la misma persona recibe ambos; si son distintas, cada una recibe el suyo. Cada premio lo pagan en partes iguales todos los demás participantes.</p><table><tr><th>Clase</th><th class="n">Ganador</th><th class="n">Campeón</th></tr>`+Object.keys(pr).map(c=>`<tr><td><span class="cb" style="--c:${ccol(c)}">${esc(c)}</span></td><td class="n">${CLP(pr[c][0])}</td><td class="n">${CLP(pr[c][1])}</td></tr>`).join("")+`</table><p><b>Corte:</b> cada participante que no pasa el corte paga ${CLP(cu)}, repartidos entre quienes sí pasaron; cada parte se redondea hacia arriba a ${CLP((pg.corte||{}).redondeo||100)} (por eso a veces se pagan ${CLP(cu+100)}). Si nadie pasa, cada uno abona la cuota a la beneficencia.</p><p><b>Neto del mes = premios recibidos − premios que le toca pagar + cortes recibidos − cuotas del corte.</b></p></details>`;
   $("pagos").innerHTML=h;
 }
 function show(v){
