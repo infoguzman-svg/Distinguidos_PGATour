@@ -1261,7 +1261,44 @@
    "ini": "2026-11-05",
    "fin": "2026-11-08",
    "m": "Nov",
-   "sel": {}
+   "sel": {
+    "Cristóbal": [
+     "Chris Kirk",
+     "Luke Clanton",
+     "Neal Shipley",
+     "Michael Kim"
+    ],
+    "Sebastián": [
+     "Jackson Suber",
+     "Zach Bauchou",
+     "Jackson Koivun",
+     "Ben Griffin"
+    ],
+    "Pedro": [
+     "Mackenzie Hughes",
+     "Pierceson Coody",
+     "Keith Mitchell",
+     "Marco Penge"
+    ],
+    "Cafeta": [
+     "Ben Kohles",
+     "Christiaan Bezuidenhout",
+     "Max Greyserman",
+     "Blades Brown"
+    ],
+    "José Miguel": [
+     "Johnny Keefer",
+     "Ryan Gerard",
+     "Harry Hall",
+     "Steven Fisk"
+    ],
+    "Benjamín": [
+     "Jordan Smith",
+     "Seamus Power",
+     "Ben James",
+     "Kristoffer Ventura"
+    ]
+   }
   }
  ]
 }
