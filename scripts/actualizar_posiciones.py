@@ -42,6 +42,8 @@ def posiciones(competidores):
         todos.append((k, al_par(c)))
         p = ((c.get("status") or {}).get("position") or {}).get("displayName")
         if p and re.fullmatch(r"T?\d+", str(p)): res[k] = str(p)
+    if len({s for _, s in todos if s is not None}) <= 1 and not res:
+        return {}                      # nadie ha jugado aún: todos con el mismo score, no hay posiciones reales
     for k, s in todos:
         if k in res or s is None: continue
         menores = sum(1 for _, x in todos if x is not None and x < s)
@@ -77,10 +79,12 @@ def buscar(t, ini, fin):
         evs = data.get("events") or []
         vistos += [e.get("name") for e in evs]
         ev = elegir_evento(evs, t, ini, fin)
-        comp = ((ev.get("competitions") or [{}])[0]).get("competitors") if ev else None
-        if ev and comp: return comp
+        c0 = (ev.get("competitions") or [{}])[0] if ev else {}
+        comp = c0.get("competitors") if ev else None
+        estado = (((ev or {}).get("status") or {}).get("type") or {}).get("state") or ((c0.get("status") or {}).get("type") or {}).get("state")
+        if ev and comp: return comp, estado
     print(f"[{t['n']}] no encontré el torneo en la fuente. Eventos devueltos: {sorted(set(map(str, vistos)))}")
-    return None
+    return None, None
 
 def main():
     datos = json.load(open(RAIZ / "data" / "datos.json", encoding="utf-8"))
@@ -93,9 +97,16 @@ def main():
         en_curso = ini - dt.timedelta(days=1) <= hoy <= fin + dt.timedelta(days=1)
         if not (os.environ.get("FORZAR") or en_curso or t["id"] == datos.get("actual")): continue
         activos += 1
-        comp = buscar(t, ini, fin)
+        comp, estado = buscar(t, ini, fin)
         if not comp: continue
         todas = posiciones(comp)
+        sin_empezar = estado == "pre" or not todas or (len(todas) >= 8 and len(set(todas.values())) == 1)
+        if sin_empezar:
+            print(f"[{t['n']}] el torneo aún no comienza (sin posiciones reales todavía)")
+            if t["id"] in actual["torneos"]:
+                del actual["torneos"][t["id"]]; cambio = True
+                print(f"[{t['n']}] se borraron posiciones anteriores que no eran válidas")
+            continue
         mios = {}
         for jugadores in t["sel"].values():
             for j in jugadores:

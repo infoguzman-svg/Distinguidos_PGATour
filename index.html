@@ -139,10 +139,14 @@ async function jget(u){const r=await fetch(u+"?t="+Date.now());if(!r.ok)throw ne
 function cargarJs(n,v){return new Promise((ok,no)=>{const s=document.createElement("script");s.src="data/"+n+".js?t="+Date.now();s.onload=()=>window[v]?ok(window[v]):no(new Error(n));s.onerror=()=>no(new Error(n));document.head.appendChild(s);});}
 async function dato(n,v){try{return await jget("data/"+n+".json");}catch(e){return await cargarJs(n,v);}}
 function pts(p){if(p<1)return 0;for(const [a,b,v] of D.escalaPos)if(p>=a&&p<=b)return v;return 0;}
+function posOk(t){
+  const v=Object.values((POS.torneos||{})[t.id]||{});
+  return !(v.length>=8&&new Set(v).size===1);   // todos con la misma posición = el torneo aún no empezó
+}
 function pos(t,name){
   const k=norm(name),m=(MAN.torneos||{})[t.id]||{};
   for(const x in m)if(norm(x)===k)return{v:String(m[x]),man:1};
-  return{v:((POS.torneos||{})[t.id]||{})[k]||"",man:0};
+  return{v:posOk(t)?(((POS.torneos||{})[t.id]||{})[k]||""):"",man:0};
 }
 function calc(t){
   if(memo[t.id])return memo[t.id];
