@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-05T15:38:37Z",
+ "actualizado": "2026-11-05T16:40:18Z",
  "torneos": {
   "sony-open": {
    "robertmacintyre": "4",
@@ -323,30 +323,30 @@
    "haotongli": "T29"
   },
   "world-wide-technology-championship": {
-   "chriskirk": "T3",
-   "lukeclanton": "T35",
-   "nealshipley": "T35",
-   "michaelkim": "T35",
-   "jacksonsuber": "T35",
-   "zachbauchou": "T35",
-   "jacksonkoivun": "T35",
-   "bengriffin": "T35",
-   "mackenziehughes": "T35",
-   "piercesoncoody": "T35",
-   "keithmitchell": "T35",
-   "marcopenge": "T35",
-   "benkohles": "T35",
-   "christiaanbezuidenhout": "T35",
-   "maxgreyserman": "T18",
-   "bladesbrown": "T18",
-   "johnnykeefer": "2",
-   "ryangerard": "T12",
-   "harryhall": "T3",
-   "stevenfisk": "T35",
-   "jordansmith": "T35",
-   "seamuspower": "T35",
-   "benjames": "T35",
-   "kristofferventura": "T35"
+   "chriskirk": "T5",
+   "lukeclanton": "T47",
+   "nealshipley": "T47",
+   "michaelkim": "T47",
+   "jacksonsuber": "T47",
+   "zachbauchou": "T47",
+   "jacksonkoivun": "T47",
+   "bengriffin": "T47",
+   "mackenziehughes": "T47",
+   "piercesoncoody": "T47",
+   "keithmitchell": "T114",
+   "marcopenge": "T47",
+   "benkohles": "T47",
+   "christiaanbezuidenhout": "T114",
+   "maxgreyserman": "T11",
+   "bladesbrown": "T5",
+   "johnnykeefer": "T11",
+   "ryangerard": "T11",
+   "harryhall": "T1",
+   "stevenfisk": "T47",
+   "jordansmith": "T47",
+   "seamuspower": "T47",
+   "benjames": "T47",
+   "kristofferventura": "T31"
   }
  }
 }
