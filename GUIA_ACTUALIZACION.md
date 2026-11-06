@@ -63,6 +63,12 @@ La pestaña **Pagos** calcula sola cuánto recibe y cuánto debe pagar cada part
 - **Liquidación:** en cada mes, la página muestra el neto de cada uno y la lista de quién le paga a quién con el menor número de transferencias.
 - Para cambiar los montos de los premios o la cuota del corte, edita las hojas `Premios` de `Pagos_2026.xlsx` y sube el archivo como siempre.
 
+## 3d. Actualización en vivo (Vercel)
+Además de la tarea de GitHub (cada 10 minutos aprox.), la página consulta cada 60 segundos la función `api/leaderboard.js` de Vercel, que lee el leaderboard de ESPN. Mientras el torneo marcado como *Actual* esté en su ventana de fechas (de un día antes del Inicio a un día después del Fin) y alguien tenga la página abierta, el encabezado dice "🔴 En vivo" y las posiciones se actualizan solas, sin esperar a GitHub.
+- Si la función no responde, la página sigue funcionando con las posiciones de `data/posiciones.json`, como antes.
+- Para probar la función, abre `https://distinguidostour.vercel.app/api/leaderboard?n=NOMBRE%20DEL%20TORNEO&ini=AAAA-MM-DD&fin=AAAA-MM-DD`. Debe responder `"ok":true`.
+- Si el torneo está suspendido o terminó la ronda, las posiciones no cambian: es normal que el encabezado no se mueva.
+
 ## 4. Plan B: escribir posiciones a mano
 Abre `data\manual.json` con el Bloc de notas y escribe (el `id` del torneo es el nombre en minúsculas, sin tildes y con guiones; míralo en `data\datos.json`):
 ```json

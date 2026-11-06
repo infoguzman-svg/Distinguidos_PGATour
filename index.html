@@ -139,6 +139,23 @@ async function jget(u){const r=await fetch(u+"?t="+Date.now());if(!r.ok)throw ne
 function cargarJs(n,v){return new Promise((ok,no)=>{const s=document.createElement("script");s.src="data/"+n+".js?t="+Date.now();s.onload=()=>window[v]?ok(window[v]):no(new Error(n));s.onerror=()=>no(new Error(n));document.head.appendChild(s);});}
 async function dato(n,v){try{return await jget("data/"+n+".json");}catch(e){return await cargarJs(n,v);}}
 function pts(p){if(p<1)return 0;for(const [a,b,v] of D.escalaPos)if(p>=a&&p<=b)return v;return 0;}
+const API=window.API_URL||((location.hostname.endsWith("vercel.app")?"":"https://distinguidostour.vercel.app")+"/api/leaderboard");
+const LIVE={};                      // id del torneo -> {pos, at}
+const dMas=(f,n)=>{const d=new Date(f+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
+async function vivo(){
+  if(!D||!D.actual)return;
+  const t=get(D.actual);if(!t||!t.ini||!t.fin)return;
+  const hoy=new Date().toISOString().slice(0,10);
+  if(hoy<dMas(t.ini,-1)||hoy>dMas(t.fin,1))return;                 // solo durante la ventana del torneo
+  try{
+    const r=await fetch(API+"?n="+encodeURIComponent(t.n)+"&ini="+t.ini+"&fin="+t.fin);
+    if(!r.ok)return;
+    const j=await r.json();
+    if(!j.ok||!j.pos||!Object.keys(j.pos).length){delete LIVE[t.id];estado();return;}   // sin datos reales: se usa posiciones.json
+    LIVE[t.id]={pos:j.pos,at:Date.now()};
+    memo={};estado();show(vista());
+  }catch(e){}
+}
 function posOk(t){
   const v=Object.values((POS.torneos||{})[t.id]||{});
   return !(v.length>=8&&new Set(v).size===1);   // todos con la misma posición = el torneo aún no empezó
@@ -146,6 +163,8 @@ function posOk(t){
 function pos(t,name){
   const k=norm(name),m=(MAN.torneos||{})[t.id]||{};
   for(const x in m)if(norm(x)===k)return{v:String(m[x]),man:1};
+  const lv=LIVE[t.id];
+  if(lv&&Date.now()-lv.at<240000)return{v:lv.pos[k]||"",man:0};      // datos en vivo (Vercel) tienen prioridad
   return{v:posOk(t)?(((POS.torneos||{})[t.id]||{})[k]||""):"",man:0};
 }
 function calc(t){
@@ -336,8 +355,10 @@ function elegir(){
   return c?c.id:null;
 }
 function estado(){
+  const lv=D&&D.actual?LIVE[D.actual]:null;
+  if(lv&&Date.now()-lv.at<240000){$("status").textContent="🔴 En vivo · actualizado "+new Date(lv.at).toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit",second:"2-digit"});return;}
   const a=POS.actualizado?new Date(POS.actualizado):null;
-  $("status").textContent=a&&!isNaN(a)?"Última actualización de posiciones: "+a.toLocaleString("es-CL",{dateStyle:"medium",timeStyle:"short"}):"Torneo fantasy · "+D.participantes.length+" participantes";
+  $("status").textContent=a&&!isNaN(a)?"Último cambio de posiciones: "+a.toLocaleString("es-CL",{dateStyle:"medium",timeStyle:"short"}):"Torneo fantasy · "+D.participantes.length+" participantes";
 }
 async function cargar(inicial){
   if(window.__DATOS__){POS=window.__DATOS__.POS||{};MAN=window.__DATOS__.MAN||{};}
@@ -354,7 +375,7 @@ async function iniciar(){
   $("pagos").addEventListener("click",e=>{const b=e.target.closest("[data-mes]");if(b){mesSel=b.dataset.mes;renderPagos();}});
   $("lista").addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b){cur=b.dataset.open;show("t");scrollTo(0,0);}});
   await cargar(true);show("t");
-  if(!window.__DATOS__)setInterval(()=>cargar(false),300000);
+  if(!window.__DATOS__){setInterval(()=>cargar(false),300000);vivo();setInterval(()=>{if(document.visibilityState==="visible")vivo();},60000);}
 }
 iniciar();
 </script>
