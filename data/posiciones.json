@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-04T22:21:32Z",
+ "actualizado": "2026-11-06T14:32:02Z",
  "torneos": {
   "sony-open": {
    "robertmacintyre": "4",
@@ -321,6 +321,32 @@
    "christolamprecht": "T96",
    "vincewhaley": "T23",
    "haotongli": "T29"
+  },
+  "world-wide-technology-championship": {
+   "chriskirk": "1",
+   "lukeclanton": "T51",
+   "nealshipley": "T31",
+   "michaelkim": "T101",
+   "jacksonsuber": "T51",
+   "zachbauchou": "T11",
+   "jacksonkoivun": "T51",
+   "bengriffin": "T76",
+   "mackenziehughes": "T97",
+   "piercesoncoody": "T31",
+   "keithmitchell": "T31",
+   "marcopenge": "T101",
+   "benkohles": "T18",
+   "christiaanbezuidenhout": "T90",
+   "maxgreyserman": "T18",
+   "bladesbrown": "T11",
+   "johnnykeefer": "T18",
+   "ryangerard": "T11",
+   "harryhall": "T7",
+   "stevenfisk": "T101",
+   "jordansmith": "T76",
+   "seamuspower": "T31",
+   "benjames": "T2",
+   "kristofferventura": "T31"
   }
  }
 }
