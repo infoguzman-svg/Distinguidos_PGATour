@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-07T00:32:54Z",
+ "actualizado": "2026-11-07T01:36:47Z",
  "torneos": {
   "sony-open": {
    "robertmacintyre": "4",
@@ -331,12 +331,12 @@
    "zachbauchou": "T6",
    "jacksonkoivun": "T36",
    "bengriffin": "T36",
-   "mackenziehughes": "T101",
+   "mackenziehughes": "T100",
    "piercesoncoody": "T52",
    "keithmitchell": "T6",
    "marcopenge": "T105",
    "benkohles": "T6",
-   "christiaanbezuidenhout": "T75",
+   "christiaanbezuidenhout": "T76",
    "maxgreyserman": "T52",
    "bladesbrown": "T6",
    "johnnykeefer": "T84",
@@ -346,7 +346,7 @@
    "jordansmith": "T36",
    "seamuspower": "T62",
    "benjames": "1",
-   "kristofferventura": "T75"
+   "kristofferventura": "T62"
   }
  }
 }
