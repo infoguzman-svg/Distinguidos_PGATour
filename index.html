@@ -109,14 +109,7 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
 .toc b{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:#000;color:var(--lime);font:700 .95rem "Space Grotesk",system-ui,sans-serif;letter-spacing:.02em}
 .toc button.on b{background:var(--lime);color:#000}
 .toc span{font-weight:600;font-size:.86rem;line-height:1.2}
-.reg-fijo{position:sticky;top:0;z-index:30;background:var(--bg);padding:10px 0 4px;margin-top:-10px}
-.reg-fijo::after{content:"";position:absolute;left:0;right:0;bottom:-16px;height:16px;background:linear-gradient(var(--bg),rgba(243,241,232,0));pointer-events:none}
-.reg-fijo .rh{margin-bottom:12px}.reg-fijo .toc{margin-bottom:8px}
-.reg h1{scroll-margin-top:calc(var(--fijoH,0px) + 14px)}
-@media(max-height:780px){.rh p,.rh-stats{display:none}.rh{padding-bottom:18px}.rh-main{margin-top:14px}}
-@media(max-width:560px){.rh{padding:12px 14px 14px;border-radius:20px}.rh-main{margin-top:10px}.rh h2{font-size:1.45rem}.rh p,.rh-stats{display:none}.rh-year{font-size:2.5rem;-webkit-text-stroke-width:1.5px}
-  .toc{display:flex;overflow-x:auto;gap:8px;scrollbar-width:none;padding:4px 2px 8px;margin:0 -2px}.toc button{flex:0 0 auto;padding:8px 12px;border-radius:14px}.toc b{width:28px;height:28px;border-radius:9px;font-size:.8rem}.toc span{font-size:.8rem;white-space:nowrap}
-  .toc button:hover,.toc button:focus-visible{transform:scale(1.05)}}
+.reg h1{scroll-margin-top:14px}
 @media(prefers-reduced-motion:reduce){.rh{animation:none}.toc button,.rh-pdf{transition:none}}
 .reg{padding:6px 20px 20px;line-height:1.55}
 .reg h1{font-size:1.15rem;margin:26px 0 10px;padding-bottom:6px;border-bottom:3px solid var(--lime)}
@@ -166,7 +159,6 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
   <section id="v-g" class="sec"><div id="gral"></div></section>
   <section id="v-p" class="sec"><div id="pagos"></div></section>
   <section id="v-c" class="sec">
-    <div class="reg-fijo" id="regFijo">
     <div class="rh">
       <div class="rh-top">
         <a class="rh-pdf" href="data/Constituzione_Reglamento_Distinguidos_2027.pdf" download target="_blank" rel="noopener" aria-label="Descargar el reglamento en PDF">⬇&nbsp; Descargar PDF</a>
@@ -179,7 +171,6 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
       <div class="rh-stats" id="rhStats"></div>
     </div>
     <div class="toc" id="regToc"></div>
-    </div>
     <div class="card reg" id="reg">
 <h1>Título I · Disposiciones generales</h1>
 <h2>Art. 1 · Obligatoriedad</h2>
@@ -778,26 +769,15 @@ let regListo=false;
 function initReg(){
   if(regListo)return;regListo=true;
   $("reg").innerHTML=$("reg").innerHTML.split("🦡").join(`<img src="${ICON_IMG["🦡"]}" alt="" style="height:.95em;vertical-align:-.12em">`);
-  const hs=[...document.querySelectorAll("#reg h1")],ROM=["I","II","III","IV","V","VI","VII","VIII"],fijo=$("regFijo");
+  const hs=[...document.querySelectorAll("#reg h1")],ROM=["I","II","III","IV","V","VI","VII","VIII"];
   $("regToc").innerHTML=hs.map((e,i)=>`<button data-r="${i}" aria-label="Ir a ${esc(e.textContent)}"><b>${ROM[i]||i+1}</b><span>${esc(e.textContent.replace(/^Título\s+[IVXL]+\s*·\s*/,""))}</span></button>`).join("");
+  $("regToc").addEventListener("click",ev=>{const b=ev.target.closest("[data-r]");if(b)hs[+b.dataset.r].scrollIntoView({behavior:"smooth",block:"start"});});
   $("rhStats").innerHTML=[hs.length+" títulos",document.querySelectorAll("#reg h2").length+" artículos",(D&&D.participantes?D.participantes.length:6)+" participantes"].map(t=>`<span>${t}</span>`).join("");
-  const bt=[...$("regToc").children];let bloqueo=0;
-  const marcar=k=>bt.forEach((x,i)=>x.classList.toggle("on",i===k));
-  const altura=()=>document.documentElement.style.setProperty("--fijoH",fijo.offsetHeight+"px");
-  const spy=()=>{
-    if(!$("v-c").classList.contains("on")||Date.now()<bloqueo)return;
-    const H=fijo.offsetHeight;let k=0;
-    hs.forEach((e,i)=>{if(e.getBoundingClientRect().top<=H+150)k=i;});
-    if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-4)k=hs.length-1;
-    marcar(k);
-    const on=bt[k];if(on&&$("regToc").scrollWidth>$("regToc").clientWidth)$("regToc").scrollTo({left:on.offsetLeft-12,behavior:"smooth"});   // en el celular, la botonera se desplaza sola
-  };
-  $("regToc").addEventListener("click",ev=>{const b=ev.target.closest("[data-r]");if(!b)return;const k=+b.dataset.r;marcar(k);bloqueo=Date.now()+900;hs[k].scrollIntoView({behavior:"smooth",block:"start"});});
-  let t=0;window.addEventListener("scroll",()=>{cancelAnimationFrame(t);t=requestAnimationFrame(spy);},{passive:true});
-  window.addEventListener("resize",()=>{altura();spy();});
-  if("ResizeObserver"in window)new ResizeObserver(altura).observe(fijo);
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{altura();spy();});
-  altura();spy();
+  if("IntersectionObserver"in window){
+    const bt=[...$("regToc").children];
+    const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const k=hs.indexOf(e.target);bt.forEach((x,i)=>x.classList.toggle("on",i===k));}}),{rootMargin:"-25% 0px -65% 0px"});
+    hs.forEach(el=>io.observe(el));
+  }
 }
 function show(v){
   ["t","l","g","p","c"].forEach(x=>$("v-"+x).classList.toggle("on",x===v));
