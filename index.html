@@ -571,8 +571,8 @@ const API=window.API_URL||((location.hostname.endsWith("vercel.app")?"":"https:/
 const LIVE={};                      // id del torneo -> {pos, at}
 const dMas=(f,n)=>{const d=new Date(f+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
 async function vivo(){
-  if(!D||!D.actual)return;
-  const t=get(D.actual);if(!t||!t.ini||!t.fin)return;
+  if(!D)return;
+  const t=get(elegir());if(!t||!t.ini||!t.fin)return;
   const hoy=new Date().toISOString().slice(0,10);
   if(hoy<dMas(t.ini,-1)||hoy>dMas(t.fin,1))return;                 // solo durante la ventana del torneo
   try{
@@ -726,7 +726,7 @@ function meses(){
   o.forEach(x=>{x.netP=z();x.netC=z();x.gP=z();x.pP=z();x.bn=z();x.benef=0;x.jug=0;
     x.det=x.ts.map(t=>{const p=pagosTorneo(t);if(p){x.jug++;ps.forEach((_,i)=>{x.netP[i]+=p.recP[i]-p.payP[i];x.netC[i]+=p.recC[i]-p.payC[i];x.gP[i]+=p.recP[i];x.pP[i]+=p.payP[i];x.bn[i]+=p.payB[i];});x.benef+=p.benef;}return{t,p};});
     x.net=x.netP.map((v,i)=>v+x.netC[i]);});
-  const act=D.actual&&get(D.actual)?get(D.actual).m:(o.filter(x=>x.jug).slice(-1)[0]||{}).m;
+  const ta=get(elegir());const act=ta&&ta.m?ta.m:(o.filter(x=>x.jug).slice(-1)[0]||{}).m;
   o.forEach(x=>{x.cerrado=x.jug>0&&mi(x.m)<mi(act);});
   return{lista:o,act};
 }
@@ -806,14 +806,19 @@ function show(v){
 }
 const vista=()=>["t","l","g","p","c"].find(x=>$("v-"+x).classList.contains("on"));
 function elegir(){
-  if(D.actual&&get(D.actual))return D.actual;
-  const h=new Date().toISOString().slice(0,10);
-  let c=D.torneos.find(t=>t.ini&&t.fin&&t.ini<=h&&h<=t.fin);
-  if(!c){const p=D.torneos.filter(played);c=p.length?p[p.length-1]:D.torneos[0];}
+  const h=new Date().toISOString().slice(0,10),m=D.actual&&get(D.actual);
+  const terminado=t=>t&&t.fin&&h>dMas(t.fin,1);
+  if(m&&!terminado(m))return m.id;                                  // el marcado como Actual, mientras no haya terminado
+  const enCurso=D.torneos.find(t=>t.ini&&t.fin&&dMas(t.ini,-1)<=h&&h<=dMas(t.fin,1));
+  if(enCurso)return enCurso.id;                                     // un torneo que se está jugando según sus fechas
+  const prox=D.torneos.filter(t=>t.ini&&t.ini>h).sort((a,b)=>a.ini<b.ini?-1:a.ini>b.ini?1:0)[0];
+  if(prox)return prox.id;                                           // el próximo torneo con fecha (torneo por venir)
+  if(m)return m.id;
+  const p=D.torneos.filter(played);const c=p.length?p[p.length-1]:D.torneos[0];
   return c?c.id:null;
 }
 function estado(){
-  const lv=D&&D.actual?LIVE[D.actual]:null;
+  const lv=D?LIVE[elegir()]:null;
   if(lv&&Date.now()-lv.at<240000){$("status").textContent="🔴 En vivo · actualizado "+new Date(lv.at).toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit",second:"2-digit"});return;}
   const a=POS.actualizado?new Date(POS.actualizado):null;
   $("status").textContent=a&&!isNaN(a)?"Último cambio de posiciones: "+a.toLocaleString("es-CL",{dateStyle:"medium",timeStyle:"short"}):"Torneo fantasy · "+D.participantes.length+" participantes";
