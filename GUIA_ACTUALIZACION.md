@@ -69,9 +69,8 @@ Además de la tarea de GitHub (cada 10 minutos aprox.), la página consulta cada
 - Para probar la función, abre `https://distinguidostour.vercel.app/api/leaderboard?n=NOMBRE%20DEL%20TORNEO&ini=AAAA-MM-DD&fin=AAAA-MM-DD`. Debe responder `"ok":true`.
 - Si el torneo está suspendido o terminó la ronda, las posiciones no cambian: es normal que el encabezado no se mueva.
 
-## 3e. Pestaña Constituzione
-Es la última pestaña de la web y muestra el reglamento de la temporada 2027, con el encabezado "Temporada 2027". El texto está dentro de `index.html` y se ve igual que el Word `Constituzione_Reglamento_Distinguidos_2027.docx`. Para cambiarlo, edita el Word y pídeme que actualice la pestaña (o edita el texto directamente en `index.html`, dentro de la sección `id="v-c"`).
-- El botón **Descargar PDF** (arriba a la izquierda de la barra negra) baja el archivo `data/Constituzione_Reglamento_Distinguidos_2027.pdf`. Ese PDF debe estar en la carpeta `data` del repositorio. Si cambia el reglamento, hay que reemplazarlo por la versión nueva (la que no incluye el anexo de revisión).
+## 3e. Pestaña Costituzione
+Es la última pestaña de la web y muestra el reglamento de la temporada 2027, con el encabezado "Temporada 2027". El texto está dentro de `index.html` y se ve igual que el Word `Costituzione_Reglamento_Distinguidos_2027.docx`. Para cambiarlo, edita el Word y pídeme que actualice la pestaña (o edita el texto directamente en `index.html`, dentro de la sección `id="v-c"`).
 - Los participantes cuentan desde su primer torneo con selecciones: los meses anteriores a que alguien se sumara no lo incluyen en los pagos.
 
 ## 4. Plan B: escribir posiciones a mano
