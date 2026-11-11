@@ -73,6 +73,26 @@ Además de la tarea de GitHub (cada 10 minutos aprox.), la página consulta cada
 Es la última pestaña de la web y muestra el reglamento de la temporada 2027, con el encabezado "Temporada 2027". El texto está dentro de `index.html` y se ve igual que el Word `Costituzione_Reglamento_Distinguidos_2027.docx`. Para cambiarlo, edita el Word y pídeme que actualice la pestaña (o edita el texto directamente en `index.html`, dentro de la sección `id="v-c"`).
 - Los participantes cuentan desde su primer torneo con selecciones: los meses anteriores a que alguien se sumara no lo incluyen en los pagos.
 
+## 3f. Draft en la web (pestaña 🐍 Draft)
+Cada participante elige sus jugadores desde la página con su **link personal**, en serpiente (1→6, 6→1). Las elecciones se usan directamente en la página: no hace falta llenar la hoja *Selecciones* del Excel para ese torneo.
+
+**Una sola vez (en Vercel):**
+1. *Storage* → conecta **Upstash Redis** (plan gratuito) al proyecto `distinguidos_tour`. Vercel agrega solo las variables de conexión.
+2. *Settings → Environment Variables* → crea `DRAFT_ADMIN_KEY` con una clave que solo tú conozcas.
+3. Sube `api/draft.js` al repositorio (carpeta `api`, junto a `leaderboard.js`) y vuelve a publicar.
+
+**Cada torneo:**
+1. Agrega el torneo en la hoja *Torneos* del Excel (nombre, clase, Inicio, Fin, Actual) y súbelo. No llenes *Selecciones*.
+2. Abre la página con `?admin=TU_CLAVE` al final de la dirección (solo la primera vez en cada equipo; queda guardada). Entra a **🐍 Draft**.
+3. Revisa el orden propuesto (el campeón del torneo anterior primero), la fecha límite (día anterior a las 20:00) y los minutos por turno, y pulsa **Crear draft**.
+4. Pega la lista de jugadores con sus cuotas, uno por línea (por ejemplo `Ryan Gerard +1500`), y pulsa **Cargar lista pegada**. Se ordena sola de mejor a peor cotizado.
+5. Envía a cada uno **su** link personal (botón WhatsApp) y pulsa **Iniciar draft**.
+6. Cada participante abre su link: cuando le toca, ve “¡Te toca!” y el botón **Elegir**. Todos ven el tablero actualizado cada pocos segundos.
+7. Pasada la fecha límite, cada turno tiene 10 minutos; si alguien no elige, pasa al siguiente y después puede elegir lo que le falta (“acá estoy”). Al final puedes usar **Sorteo final** para completar al azar a quien no eligió.
+8. Botones del administrador: Pausar, Saltar turno, Deshacer, Resetear (por ejemplo si se retira una primera elección, Art. 11) y Borrar.
+
+Los nombres de la lista deben coincidir con los del leaderboard para que lleguen las posiciones (las tildes no importan).
+
 ## 4. Plan B: escribir posiciones a mano
 Abre `data\manual.json` con el Bloc de notas y escribe (el `id` del torneo es el nombre en minúsculas, sin tildes y con guiones; míralo en `data\datos.json`):
 ```json
