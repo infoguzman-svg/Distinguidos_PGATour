@@ -87,6 +87,21 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
 .gm .nt{background:#f6f3dc;font-weight:800;font-size:.95rem}
 .gm tfoot td{background:#111;color:#fff;font-weight:700;border-color:#111}
 .gm tfoot .sk{background:#111}
+.reg-hero{background:#000;color:#fff;border-radius:16px;padding:20px 22px;margin-bottom:14px;border-left:6px solid var(--lime)}
+.reg-hero h2{margin:8px 0 2px;font-size:1.7rem;letter-spacing:.06em;color:var(--lime);display:block}
+.reg-hero p{margin:0;opacity:.85}
+.reg-hero .tag{background:var(--lime);color:#000;margin:0;letter-spacing:.1em}
+.reg{padding:6px 20px 20px;line-height:1.55}
+.reg h1{font-size:1.15rem;margin:26px 0 10px;padding-bottom:6px;border-bottom:3px solid var(--lime)}
+.reg h2{display:block;font-size:.98rem;margin:18px 0 6px}
+.reg p{margin:6px 0}.reg ul{margin:6px 0 6px 4px;padding-left:20px}.reg li{margin:4px 0}
+.reg{overflow-x:auto}
+.reg table{margin:10px 0;border:1px solid var(--line);width:100%;border-collapse:collapse}
+.reg th{background:#111;color:#fff;text-transform:none;letter-spacing:0;font-size:.78rem;white-space:normal;text-align:left}
+.reg td{white-space:normal;font-size:.88rem}
+.reg tbody tr:nth-child(even) td{background:var(--soft)}
+.reg .callout{background:#f1fbc8;border-left:5px solid var(--lime);padding:8px 12px;border-radius:6px}
+@media(max-width:560px){nav{overflow-x:auto;scrollbar-width:none}nav button{flex:0 0 auto;padding:11px 14px}.reg{padding:4px 12px 16px}.reg th,.reg td{padding:7px 5px;font-size:.78rem}}
 .hint{font-size:.8rem;color:var(--mut);margin-top:10px}
 .rules{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.84rem}
 .rules span{background:var(--soft);border-radius:8px;padding:3px 9px}
@@ -109,6 +124,7 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
     <button data-v="l">📅 Torneos</button>
     <button data-v="g">🏆 Tabla general</button>
     <button data-v="p">💰 Pagos</button>
+    <button data-v="c">📜 Constituzione</button>
   </nav>
 </div></header>
 <main>
@@ -119,6 +135,374 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
   <section id="v-l" class="sec"><div id="lista"></div></section>
   <section id="v-g" class="sec"><div id="gral"></div></section>
   <section id="v-p" class="sec"><div id="pagos"></div></section>
+  <section id="v-c" class="sec">
+    <div class="reg-hero"><span class="tag">TEMPORADA 2027</span><h2>CONSTITUZIONE</h2><p>Reglamento Distinguidos Tour</p></div>
+    <div class="chips" id="regToc"></div>
+    <div class="card reg" id="reg">
+<h1>Título I · Disposiciones generales</h1>
+<h2>Art. 1 · Obligatoriedad</h2>
+<p>Los integrantes del grupo Distinguidos declaran conocer las reglas de este documento y se comprometen a cumplirlas.</p>
+<h2>Art. 2 · Convivencia</h2>
+<p>Todos los integrantes mantendrán buena convivencia, respeto y disposición, acordes con el prestigio de la liga.</p>
+<h2>Art. 3 · Sanciones</h2>
+<p>Toda falta al procedimiento se sanciona con la <strong>eliminación de los puntos del torneo</strong> que se esté jugando en ese momento.</p>
+<h2>Art. 4 · Participantes y cargos</h2>
+<table>
+<thead>
+<tr class="header">
+<th><strong>Participante</strong></th>
+<th><strong>Cargo</strong></th>
+<th><strong>Avatar</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Cristóbal</strong></td>
+<td>Official Coach</td>
+<td>🐐 Cabra</td>
+</tr>
+<tr class="even">
+<td><strong>Sebastián</strong></td>
+<td>Tournament Delegate</td>
+<td>🦡 Tejón</td>
+</tr>
+<tr class="odd">
+<td><strong>Pedro</strong></td>
+<td>Tournament Secretary</td>
+<td>🦈 Tiburón</td>
+</tr>
+<tr class="even">
+<td><strong>Cafeta</strong></td>
+<td>Tournament Commissioner</td>
+<td>🦌 Cervato</td>
+</tr>
+<tr class="odd">
+<td><strong>José Miguel</strong></td>
+<td>Event Planner</td>
+<td>🦕 Dino</td>
+</tr>
+<tr class="even">
+<td><strong>Benjamín</strong></td>
+<td>Operations Manager</td>
+<td>⚰️ Difunti</td>
+</tr>
+</tbody>
+</table>
+<h1>Título II · Draft</h1>
+<h2>Art. 5 · Definición</h2>
+<p>El draft es la etapa previa al torneo en la que cada participante elige a sus jugadores.</p>
+<h2>Art. 6 · Jugadores por participante</h2>
+<p>En la temporada 2027 cada uno de los 6 participantes elige <strong>4 jugadores</strong>, es decir, 24 jugadores en total. Cada jugador del PGA Tour puede ser elegido por <strong>un solo participante</strong>: no se puede repetir ninguno.</p>
+<h2>Art. 7 · Orden de elección</h2>
+<ul>
+<li><p>Elige primero el <strong>campeón del torneo anterior</strong>; los demás siguen según el puesto que obtuvieron en ese torneo.</p></li>
+<li><p>La elección es <strong>de ida y vuelta</strong>: primero en orden descendente (ida) y luego en orden ascendente (vuelta).</p></li>
+</ul>
+<p>Ejemplo con 6 participantes (el número indica el puesto del torneo anterior):</p>
+<table>
+<thead>
+<tr class="header">
+<th><strong>Ronda</strong></th>
+<th><strong>Sentido</strong></th>
+<th><strong>Orden de turnos</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Ronda 1</strong></td>
+<td>Ida</td>
+<td>1.⁠° → 2.⁠° → 3.⁠° → 4.⁠° → 5.⁠° → 6.⁠°</td>
+</tr>
+<tr class="even">
+<td><strong>Ronda 2</strong></td>
+<td>Vuelta</td>
+<td>6.⁠° → 5.⁠° → 4.⁠° → 3.⁠° → 2.⁠° → 1.⁠°</td>
+</tr>
+<tr class="odd">
+<td><strong>Ronda 3</strong></td>
+<td>Ida</td>
+<td>1.⁠° → 2.⁠° → 3.⁠° → 4.⁠° → 5.⁠° → 6.⁠°</td>
+</tr>
+<tr class="even">
+<td><strong>Ronda 4</strong></td>
+<td>Vuelta</td>
+<td>6.⁠° → 5.⁠° → 4.⁠° → 3.⁠° → 2.⁠° → 1.⁠°</td>
+</tr>
+</tbody>
+</table>
+<h2>Art. 8 · Desempates</h2>
+<p>Si hay igualdad de lugar, en cualquier puesto que se esté disputando, se resuelve así:</p>
+<ul>
+<li><p>Gana el participante cuyo <strong>jugador elegido tenga el mejor ranking</strong> en el torneo.</p></li>
+<li><p>Si la igualdad persiste, gana el que haya quedado <strong>mejor posicionado en el torneo anterior</strong>.</p></li>
+</ul>
+<h2>Art. 9 · Plazos</h2>
+<ul>
+<li><p>La elección puede comenzar <strong>desde el lunes de la semana del torneo</strong>, si así lo pide el campeón vigente, o postergarse hasta la fecha límite.</p></li>
+</ul>
+<blockquote>
+<p class="callout"><strong>FECHA LÍMITE:</strong> el día anterior al torneo, hasta las <strong>20:00 hrs.</strong></p>
+</blockquote>
+<ul>
+<li><p>Vencida la fecha límite, el draft pasa a <strong>modalidad lead time</strong>: cada turno dispone de <strong>10 minutos adicionales</strong> de espera.</p></li>
+</ul>
+<h2>Art. 10 · Turnos y ausencias</h2>
+<ul>
+<li><p><strong>Contingencia.</strong> Un participante con una contingencia puede pedir a otro integrante que haga su elección, dentro de los mismos tiempos acordados.</p></li>
+<li><p><strong>Turno perdido.</strong> Nadie elige por el ausente: no se eligen jugadores al azar ni se escogen los siguientes mejor pagados en apuestas. Si en lead time un participante no elige dentro de sus 10 minutos, el turno pasa al siguiente; si pasan otros 10 minutos sin elección, pasa al siguiente, y así sucesivamente.</p></li>
+<li><p><strong>Regreso.</strong> Cuando el participante ausente vuelve, avisa (“acá estoy”) y elige los jugadores que le falten, a continuación de la última elección ya registrada, entre los jugadores que queden en la grilla en ese momento. Si nadie había elegido nada mientras tanto, puede elegir de inmediato.</p></li>
+<li><p><strong>Sorteo final.</strong> Si al terminar todos los demás participantes aún no completa su lista, se le asignan al azar jugadores de los que queden en la grilla.</p></li>
+</ul>
+<h2>Art. 11 · Retiro de una primera elección durante el draft</h2>
+<p>Si, mientras el draft no ha terminado, se retira del torneo por lesión u otra razón <strong>uno de los jugadores elegidos en la primera elección de cualquiera de los 6 participantes</strong>, el draft completo se <strong>resetea</strong> y comienza de nuevo desde el inicio.</p>
+<p>Esto se aplica solo a las primeras elecciones, porque son los jugadores más importantes y su salida de la grilla quita muchas opciones al resto. Ejemplo: el draft parte el lunes y el miércoles se lesiona uno de esos jugadores; el draft se reinicia.</p>
+<p>El retiro de cualquier otro jugador se resuelve según el Art. 12.</p>
+<h2>Art. 12 · Lesiones y abandonos</h2>
+<table>
+<thead>
+<tr class="header">
+<th><strong>Momento</strong></th>
+<th><strong>Qué ocurre</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Antes del inicio del torneo</strong></td>
+<td>El jugador se puede <strong>reemplazar</strong> (salvo lo dispuesto en el Art. 11 para las primeras elecciones mientras el draft está en curso).</td>
+</tr>
+<tr class="even">
+<td><strong>Días 1 y 2 (torneo en juego)</strong></td>
+<td>Se compensa con un jugador que lleve <strong>el mismo score</strong> en ese momento.</td>
+</tr>
+<tr class="odd">
+<td><strong>Días 3 y 4</strong></td>
+<td><strong>No se puede</strong> reemplazar.</td>
+</tr>
+</tbody>
+</table>
+<h1>Título III · Clases de torneo</h1>
+<h2>Art. 13 · Clasificación</h2>
+<table>
+<thead>
+<tr class="header">
+<th><strong>Clase</strong></th>
+<th><strong>Descripción</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>MAJORS</strong></td>
+<td>Los torneos más grandes del golf mundial. Son cuatro en el año.</td>
+</tr>
+<tr class="even">
+<td><strong>ELITE</strong></td>
+<td>Los segundos torneos más importantes de la temporada.</td>
+</tr>
+<tr class="odd">
+<td><strong>TOP 1</strong></td>
+<td>Torneos con al menos 8 a 10 jugadores inscritos que estén dentro del top 20 del ranking mundial.</td>
+</tr>
+<tr class="even">
+<td><strong>TOP 2</strong></td>
+<td>Torneos con poca presencia de top players.</td>
+</tr>
+</tbody>
+</table>
+<p>La clase de cada torneo se publica en la pestaña <strong>Torneos</strong> de la web.</p>
+<h1>Título IV · Puntuación</h1>
+<h2>Art. 14 · Puntos por jugador</h2>
+<p>Cada jugador elegido suma puntos según su posición final en el torneo:</p>
+<table>
+<thead>
+<tr class="header">
+<th><strong>Posición</strong></th>
+<th><strong>1.⁠°</strong></th>
+<th><strong>2.⁠°</strong></th>
+<th><strong>3.⁠°</strong></th>
+<th><strong>4.⁠°</strong></th>
+<th><strong>5.⁠°</strong></th>
+<th><strong>6.⁠°</strong></th>
+<th><strong>7.⁠°</strong></th>
+<th><strong>8.⁠°</strong></th>
+<th><strong>9.⁠°</strong></th>
+<th><strong>10.⁠°</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Puntos</strong></td>
+<td>30</td>
+<td>20</td>
+<td>18</td>
+<td>16</td>
+<td>14</td>
+<td>12</td>
+<td>10</td>
+<td>9</td>
+<td>8</td>
+<td>7</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th><strong>Posición</strong></th>
+<th><strong>11.⁠° a 15.⁠°</strong></th>
+<th><strong>16.⁠° a 20.⁠°</strong></th>
+<th><strong>21.⁠° a 25.⁠°</strong></th>
+<th><strong>26.⁠° a 30.⁠°</strong></th>
+<th><strong>31.⁠° o más</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Puntos</strong></td>
+<td>6</td>
+<td>5</td>
+<td>4</td>
+<td>3</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<h2>Art. 15 · Resultado del torneo</h2>
+<p>El puntaje de cada participante es la <strong>suma de los puntos de sus 4 jugadores</strong>. Quien suma más queda en el 1.⁠° lugar, y así sucesivamente. Los empates se resuelven según el Art. 8.</p>
+<h2>Art. 16 · Puntos de liga</h2>
+<p>Los <strong>tres primeros</strong> de cada torneo suman puntos de liga según la clase del torneo. Del 4.⁠° lugar en adelante no suman puntos de liga.</p>
+<table>
+<thead>
+<tr class="header">
+<th><strong>Clase</strong></th>
+<th><strong>🥇 1.⁠° lugar</strong></th>
+<th><strong>🥈 2.⁠° lugar</strong></th>
+<th><strong>🥉 3.⁠° lugar</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>MAJORS</strong></td>
+<td>20 pts</td>
+<td>14 pts</td>
+<td>10 pts</td>
+</tr>
+<tr class="even">
+<td><strong>ELITE</strong></td>
+<td>16 pts</td>
+<td>10 pts</td>
+<td>7 pts</td>
+</tr>
+<tr class="odd">
+<td><strong>TOP 1</strong></td>
+<td>10 pts</td>
+<td>6 pts</td>
+<td>4 pts</td>
+</tr>
+<tr class="even">
+<td><strong>TOP 2</strong></td>
+<td>6 pts</td>
+<td>4 pts</td>
+<td>2 pts</td>
+</tr>
+</tbody>
+</table>
+<h2>Art. 17 · Tabla general</h2>
+<p>La tabla general suma los puntos de liga obtenidos en todas las clases durante la temporada.</p>
+<h1>Título V · Pagos y bonificaciones</h1>
+<h2>Art. 18 · Premios por torneo</h2>
+<p>Cada torneo reparte dos premios:</p>
+<ul>
+<li><p><strong>Ganador del torneo:</strong> el participante que queda en el 1.⁠° lugar del torneo.</p></li>
+<li><p><strong>Campeón del torneo:</strong> el participante dueño del jugador que gana el torneo real.</p></li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th><strong>Clase</strong></th>
+<th><strong>Ganador del torneo</strong></th>
+<th><strong>Campeón del torneo</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>MAJORS</strong></td>
+<td>$15.000</td>
+<td>$5.000</td>
+</tr>
+<tr class="even">
+<td><strong>ELITE</strong></td>
+<td>$10.000</td>
+<td>$5.000</td>
+</tr>
+<tr class="odd">
+<td><strong>TOP 1</strong></td>
+<td>$4.000</td>
+<td>$3.000</td>
+</tr>
+<tr class="even">
+<td><strong>TOP 2</strong></td>
+<td>$3.000</td>
+<td>$2.000</td>
+</tr>
+</tbody>
+</table>
+<p>Si ambos premios corresponden a la misma persona, recibe los dos. Si corresponden a personas distintas, cada una recibe el suyo.</p>
+<h2>Art. 19 · Quién paga los premios</h2>
+<p>Cada premio lo pagan, <strong>en partes iguales, todos los demás participantes</strong>. Quien recibe un premio no paga esa parte.</p>
+<h2>Art. 20 · Bono por corte</h2>
+<p>Si el torneo tiene corte, <strong>todos los participantes que pasen el corte con sus 4 jugadores</strong> reciben un bono. Lo pagan los demás participantes:</p>
+<ul>
+<li><p>Cada uno de ellos paga una <strong>cuota fija de $2.000</strong>.</p></li>
+<li><p>Las cuotas se juntan y se reparten <strong>en partes iguales</strong> entre quienes reciben el bono.</p></li>
+<li><p>Si <strong>ningún participante</strong> pasa el corte con sus 4 jugadores, <strong>no se paga nada</strong> por el corte.</p></li>
+</ul>
+<p>Con 6 participantes el reparto siempre es exacto:</p>
+<table>
+<thead>
+<tr class="header">
+<th><strong>Situación</strong></th>
+<th><strong>Cada perdedor paga</strong></th>
+<th><strong>Total que recibe cada ganador</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>1 paga · 5 ganan</strong></td>
+<td>$2.000</td>
+<td>$400</td>
+</tr>
+<tr class="even">
+<td><strong>2 pagan · 4 ganan</strong></td>
+<td>$2.000</td>
+<td>$1.000</td>
+</tr>
+<tr class="odd">
+<td><strong>3 pagan · 3 ganan</strong></td>
+<td>$2.000</td>
+<td>$2.000</td>
+</tr>
+<tr class="even">
+<td><strong>4 pagan · 2 ganan</strong></td>
+<td>$2.000</td>
+<td>$4.000</td>
+</tr>
+<tr class="odd">
+<td><strong>5 pagan · 1 gana</strong></td>
+<td>$2.000</td>
+<td>$10.000</td>
+</tr>
+</tbody>
+</table>
+<h2>Art. 21 · Pago especial a beneficencia</h2>
+<p>El participante a quien <strong>ninguno de sus 4 jugadores</strong> pasa el corte debe pagar, además de la cuota del bono, <strong>$2.000 extra a beneficencia</strong>.</p>
+<p>Este pago no forma parte de la tabla de premios: se registra como <strong>pago especial “Beneficencia”</strong> y se va <strong>acumulando</strong> entre todos los participantes que quedaron en esa situación. Aplica solo cuando el corte genera bono (Art. 20).</p>
+<h2>Art. 22 · Forma de pago</h2>
+<p>Los pagos se hacen <strong>directamente entre los participantes</strong>, según lo que indica la pestaña <strong>Pagos</strong> de la web.</p>
+<h2>Art. 23 · Apuestas externas</h2>
+<p>Se permiten todo tipo de apuestas externas al tour entre los integrantes. Deben acordarse y quedar registradas en el chat del grupo.</p>
+
+    </div>
+  </section>
 </main>
 <script>
 const $=id=>document.getElementById(id);
@@ -131,7 +515,7 @@ const CCOL=["#b8860b","#7c3aed","#2563eb","#0d9488","#be185d","#475569"];
 let D=null,POS={},MAN={},memo={},cur=null;
 
 const ccol=c=>CCOL[Math.max(0,Object.keys(D.clases).indexOf(c))%CCOL.length];
-const ICO0={cr:"🐐",ca:"🦌",pe:"🦈",se:"🦖",jo:"🦕",be:"⚰️"};
+const ICO0={cr:"🐐",ca:"🦌",pe:"🦈",se:"🦡",jo:"🦕",be:"⚰️"};
 const ico=i=>(D.iconos||{})[D.participantes[i]]||ICO0[norm(D.participantes[i]).slice(0,2)]||D.participantes[i].slice(0,2);
 const av=i=>`<span class="av" style="background:${COL[i%COL.length]}22;border:2px solid ${COL[i%COL.length]}">${esc(ico(i))}</span>`;
 const get=id=>D.torneos.find(t=>t.id===id);
@@ -272,25 +656,31 @@ function idx(nombres){return (nombres||[]).map(x=>D.participantes.findIndex(p=>n
 function pagosTorneo(t){
   const ps=D.participantes,r=calc(t);
   if(!r.place.some(p=>p>0))return null;
-  const z=()=>ps.map(()=>0),recP=z(),payP=z(),recC=z(),payC=z(),pg=D.pagos||{},pr=(pg.premios||{})[t.c]||[0,0];
-  const todos=ps.map((_,i)=>i);
+  const z=()=>ps.map(()=>0),recP=z(),payP=z(),recC=z(),payC=z(),payB=z(),pg=D.pagos||{},pr=(pg.premios||{})[t.c]||[0,0];
+  const todos=ps.map((_,i)=>i),ixT=D.torneos.indexOf(t);
+  const pri=ps.map(p=>{const k=D.torneos.findIndex(x=>(x.sel[p]||[]).length>0);return k<0?Infinity:k;});
+  const act=todos.filter(i=>t.puestos?ixT>=pri[i]:(t.sel[ps[i]]||[]).length>0);   // activos en este torneo
   const gan=todos.filter(i=>r.place[i]===1);
   const cam=t.campeones?idx(t.campeones):(t.puestos?[]:todos.filter(i=>(t.sel[ps[i]]||[]).some(n=>parse(pos(t,n).v)===1)));
-  const repartir=(S,monto)=>{if(!S.length||!monto)return;const pagan=todos.filter(i=>!S.includes(i));S.forEach(i=>recP[i]+=monto/S.length);pagan.forEach(i=>payP[i]+=monto/pagan.length);};
+  const repartir=(S,monto)=>{if(!S.length||!monto)return;const pagan=act.filter(i=>!S.includes(i));S.forEach(i=>recP[i]+=monto/S.length);pagan.forEach(i=>payP[i]+=monto/pagan.length);};
   repartir(gan,pr[0]);repartir(cam,pr[1]);
-  let benef=0;
-  if(t.corte&&t.corte.pagan&&t.corte.pagan.length){
-    const cu=(pg.corte||{}).cuota||2000,rd=(pg.corte||{}).redondeo||100,P_=idx(t.corte.pagan),G_=idx(t.corte.ganan);
-    if(!G_.length){P_.forEach(i=>payC[i]+=cu);benef=cu*P_.length;}
-    else{const c1=Math.ceil(cu/G_.length/rd)*rd;P_.forEach(i=>payC[i]+=c1*G_.length);G_.forEach(i=>recC[i]+=c1*P_.length);}
+  let benef=0;const co=t.corte;
+  if(co){
+    const cfg=pg.corte||{},cu=cfg.cuota||2000,rd=cfg.redondeo||100,bf=cfg.beneficencia===undefined?2000:cfg.beneficencia;
+    const G_=idx(co.ganan),Bn=idx(co.benef),P_=[...new Set([...idx(co.pagan),...Bn])].filter(i=>!G_.includes(i));
+    if(G_.length&&P_.length){                      // sin ganadores del bono no se paga nada
+      if(act.length>=6){P_.forEach(i=>payC[i]+=cu);G_.forEach(i=>recC[i]+=cu*P_.length/G_.length);}   // 6 participantes: cuota fija y reparto exacto
+      else{const c1=Math.ceil(cu/G_.length/rd)*rd;P_.forEach(i=>payC[i]+=c1*G_.length);G_.forEach(i=>recC[i]+=c1*P_.length);}   // torneos de 2026 (5 participantes)
+      Bn.forEach(i=>{payB[i]+=bf;benef+=bf;});     // pago especial a beneficencia (aparte del neto entre participantes)
+    }
   }
-  return{recP,payP,recC,payC,gan,cam,pr,benef,corte:t.corte||null};
+  return{recP,payP,recC,payC,payB,gan,cam,pr,benef,corte:co||null};
 }
 function meses(){
   const o=[],mp={},ps=D.participantes,z=()=>ps.map(()=>0);
   D.torneos.forEach(t=>{if(!t.m)return;if(!mp[t.m]){mp[t.m]={m:t.m,ts:[]};o.push(mp[t.m]);}mp[t.m].ts.push(t);});
-  o.forEach(x=>{x.netP=z();x.netC=z();x.gP=z();x.pP=z();x.benef=0;x.jug=0;
-    x.det=x.ts.map(t=>{const p=pagosTorneo(t);if(p){x.jug++;ps.forEach((_,i)=>{x.netP[i]+=p.recP[i]-p.payP[i];x.netC[i]+=p.recC[i]-p.payC[i];x.gP[i]+=p.recP[i];x.pP[i]+=p.payP[i];});x.benef+=p.benef;}return{t,p};});
+  o.forEach(x=>{x.netP=z();x.netC=z();x.gP=z();x.pP=z();x.bn=z();x.benef=0;x.jug=0;
+    x.det=x.ts.map(t=>{const p=pagosTorneo(t);if(p){x.jug++;ps.forEach((_,i)=>{x.netP[i]+=p.recP[i]-p.payP[i];x.netC[i]+=p.recC[i]-p.payC[i];x.gP[i]+=p.recP[i];x.pP[i]+=p.payP[i];x.bn[i]+=p.payB[i];});x.benef+=p.benef;}return{t,p};});
     x.net=x.netP.map((v,i)=>v+x.netC[i]);});
   const act=D.actual&&get(D.actual)?get(D.actual).m:(o.filter(x=>x.jug).slice(-1)[0]||{}).m;
   o.forEach(x=>{x.cerrado=x.jug>0&&mi(x.m)<mi(act);});
@@ -312,41 +702,47 @@ function renderPagos(){
   const vis=lista.filter(x=>x.jug||x.m===act);
   if(!vis.length){$("pagos").innerHTML="<p class='hint'>Aún no hay torneos con resultados para calcular pagos.</p>";return;}
   if(!mesSel||!vis.some(x=>x.m===mesSel))mesSel=(vis.find(x=>x.m===act)||vis[vis.length-1]).m;
-  const x=vis.find(y=>y.m===mesSel),cerr=x.cerrado,N=ps.length;
-  const sum=k=>ps.map((_,i)=>lista.reduce((s,y)=>s+y[k][i],0)),tp=sum("netP"),tc=sum("netC"),tot=sum("net");
+  const x=vis.find(y=>y.m===mesSel),cerr=x.cerrado,N=ps.length,mn=MESN[x.m]||x.m;
+  const sum=k=>ps.map((_,i)=>lista.reduce((s,y)=>s+y[k][i],0)),tp=sum("netP"),tc=sum("netC"),tot=sum("net"),tb=sum("bn");
   const sg=a=>a.reduce((s,v)=>s+v,0);
-  // 1) módulo del mes: botonera + tabla como tu Excel
-  let h=`<h2>Pagos de ${esc(MESN[x.m]||x.m)} <span class="cerr ${cerr?"ok":""}">${cerr?"Mes cerrado":"Mes en curso · se acumula con cada torneo"}</span></h2>`;
+  let h=`<h2>Pagos de ${esc(mn)} <span class="cerr ${cerr?"ok":""}">${cerr?"Mes cerrado":"Mes en curso · se acumula con cada torneo"}</span></h2>`;
   h+=`<div class="chips">`+vis.map(y=>`<button class="chip${y.m===mesSel?" on":""}" data-mes="${esc(y.m)}"><i style="--c:#c6f613"></i>${esc(y.m)}${y.cerrado?" 🔒":" ⏳"}</button>`).join("")+`</div>`;
-  h+=`<div class="card scroll"><table class="gm"><thead><tr><th class="sk">TORNEO</th>`+x.det.map(({t})=>`<th class="tc" style="--c:${ccol(t.c)}">${esc(t.c)}</th>`).join("")+`<th rowspan="4" class="tt">Premios<br>ganados</th><th rowspan="4" class="tt">Premios<br>que paga</th><th rowspan="4" class="tt">Corte</th><th rowspan="4" class="nt">Neto<br>del mes</th></tr>`;
+  h+=`<div class="card scroll"><table class="gm"><thead><tr><th class="sk">TORNEO</th>`+x.det.map(({t})=>`<th class="tc" style="--c:${ccol(t.c)}">${esc(t.c)}</th>`).join("")+`<th rowspan="4" class="tt">Premios<br>ganados</th><th rowspan="4" class="tt">Premios<br>que paga</th><th rowspan="4" class="tt">Corte</th><th rowspan="4" class="nt">Neto<br>del mes</th><th rowspan="4" class="tt">Benefi-<br>cencia</th></tr>`;
   h+=`<tr><th class="sk" style="background:var(--soft);color:var(--ink)"></th>`+x.det.map(({t})=>`<th class="tn">${esc(t.n)}</th>`).join("")+`</tr>`;
   const nm=a=>a.length?a.map(i=>esc(ps[i])).join(", "):"–";
   h+=`<tr><th class="sk" style="background:var(--card);color:var(--ink)">⛳ Ganador</th>`+x.det.map(({p})=>`<td class="wr">${p?nm(p.gan):"·"}</td>`).join("")+`</tr>`;
   h+=`<tr><th class="sk" style="background:var(--card);color:var(--ink)">👑 Campeón</th>`+x.det.map(({p})=>`<td class="wr">${p?nm(p.cam):"·"}</td>`).join("")+`</tr></thead><tbody>`;
   ps.forEach((_,i)=>{
     h+=`<tr><td class="sk"><div class="who">${av(i)}${esc(ps[i])}</div></td>`+x.det.map(({p})=>`<td>${p&&p.recP[i]>0?`<b class="pos">${CLP(p.recP[i])}</b>`:`<span class="mut">${p?"$0":"·"}</span>`}</td>`).join("");
-    h+=`<td class="tt">${x.gP[i]?CLP(x.gP[i]):"$0"}</td><td class="tt ${x.pP[i]?"neg":""}">${x.pP[i]?CLP(-x.pP[i]):"$0"}</td><td class="tt ${cls(x.netC[i])}">${x.netC[i]?CLP(x.netC[i]):"$0"}</td><td class="nt ${cls(x.net[i])}">${CLP(x.net[i])}</td></tr>`;});
-  h+=`</tbody><tfoot><tr><td class="sk">REPARTO</td>`+x.det.map(({p})=>`<td>${p?CLP(sg(p.recP)):"·"}</td>`).join("")+`<td>${CLP(sg(x.gP))}</td><td>${sg(x.pP)?CLP(-sg(x.pP)):"$0"}</td><td>${sg(x.netC)?CLP(sg(x.netC)):"$0"}</td><td>${CLP(sg(x.net))}</td></tr></tfoot></table></div>`;
-  h+=`<p class="hint">Cada torneo muestra lo que gana cada participante. A la derecha se acumula el mes: <b>Neto = Premios ganados − Premios que paga ± Corte</b>. Verde: recibe · Rojo: debe pagar.${cerr?"":" Mientras el mes sigue en curso, los montos son provisorios."}${x.benef?` A beneficencia este mes: <b>${CLP(x.benef)}</b> (incluido en el Corte).`:""}</p>`;
-  const cortes=x.det.filter(({p})=>p&&p.corte&&p.corte.pagan.length);
-  if(cortes.length)h+=`<p class="hint"><b>Corte del mes:</b> `+cortes.map(({t,p})=>`${esc(t.n)} (${p.corte.ganan.length?`${p.corte.pagan.length} pagan · ${p.corte.ganan.length} ganan`:"a beneficencia"})`).join(" · ")+`.</p>`;
-  h+=`<h2>Quién le paga a quién en ${esc(MESN[x.m]||x.m)}</h2><div class="card">${tablaTransf(x.net)}</div>`;
+    h+=`<td class="tt">${x.gP[i]?CLP(x.gP[i]):"$0"}</td><td class="tt ${x.pP[i]?"neg":""}">${x.pP[i]?CLP(-x.pP[i]):"$0"}</td><td class="tt ${cls(x.netC[i])}">${x.netC[i]?CLP(x.netC[i]):"$0"}</td><td class="nt ${cls(x.net[i])}">${CLP(x.net[i])}</td><td class="tt ${x.bn[i]?"neg":""}">${x.bn[i]?CLP(-x.bn[i]):"$0"}</td></tr>`;});
+  h+=`</tbody><tfoot><tr><td class="sk">REPARTO</td>`+x.det.map(({p})=>`<td>${p?CLP(sg(p.recP)):"·"}</td>`).join("")+`<td>${CLP(sg(x.gP))}</td><td>${sg(x.pP)?CLP(-sg(x.pP)):"$0"}</td><td>${sg(x.netC)?CLP(sg(x.netC)):"$0"}</td><td>${CLP(sg(x.net))}</td><td>${x.benef?CLP(-x.benef):"$0"}</td></tr></tfoot></table></div>`;
+  h+=`<p class="hint">Cada torneo muestra lo que gana cada participante. A la derecha se acumula el mes: <b>Neto = Premios ganados − Premios que paga ± Corte</b> (entre participantes). La <b>Beneficencia</b> es un pago especial aparte: no entra en el neto. Verde: recibe · Rojo: debe pagar.${cerr?"":" Mientras el mes sigue en curso, los montos son provisorios."}</p>`;
+  const co=x.det.filter(({p})=>p&&p.corte&&((p.corte.pagan||[]).length||(p.corte.benef||[]).length));
+  if(co.length)h+=`<p class="hint"><b>Corte del mes:</b> `+co.map(({t,p})=>{const c=p.corte,g=(c.ganan||[]).length,pa=new Set([...idx(c.pagan),...idx(c.benef)]).size,b=(c.benef||[]).length;return g?`${esc(t.n)} (${pa} pagan · ${g} ganan${b?` · ${b} a beneficencia`:""})`:`${esc(t.n)} (sin bono: nadie paga)`;}).join(" · ")+`.</p>`;
+  h+=`<h2>Quién le paga a quién en ${esc(mn)}</h2><div class="card">${tablaTransf(x.net)}</div>`;
   h+=`<p class="hint">Es la liquidación con menos transferencias posible para dejar a todos en cero.${cerr?"":" Como el mes sigue en curso, puede cambiar."}</p>`;
-  // 2) acumulado de la temporada
-  h+=`<h2>Acumulado de la temporada</h2><div class="card scroll"><table><tr><th>Participante</th><th class="n">Premios</th><th class="n">Corte</th><th class="n">Total</th></tr>`;
-  ord(N,i=>tot[i]).forEach(i=>{h+=`<tr><td><div class="who">${av(i)}${esc(ps[i])}</div></td><td class="n ${cls(tp[i])}">${CLP(tp[i])}</td><td class="n ${cls(tc[i])}">${CLP(tc[i])}</td><td class="n tot ${cls(tot[i])}">${CLP(tot[i])}</td></tr>`;});
-  h+=`</table></div><p class="hint">Suma de todos los meses con resultados.</p>`;
+  if(x.benef)h+=`<h2>Pago especial: Beneficencia · ${esc(mn)}</h2><div class="card">`+ps.map((p,i)=>x.bn[i]?`<div class="xfer">${av(i)}<span><b style="margin:0;font-size:1rem">${esc(p)}</b> aporta a beneficencia</span><b class="neg">${CLP(x.bn[i])}</b></div>`:"").join("")+`<div class="xfer"><span>Total del mes</span><b>${CLP(x.benef)}</b></div></div>`;
+  h+=`<h2>Acumulado de la temporada</h2><div class="card scroll"><table><tr><th>Participante</th><th class="n">Premios</th><th class="n">Corte</th><th class="n">Total</th><th class="n">Beneficencia</th></tr>`;
+  ord(N,i=>tot[i]).forEach(i=>{h+=`<tr><td><div class="who">${av(i)}${esc(ps[i])}</div></td><td class="n ${cls(tp[i])}">${CLP(tp[i])}</td><td class="n ${cls(tc[i])}">${CLP(tc[i])}</td><td class="n tot ${cls(tot[i])}">${CLP(tot[i])}</td><td class="n ${tb[i]?"neg":""}">${tb[i]?CLP(-tb[i]):"$0"}</td></tr>`;});
+  h+=`</table></div><p class="hint">Suma de todos los meses con resultados.${sg(tb)?` Beneficencia acumulada de la temporada: <b>${CLP(sg(tb))}</b>.`:""}</p>`;
   h+=`<details class="calc"><summary>Liquidación acumulada de la temporada (todos los meses)</summary><div style="margin-top:8px">${tablaTransf(tot)}</div><p class="hint">Úsala solo si no has liquidado mes a mes; si ya pagaron algún mes, descuéntalo.</p></details>`;
-  const pr=pg.premios||{},cu=((pg.corte||{}).cuota||2000);
-  h+=`<details class="calc"><summary>Cómo se calcula</summary><p>En cada torneo se pagan dos premios: <b>Ganador</b> (1° de la polla) y <b>Campeón</b> (dueño del jugador que ganó el torneo real). Si es la misma persona recibe ambos; si son distintas, cada una recibe el suyo. Cada premio lo pagan en partes iguales todos los demás participantes.</p><table><tr><th>Clase</th><th class="n">Ganador</th><th class="n">Campeón</th></tr>`+Object.keys(pr).map(c=>`<tr><td><span class="cb" style="--c:${ccol(c)}">${esc(c)}</span></td><td class="n">${CLP(pr[c][0])}</td><td class="n">${CLP(pr[c][1])}</td></tr>`).join("")+`</table><p><b>Corte:</b> cada participante que no pasa el corte paga ${CLP(cu)}, repartidos entre quienes sí pasaron; cada parte se redondea hacia arriba a ${CLP((pg.corte||{}).redondeo||100)} (por eso a veces se pagan ${CLP(cu+100)}). Si nadie pasa, cada uno abona la cuota a la beneficencia.</p><p><b>Neto del mes = premios recibidos − premios que le toca pagar + cortes recibidos − cuotas del corte.</b></p></details>`;
+  const pr=pg.premios||{},cf=pg.corte||{},cu=cf.cuota||2000,bf=cf.beneficencia===undefined?2000:cf.beneficencia;
+  h+=`<details class="calc"><summary>Cómo se calcula</summary><p>En cada torneo se pagan dos premios: <b>Ganador</b> (1° de la polla) y <b>Campeón</b> (dueño del jugador que ganó el torneo real). Si es la misma persona recibe ambos; si son distintas, cada una recibe el suyo. Cada premio lo pagan en partes iguales todos los demás participantes.</p><table><tr><th>Clase</th><th class="n">Ganador</th><th class="n">Campeón</th></tr>`+Object.keys(pr).map(c=>`<tr><td><span class="cb" style="--c:${ccol(c)}">${esc(c)}</span></td><td class="n">${CLP(pr[c][0])}</td><td class="n">${CLP(pr[c][1])}</td></tr>`).join("")+`</table><p><b>Corte:</b> si el torneo tiene corte, los participantes que lo pasan con sus 4 jugadores reciben un bono. Lo pagan los demás: cada uno una cuota fija de ${CLP(cu)}. Las cuotas se juntan y se reparten en partes iguales entre quienes lo reciben; con 6 participantes el reparto es siempre exacto (en los torneos de 2026, con 5 participantes, cada parte se redondeaba a ${CLP(cf.redondeo||100)}). Si nadie lo pasa con sus 4 jugadores, no se paga nada.</p><p><b>Beneficencia:</b> quien no pasa ninguno de sus 4 jugadores paga además ${CLP(bf)} extra a beneficencia. Es un pago especial que se acumula aparte y no entra en el neto entre participantes.</p><p><b>Neto del mes = premios recibidos − premios que le toca pagar + bono de corte recibido − cuotas de corte.</b></p></details>`;
   $("pagos").innerHTML=h;
 }
-function show(v){
-  ["t","l","g","p"].forEach(x=>$("v-"+x).classList.toggle("on",x===v));
-  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
-  if(v==="g")renderGral();if(v==="p")renderPagos();if(v==="t")renderTorneo();if(v==="l")renderLista();
+let regListo=false;
+function initReg(){
+  if(regListo)return;regListo=true;
+  const hs=[...document.querySelectorAll("#reg h1")];
+  $("regToc").innerHTML=hs.map((e,i)=>`<button class="chip" data-r="${i}">${esc(e.textContent.replace(/^Título\s+/,""))}</button>`).join("");
+  $("regToc").addEventListener("click",ev=>{const b=ev.target.closest("[data-r]");if(b)hs[+b.dataset.r].scrollIntoView({behavior:"smooth",block:"start"});});
 }
-const vista=()=>["t","l","g","p"].find(x=>$("v-"+x).classList.contains("on"));
+function show(v){
+  ["t","l","g","p","c"].forEach(x=>$("v-"+x).classList.toggle("on",x===v));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  if(v==="g")renderGral();if(v==="p")renderPagos();if(v==="c")initReg();if(v==="t")renderTorneo();if(v==="l")renderLista();
+}
+const vista=()=>["t","l","g","p","c"].find(x=>$("v-"+x).classList.contains("on"));
 function elegir(){
   if(D.actual&&get(D.actual))return D.actual;
   const h=new Date().toISOString().slice(0,10);
