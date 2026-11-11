@@ -88,10 +88,29 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
 .gm .nt{background:#f6f3dc;font-weight:800;font-size:.95rem}
 .gm tfoot td{background:#111;color:#fff;font-weight:700;border-color:#111}
 .gm tfoot .sk{background:#111}
-.reg-hero{background:#000;color:#fff;border-radius:16px;padding:20px 22px;margin-bottom:14px;border-left:6px solid var(--lime)}
-.reg-hero h2{margin:8px 0 2px;font-size:1.7rem;letter-spacing:.06em;color:var(--lime);display:block}
-.reg-hero p{margin:0;opacity:.85}
-.reg-hero .tag{background:var(--lime);color:#000;margin:0;letter-spacing:.1em}
+.rh{position:relative;overflow:hidden;border-radius:28px;padding:18px 26px 24px;margin-bottom:16px;color:#fff;border:1px solid rgba(198,246,19,.35);
+  background:radial-gradient(520px 220px at 100% 0,rgba(198,246,19,.28),transparent 70%),radial-gradient(380px 200px at 0 100%,rgba(198,246,19,.10),transparent 70%),linear-gradient(160deg,#050505,#10140a);
+  box-shadow:0 18px 40px -18px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08);animation:rhIn .7s ease both}
+@keyframes rhIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.rh-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.rh-pdf{display:inline-flex;align-items:center;padding:8px 15px;border-radius:99px;border:1px solid rgba(198,246,19,.65);color:var(--lime);background:rgba(198,246,19,.08);font:700 .78rem "Space Grotesk",system-ui,sans-serif;letter-spacing:.04em;text-decoration:none;transition:transform .22s cubic-bezier(.2,.9,.3,1.3),background .2s,color .2s,box-shadow .2s}
+.rh-pdf:hover,.rh-pdf:focus-visible{transform:scale(1.09);background:var(--lime);color:#000;box-shadow:0 8px 22px -8px rgba(198,246,19,.7);outline:none}
+.rh-tag{font:700 .72rem "Space Grotesk",system-ui,sans-serif;letter-spacing:.26em;color:#000;background:var(--lime);padding:6px 13px 6px 15px;border-radius:99px}
+.rh-main{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-top:20px;flex-wrap:wrap}
+.rh h2{margin:0;display:block;font:700 clamp(1.8rem,6vw,3.1rem)/1 "Space Grotesk",system-ui,sans-serif;letter-spacing:.05em;background:linear-gradient(90deg,#fff 0%,#ecffa8 55%,var(--lime) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rh p{margin:9px 0 0;opacity:.8;font-size:.95rem}
+.rh-year{font:700 clamp(3.4rem,13vw,6.6rem)/.85 "Space Grotesk",system-ui,sans-serif;color:transparent;-webkit-text-stroke:2px var(--lime);text-shadow:0 0 30px rgba(198,246,19,.35);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.rh-stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.rh-stats span{font:600 .74rem "Space Grotesk",system-ui,sans-serif;letter-spacing:.03em;padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16)}
+.toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 16px}
+.toc button{display:flex;align-items:center;gap:11px;text-align:left;padding:12px 14px;border-radius:18px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font:inherit;box-shadow:0 1px 2px rgba(0,0,0,.05);transition:transform .22s cubic-bezier(.2,.9,.3,1.3),box-shadow .22s,border-color .22s,background .22s,color .22s}
+.toc button:hover,.toc button:focus-visible{transform:scale(1.08);border-color:var(--lime);box-shadow:0 12px 26px -12px rgba(0,0,0,.4),0 0 0 3px rgba(198,246,19,.4);outline:none;z-index:1}
+.toc button.on{background:#000;color:#fff;border-color:#000}
+.toc b{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:#000;color:var(--lime);font:700 .95rem "Space Grotesk",system-ui,sans-serif;letter-spacing:.02em}
+.toc button.on b{background:var(--lime);color:#000}
+.toc span{font-weight:600;font-size:.86rem;line-height:1.2}
+.reg h1{scroll-margin-top:14px}
+@media(prefers-reduced-motion:reduce){.rh{animation:none}.toc button,.rh-pdf{transition:none}}
 .reg{padding:6px 20px 20px;line-height:1.55}
 .reg h1{font-size:1.15rem;margin:26px 0 10px;padding-bottom:6px;border-bottom:3px solid var(--lime)}
 .reg h2{display:block;font-size:.98rem;margin:18px 0 6px}
@@ -110,6 +129,9 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
 .leg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
 @media(max-width:560px){.hero h1{font-size:1.35rem}th,td{padding:8px 5px}.dif{display:none}.card .av{width:27px;height:27px;font-size:.9rem;margin-right:5px}.cb{padding:2px 6px}}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <header class="hero"><div class="wrap">
@@ -137,8 +159,18 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
   <section id="v-g" class="sec"><div id="gral"></div></section>
   <section id="v-p" class="sec"><div id="pagos"></div></section>
   <section id="v-c" class="sec">
-    <div class="reg-hero"><span class="tag">TEMPORADA 2027</span><h2>CONSTITUZIONE</h2><p>Reglamento Distinguidos Tour</p></div>
-    <div class="chips" id="regToc"></div>
+    <div class="rh">
+      <div class="rh-top">
+        <a class="rh-pdf" href="data/Constituzione_Reglamento_Distinguidos_2027.pdf" download target="_blank" rel="noopener" aria-label="Descargar el reglamento en PDF">⬇&nbsp; Descargar PDF</a>
+        <span class="rh-tag">TEMPORADA</span>
+      </div>
+      <div class="rh-main">
+        <div><h2>CONSTITUZIONE</h2><p>Reglamento Distinguidos Tour</p></div>
+        <div class="rh-year" aria-label="2027">2027</div>
+      </div>
+      <div class="rh-stats" id="rhStats"></div>
+    </div>
+    <div class="toc" id="regToc"></div>
     <div class="card reg" id="reg">
 <h1>Título I · Disposiciones generales</h1>
 <h2>Art. 1 · Obligatoriedad</h2>
@@ -737,9 +769,15 @@ let regListo=false;
 function initReg(){
   if(regListo)return;regListo=true;
   $("reg").innerHTML=$("reg").innerHTML.split("🦡").join(`<img src="${ICON_IMG["🦡"]}" alt="" style="height:.95em;vertical-align:-.12em">`);
-  const hs=[...document.querySelectorAll("#reg h1")];
-  $("regToc").innerHTML=hs.map((e,i)=>`<button class="chip" data-r="${i}">${esc(e.textContent.replace(/^Título\s+/,""))}</button>`).join("");
+  const hs=[...document.querySelectorAll("#reg h1")],ROM=["I","II","III","IV","V","VI","VII","VIII"];
+  $("regToc").innerHTML=hs.map((e,i)=>`<button data-r="${i}" aria-label="Ir a ${esc(e.textContent)}"><b>${ROM[i]||i+1}</b><span>${esc(e.textContent.replace(/^Título\s+[IVXL]+\s*·\s*/,""))}</span></button>`).join("");
   $("regToc").addEventListener("click",ev=>{const b=ev.target.closest("[data-r]");if(b)hs[+b.dataset.r].scrollIntoView({behavior:"smooth",block:"start"});});
+  $("rhStats").innerHTML=[hs.length+" títulos",document.querySelectorAll("#reg h2").length+" artículos",(D&&D.participantes?D.participantes.length:6)+" participantes"].map(t=>`<span>${t}</span>`).join("");
+  if("IntersectionObserver"in window){
+    const bt=[...$("regToc").children];
+    const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const k=hs.indexOf(e.target);bt.forEach((x,i)=>x.classList.toggle("on",i===k));}}),{rootMargin:"-25% 0px -65% 0px"});
+    hs.forEach(el=>io.observe(el));
+  }
 }
 function show(v){
   ["t","l","g","p","c"].forEach(x=>$("v-"+x).classList.toggle("on",x===v));
