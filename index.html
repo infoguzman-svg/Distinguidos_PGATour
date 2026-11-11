@@ -847,7 +847,7 @@ let DRAFTS={},DR={id:null,d:null,yo:null,admin:false,err:"",msg:"",filtro:"",tod
 function aplicarDrafts(){if(!D)return;D.torneos.forEach(t=>{const s=DRAFTS[t.id];if(s)t.sel=Object.assign({},t.sel,s);});memo={};}
 async function cargarDrafts(){try{const r=await fetch(DRAFT_URL+"?todos=1");const j=await r.json();if(j.ok){DRAFTS=j.drafts||{};aplicarDrafts();}}catch(e){}}
 function selDe(d){const s={};(d.picks||[]).forEach(x=>(s[x.p]=s[x.p]||[]).push(x.j));return s;}
-function drRecibir(j){DR.d=j.d;if(j.yo!==undefined)DR.yo=j.yo;DR.admin=!!j.admin;DR.err="";if(j.d){DR.skew=(j.d.ahora||Date.now())-Date.now();DRAFTS[DR.id]=selDe(j.d);aplicarDrafts();}}
+function drRecibir(j){if("d" in j)DR.d=j.d;if(j.yo!==undefined)DR.yo=j.yo;if(j.admin!==undefined)DR.admin=!!j.admin;if(j.tokens)DR.tokens=j.tokens;DR.err="";if(DR.admin&&D&&DR.tokens&&!DR.pidioLinks&&D.participantes.some(p=>!DR.tokens[p])){DR.pidioLinks=true;setTimeout(()=>drPost({accion:"links",participantes:D.participantes}),0);}if(j.d){DR.skew=(j.d.ahora||Date.now())-Date.now();DRAFTS[DR.id]=selDe(j.d);aplicarDrafts();}}
 async function drCargar(){
   if(!D)return;DR.id=DR.id||elegir();
   let firma=DR.firma;
@@ -894,13 +894,19 @@ function drFormCrear(t){
   <div class="dr-btns"><label>Rondas <input type="number" id="drRondas" min="1" max="8" value="4" style="width:60px"></label><label>Minutos por turno <input type="number" id="drLead" min="1" value="10" style="width:70px"></label><label>Fecha límite <input type="datetime-local" id="drLimite" value="${lim}"></label></div>
   <div class="dr-btns"><button data-crear="1" class="dr-pri">✨ Crear draft</button></div></div>`;
 }
+function drLinks(){
+  if(!DR.admin)return"";
+  const base=location.origin+location.pathname,tk=DR.tokens||{};
+  return `<h4>Links personales (permanentes)</h4><p class="hint">Cada participante tiene un solo link para toda la temporada: sirve en todos los drafts y lo puede guardar en favoritos. Si pasa algo, usa “Cambiar link”: el anterior deja de funcionar al instante.</p>`+D.participantes.map(p=>{const t=tk[p],L=t?base+"?d="+t:"";
+    return `<div class="dr-link"><span class="who">${avDe(p)}${esc(p)}</span>${t?`<input readonly value="${esc(L)}"><button data-copy="${esc(L)}">Copiar</button><a target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("🐍 Distinguidos Tour · "+p+", este es tu link personal para los drafts de la temporada (guárdalo en favoritos): "+L)}">WhatsApp</a><button data-nuevolink="${esc(p)}">🔄 Cambiar link</button>`:`<span class="hint">generando…</span>`}</div>`;}).join("");
+}
 function drPanelAdmin(d){
   if(!DR.admin)return"";
   const base=location.origin+location.pathname,e=d.estado,tn=(get(DR.id)||{}).n||DR.id;
   const btn=[e==="preparando"&&["iniciar","▶️ Iniciar draft"],e==="en curso"&&["pausar","⏸️ Pausar"],e==="pausado"&&["reanudar","▶️ Reanudar"],e==="en curso"&&["saltar","⏭️ Saltar turno"],d.puedeDeshacer&&["deshacer","↩️ Deshacer"],["sorteo","🎲 Sorteo final"],["resetear","🔄 Resetear draft"],["borrar","🗑️ Borrar draft"]].filter(Boolean);
   let h=`<h2>🛠️ Panel del administrador</h2><div class="card dr-adm"><div class="dr-btns">${btn.map(([a,t])=>`<button data-adm="${a}"${a==="iniciar"?' class="dr-pri"':""}>${t}</button>`).join("")}</div>`;
   if(d.actual&&e==="en curso")h+=`<p><a class="dr-wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("🐍 Draft "+tn+": "+d.actual.p+", te toca elegir (ronda "+(d.actual.r+1)+"). Entra con tu link personal.")}">📣 Avisar a ${esc(d.actual.p)} por WhatsApp</a></p>`;
-  h+=`<h4>Links personales</h4><p class="hint">Envía a cada uno solo su link: con él la página sabe quién es y le habilita “Elegir” en su turno.</p>`+d.orden.map(p=>{const L=base+"?d="+((d.tokens||{})[p]||"");return `<div class="dr-link"><span class="who">${avDe(p)}${esc(p)}</span><input readonly value="${esc(L)}"><button data-copy="${esc(L)}">Copiar</button><a target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("🐍 Draft "+tn+" · tu link personal, "+p+": "+L)}">WhatsApp</a></div>`;}).join("");
+  h+=drLinks();
   h+=`<h4>Lista de jugadores (${d.pool.length})</h4><p class="hint">Pega la lista del torneo con sus cuotas, uno por línea (por ejemplo “Ryan Gerard +1500”). Se ordena sola de mejor a peor cotizado y reemplaza la lista anterior. También puedes sumar el campo desde ESPN (sin cuotas).</p>
   <textarea id="drPool" rows="6" placeholder="Ryan Gerard +1500&#10;Ben Griffin +1500&#10;…"></textarea><div class="dr-btns"><button data-pool="1">📋 Cargar lista pegada</button><button data-espn="1">🌐 Sumar campo desde ESPN</button></div>`;
   if(!d.picks.length)h+=`<h4>Fecha límite y tiempo por turno</h4><div class="dr-btns"><input type="datetime-local" id="drLimite" value="${d.limite?aLocal(d.limite):""}"><label>Minutos por turno <input type="number" id="drLead" min="1" value="${d.lead}" style="width:70px"></label><button data-conf="1">Guardar</button></div>`;
@@ -924,7 +930,7 @@ function renderDraft(){
   if(DR.admin&&opciones.length>1)h+=`<div class="bar"><select id="drTorneo">${opciones.map(x=>`<option value="${esc(x.id)}"${x.id===DR.id?" selected":""}>${esc(x.m||"")} · ${esc(x.n)}</option>`).join("")}</select></div>`;
   if(DR.err)h+=`<p class="dr-err">⚠️ ${esc(DR.err)}</p>`;
   if(DR.msg)h+=`<p class="dr-ok">✅ ${esc(DR.msg)}</p>`;
-  if(!d){el.innerHTML=h+(DR.admin?drFormCrear(t):`<div class="card"><p>El draft de este torneo todavía no está abierto. Cuando el administrador lo cree, aquí verás el tablero y tu turno.</p></div>`);return;}
+  if(!d){el.innerHTML=h+(DR.admin?drFormCrear(t)+`<div class="card dr-adm">${drLinks()}</div>`:`<div class="card"><p>El draft de este torneo todavía no está abierto. Cuando el administrador lo cree, aquí verás el tablero y tu turno.</p></div>`);return;}
   const act=d.actual,miTurno=!!(DR.yo&&act&&act.p===DR.yo&&d.estado==="en curso"),pend=DR.yo?(d.pend[DR.yo]||0):0,sel=selDe(d);
   h+=`<div class="dr-reloj" id="drReloj">${relojTexto()}</div>`;
   if(miTurno)h+=`<div class="dr-turno yo">🟢 <b>¡Te toca!</b> Elige tu jugador de la ronda ${act.r+1} en la lista de abajo.</div>`;
@@ -958,6 +964,7 @@ function iniciarDraftUI(){
     else if(s.conf)drPost({accion:"configurar",limite:$("drLimite").value?new Date($("drLimite").value).toISOString():"",lead:+$("drLead").value,msg:"Configuración guardada"});
     else if(s.crear){const orden=[...document.querySelectorAll("[data-ord]")].map(x=>x.value);if(new Set(orden).size!==orden.length){DR.err="El orden tiene participantes repetidos";renderDraft();return;}
       drPost({accion:"crear",n:(get(DR.id)||{}).n,orden,rondas:+$("drRondas").value,lead:+$("drLead").value,limite:$("drLimite").value?new Date($("drLimite").value).toISOString():"",msg:"Draft creado: ahora carga la lista de jugadores y comparte los links"});}
+    else if(s.nuevolink){if(!confirm("¿Cambiar el link de "+s.nuevolink+"? El link actual dejará de funcionar y tendrás que enviarle el nuevo."))return;drPost({accion:"nuevo_link",p:s.nuevolink,msg:"Link nuevo para "+s.nuevolink+": envíaselo (el anterior ya no funciona)"});}
     else if(s.todos){DR.todos=true;drPintarLista();}
     else if(s.salir){e.preventDefault();localStorage.removeItem("dt_admin");DADM=null;DR.admin=false;DR.firma="";drCargar();}
   });
