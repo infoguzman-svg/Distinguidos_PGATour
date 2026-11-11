@@ -127,7 +127,7 @@
    2
   ]
  },
- "actual": "world-wide-technology-championship",
+ "actual": "austin-championship",
  "torneos": [
   {
    "id": "sony-open",
@@ -1286,6 +1286,22 @@
      "Ben James",
      "Kristoffer Ventura"
     ]
+   }
+  },
+  {
+   "id": "austin-championship",
+   "n": "Austin Championship",
+   "c": "Top 2",
+   "ini": "2026-11-12",
+   "fin": "2026-11-15",
+   "m": "Nov",
+   "sel": {
+    "Cristóbal": [],
+    "Sebastián": [],
+    "Pedro": [],
+    "Cafeta": [],
+    "José Miguel": [],
+    "Benjamín": []
    }
   }
  ]
