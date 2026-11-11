@@ -148,6 +148,12 @@ module.exports = async (req, res) => {
   try {
     const q = req.query || {};
     if (req.method === "GET") {
+      if (q.campo) {   // campo del torneo según ESPN (solo nombres), para completar el recuadro de la lista
+        const r = await fetch(ESPN, { headers: { "User-Agent": "Mozilla/5.0" }, signal: AbortSignal.timeout(8000) });
+        const ev = elegirEvento((await r.json()).events || [], String(q.n || "").slice(0, 120));
+        const comp = ev && ev.competitions && ev.competitions[0] ? ev.competitions[0].competitors || [] : [];
+        return res.status(200).json({ ok: true, evento: ev ? ev.name : null, jugadores: comp.map(c => (c.athlete || {}).displayName).filter(Boolean) });
+      }
       if (q.todos) {   // elecciones de todos los drafts, para que la página las use
         const ids = (await redis(["SMEMBERS", "drafts"])) || [];
         const vals = ids.length ? await redis(["MGET", ...ids.map(clave)]) : [];

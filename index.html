@@ -907,8 +907,8 @@ function drPanelAdmin(d){
   let h=`<h2>🛠️ Panel del administrador</h2><div class="card dr-adm"><div class="dr-btns">${btn.map(([a,t])=>`<button data-adm="${a}"${a==="iniciar"?' class="dr-pri"':""}>${t}</button>`).join("")}</div>`;
   if(d.actual&&e==="en curso")h+=`<p><a class="dr-wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("🐍 Draft "+tn+": "+d.actual.p+", te toca elegir (ronda "+(d.actual.r+1)+"). Entra con tu link personal.")}">📣 Avisar a ${esc(d.actual.p)} por WhatsApp</a></p>`;
   h+=drLinks();
-  h+=`<h4>Lista de jugadores (${d.pool.length})</h4><p class="hint">Pega la lista del torneo con sus cuotas, uno por línea (por ejemplo “Ryan Gerard +1500”). Se ordena sola de mejor a peor cotizado y reemplaza la lista anterior. También puedes sumar el campo desde ESPN (sin cuotas).</p>
-  <textarea id="drPool" rows="6" placeholder="Ryan Gerard +1500&#10;Ben Griffin +1500&#10;…"></textarea><div class="dr-btns"><button data-pool="1">📋 Cargar lista pegada</button><button data-espn="1">🌐 Sumar campo desde ESPN</button></div>`;
+  h+=`<h4>Lista de jugadores (${d.pool.length})</h4><p class="hint">1) Pega la lista con cuotas, uno por línea (por ejemplo “Ryan Gerard +1500”). 2) Pulsa “Completar con el campo de ESPN” para sumar al recuadro al resto de los inscritos, sin cuota. 3) Pulsa “Cargar lista pegada”: se ordena de mejor a peor cotizado (los sin cuota quedan al final) y reemplaza la lista anterior.</p>
+  <textarea id="drPool" rows="8" placeholder="Ryan Gerard +1500&#10;Ben Griffin +1500&#10;…">${esc(DR.poolTxt||"")}</textarea><div class="dr-btns"><button data-espn="1">🌐 Completar con el campo de ESPN</button><button data-pool="1" class="dr-pri">📋 Cargar lista pegada</button><span id="drPoolMsg" class="hint"></span></div>`;
   if(!d.picks.length)h+=`<h4>Fecha límite y tiempo por turno</h4><div class="dr-btns"><input type="datetime-local" id="drLimite" value="${d.limite?aLocal(d.limite):""}"><label>Minutos por turno <input type="number" id="drLead" min="1" value="${d.lead}" style="width:70px"></label><button data-conf="1">Guardar</button></div>`;
   return h+`<p class="hint">¿No eres el administrador en este equipo? <a href="#" data-salir="1">Salir del modo administrador</a>.</p></div>`;
 }
@@ -959,8 +959,14 @@ function iniciarDraftUI(){
     if(s.pick){const como=DR.admin&&$("drComo")?$("drComo").value:undefined;if(!confirm("¿Confirmas a "+s.pick+(como?" para "+como:"")+"?"))return;drPost({accion:"elegir",j:s.pick,como,msg:(como||"Elegiste")+(como?" eligió a ":" a ")+s.pick});}
     else if(s.adm){const a=s.adm,q={resetear:"¿Resetear el draft? Se borran todas las elecciones.",borrar:"¿Borrar el draft completo, con sus links?",sorteo:"¿Asignar al azar los turnos pendientes?"};if(q[a]&&!confirm(q[a]))return;drPost({accion:a,msg:({iniciar:"Draft iniciado",pausar:"Draft en pausa",reanudar:"Draft reanudado",saltar:"Turno saltado",deshacer:"Se deshizo la última acción",sorteo:"Sorteo final aplicado",resetear:"Draft reseteado",borrar:"Draft borrado"})[a]});}
     else if(s.copy){try{navigator.clipboard.writeText(s.copy);b.textContent="¡Copiado!";}catch(err){}}
-    else if(s.pool){const L=parsePool($("drPool").value);if(!L.length){DR.err="No encontré jugadores en el texto pegado";renderDraft();return;}drPost({accion:"pool",jugadores:L,msg:"Lista cargada: "+L.length+" jugadores"});}
-    else if(s.espn)drPost({accion:"pool_espn",msg:"Campo sumado desde ESPN"});
+    else if(s.pool){const L=parsePool($("drPool").value);if(!L.length){DR.err="No encontré jugadores en el texto pegado";renderDraft();return;}DR.poolTxt="";const con=L.filter(x=>x.o).length;drPost({accion:"pool",jugadores:L,msg:"Lista cargada: "+L.length+" jugadores ("+con+" con cuota)"});}
+    else if(s.espn){const ta=$("drPool"),msg=$("drPoolMsg");msg.textContent="Consultando ESPN…";
+      fetch(DRAFT_URL+"?campo=1&t="+encodeURIComponent(DR.id)+"&n="+encodeURIComponent((get(DR.id)||{}).n||"")).then(r=>r.json()).then(j=>{
+        if(!j.ok)throw new Error(j.error);if(!j.jugadores.length)throw new Error("ESPN todavía no publica el campo de este torneo. Prueba más cerca del inicio.");
+        const ya=new Set(parsePool(ta.value).map(x=>norm(x.n))),nuevos=j.jugadores.filter(n=>!ya.has(norm(n)));
+        ta.value=(ta.value.trim()?ta.value.trim()+"\n":"")+nuevos.join("\n");DR.poolTxt=ta.value;
+        msg.textContent="✅ ESPN ("+j.evento+"): "+j.jugadores.length+" inscritos; se sumaron "+nuevos.length+" que no estaban. Revisa y pulsa “Cargar lista pegada”.";
+      }).catch(err=>{msg.textContent="⚠️ "+(err.message||"No se pudo consultar ESPN");});}
     else if(s.conf)drPost({accion:"configurar",limite:$("drLimite").value?new Date($("drLimite").value).toISOString():"",lead:+$("drLead").value,msg:"Configuración guardada"});
     else if(s.crear){const orden=[...document.querySelectorAll("[data-ord]")].map(x=>x.value);if(new Set(orden).size!==orden.length){DR.err="El orden tiene participantes repetidos";renderDraft();return;}
       drPost({accion:"crear",n:(get(DR.id)||{}).n,orden,rondas:+$("drRondas").value,lead:+$("drLead").value,limite:$("drLimite").value?new Date($("drLimite").value).toISOString():"",msg:"Draft creado: ahora carga la lista de jugadores y comparte los links"});}
@@ -968,7 +974,7 @@ function iniciarDraftUI(){
     else if(s.todos){DR.todos=true;drPintarLista();}
     else if(s.salir){e.preventDefault();localStorage.removeItem("dt_admin");DADM=null;DR.admin=false;DR.firma="";drCargar();}
   });
-  $("draft").addEventListener("input",e=>{if(e.target.id==="drBuscar"){DR.filtro=e.target.value;drPintarLista();}});
+  $("draft").addEventListener("input",e=>{if(e.target.id==="drBuscar"){DR.filtro=e.target.value;drPintarLista();}if(e.target.id==="drPool")DR.poolTxt=e.target.value;});
   $("draft").addEventListener("change",e=>{if(e.target.id==="drTorneo"){DR.id=e.target.value;DR.d=null;DR.msg="";DR.firma="";drCargar();}if(e.target.id==="drComo")DR.como=e.target.value;});
 }
 function drVista(activa){

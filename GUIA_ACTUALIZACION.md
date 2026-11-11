@@ -85,7 +85,7 @@ Cada participante elige sus jugadores desde la página con su **link personal**,
 1. Agrega el torneo en la hoja *Torneos* del Excel (nombre, clase, Inicio, Fin, Actual) y súbelo. No llenes *Selecciones*.
 2. Abre la página con `?admin=TU_CLAVE` al final de la dirección (solo la primera vez en cada equipo; queda guardada). Entra a **🐍 Draft**.
 3. Revisa el orden propuesto (el campeón del torneo anterior primero), la fecha límite (día anterior a las 20:00) y los minutos por turno, y pulsa **Crear draft**.
-4. Pega la lista de jugadores con sus cuotas, uno por línea (por ejemplo `Ryan Gerard +1500`), y pulsa **Cargar lista pegada**. Se ordena sola de mejor a peor cotizado.
+4. Pega la lista de jugadores con sus cuotas, uno por línea (por ejemplo `Ryan Gerard +1500`; puedes pedírsela a Claude cada semana). Luego pulsa **🌐 Completar con el campo de ESPN** para sumar al recuadro al resto de los inscritos, sin cuota, y después **Cargar lista pegada**. Se ordena sola de mejor a peor cotizado; los que no tienen cuota quedan al final.
 5. Pulsa **Iniciar draft**. Los links personales son **permanentes**: se envían una sola vez en la temporada (botón WhatsApp del panel) y sirven en todos los drafts. Si alguno se filtra o hay un problema, **🔄 Cambiar link** le genera uno nuevo y el anterior deja de funcionar al instante.
 6. Cada participante abre su link: cuando le toca, ve “¡Te toca!” y el botón **Elegir**. Todos ven el tablero actualizado cada pocos segundos.
 7. Pasada la fecha límite, cada turno tiene 10 minutos; si alguien no elige, pasa al siguiente y después puede elegir lo que le falta (“acá estoy”). Al final puedes usar **Sorteo final** para completar al azar a quien no eligió.
