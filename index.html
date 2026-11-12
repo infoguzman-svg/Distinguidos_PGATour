@@ -162,6 +162,7 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
 .dr-link{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid var(--line)}.dr-link .who{min-width:130px}.dr-link input{flex:1;min-width:150px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:.78rem;color:var(--mut)}
 .dr-link a,.dr-wa{color:#128C7E;font-weight:700;text-decoration:none}
 .dr-pasos{margin:6px 0 8px 18px;padding:0}.dr-pasos li{margin:4px 0}
+.dr-consulta{margin-top:10px;padding:10px 12px;border:1px dashed var(--line);border-radius:12px;background:var(--bg)}.dr-consulta textarea{width:100%;font-size:.78rem;border-radius:8px;border:1px solid var(--line);padding:8px;background:var(--card)}
 .dr-orden{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:6px 0}
 .hint{font-size:.8rem;color:var(--mut);margin-top:10px}
 .rules{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.84rem}
@@ -843,6 +844,7 @@ try{const u=new URL(location.href),pd=u.searchParams.get("d"),pa=u.searchParams.
   if(pa){localStorage.setItem("dt_admin",pa);ABRIR_DRAFT=true;}
   if(pd||pa){u.searchParams.delete("d");u.searchParams.delete("admin");history.replaceState(null,"",u.pathname+u.search+u.hash);}
   DTK=localStorage.getItem("dt_token");DADM=localStorage.getItem("dt_admin");}catch(e){}
+const CUOTAS_URL=DRAFT_URL.replace(/draft$/,"cuotas");
 const ESTADO={preparando:"En preparación","en curso":"En curso",pausado:"En pausa",terminado:"Terminado ✅"};
 let DRAFTS={},DR={id:null,d:null,yo:null,admin:false,err:"",msg:"",filtro:"",todos:false,skew:0,como:"",firma:""},drInt=null,drRel=null;
 function aplicarDrafts(){if(!D)return;D.torneos.forEach(t=>{const s=DRAFTS[t.id];if(s)t.sel=Object.assign({},t.sel,s);});memo={};}
@@ -883,7 +885,7 @@ function ordenPropuesto(id){const ix=D.torneos.findIndex(t=>t.id===id);for(let j
 function parsePool(txt){
   const out=[],vistos=new Set();
   String(txt||"").split(/\r?\n/).forEach((l,i)=>{
-    let s=l.replace(/\t/g," ").trim(),o="",pr=null,m;if(!s)return;
+    let s=l.replace(/\t/g," ").trim(),o="",pr=null,m;if(!s||/^(fuente|source)\s*:/i.test(s))return;
     if((m=s.match(/(^|\s)([+-]\d{3,6})(?!\d)/))){o=m[2];const v=+m[2];pr=v>0?100/(v+100):-v/(-v+100);s=s.replace(m[2]," ");}
     else if((m=s.match(/(\d+)\s*\/\s*(\d+)/))){o=m[1]+"/"+m[2];pr=+m[2]/(+m[1]+ +m[2]);s=s.replace(m[0]," ");}
     else if((m=s.match(/(^|\s)(\d{1,4}[.,]\d{1,2})(?=\s|$)/))){const v=parseFloat(m[2].replace(",","."));if(v>1){o=m[2];pr=1/v;s=s.replace(m[2]," ");}}
@@ -937,7 +939,8 @@ function drPanelAdmin(d){
   if(d.actual&&e==="en curso")h+=`<p><a class="dr-wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("🐍 Draft "+tn+": "+d.actual.p+", te toca elegir (ronda "+(d.actual.r+1)+"). Entra con tu link personal.")}">📣 Avisar a ${esc(d.actual.p)} por WhatsApp (manual, lo envías tú)</a></p>`;
   h+=drLinks();
   h+=`<h4>Lista de jugadores (${d.pool.length})</h4><p class="hint">1) Pega la lista con cuotas, uno por línea (por ejemplo “Ryan Gerard +1500”). 2) Pulsa “Completar con el campo de ESPN” para sumar al recuadro al resto de los inscritos, sin cuota. 3) Pulsa “Cargar lista pegada”: se ordena de mejor a peor cotizado (los sin cuota quedan al final) y reemplaza la lista anterior.</p>
-  <textarea id="drPool" rows="8" placeholder="Ryan Gerard +1500&#10;Ben Griffin +1500&#10;…">${esc(DR.poolTxt||"")}</textarea><div class="dr-btns"><button data-espn="1">🌐 Completar con el campo de ESPN</button><button data-pool="1" class="dr-pri">📋 Cargar lista pegada</button><span id="drPoolMsg" class="hint"></span></div>`;
+  <textarea id="drPool" rows="8" placeholder="Ryan Gerard +1500&#10;Ben Griffin +1500&#10;…">${esc(DR.poolTxt||"")}</textarea><div class="dr-btns"><button data-espn="1">🌐 Completar con el campo de ESPN</button><button data-ia="1">🤖 Buscar cuotas con IA (API)</button><button data-claude="1">💬 Pedir cuotas a Claude (gratis)</button><button data-pool="1" class="dr-pri">📋 Cargar lista pegada</button><span id="drPoolMsg" class="hint"></span></div>
+  ${DR.consulta?`<div class="dr-consulta"><p class="hint"><b>Consulta lista para Claude.</b> Cópiala, pégala en tu chat con Claude y luego pega su respuesta en el recuadro de arriba y pulsa “Cargar lista pegada”.</p><textarea readonly rows="6">${esc(DR.consulta)}</textarea><div class="dr-btns"><button data-copiarconsulta="1" class="dr-pri">📋 Copiar consulta</button><a class="dr-wa" target="_blank" rel="noopener" href="https://claude.ai/new">Abrir Claude ↗</a><button data-cerrarconsulta="1">Cerrar</button></div></div>`:""}`;
   if(!d.picks.length)h+=`<h4>Fecha límite y tiempo por turno</h4><div class="dr-btns"><input type="datetime-local" id="drLimite" value="${d.limite?aLocal(d.limite):""}"><label>Minutos por turno <input type="number" id="drLead" min="1" value="${d.lead}" style="width:70px"></label><button data-conf="1">Guardar</button></div>`;
   return h+`<p class="hint">¿No eres el administrador en este equipo? <a href="#" data-salir="1">Salir del modo administrador</a>.</p></div>`;
 }
@@ -988,7 +991,7 @@ function iniciarDraftUI(){
     const b=e.target.closest("button,a[data-salir]");if(!b)return;const s=b.dataset;
     if(s.pick){const como=DR.admin&&$("drComo")?$("drComo").value:undefined;if(!confirm("¿Confirmas a "+s.pick+(como?" para "+como:"")+"?"))return;drPost({accion:"elegir",j:s.pick,como,msg:(como||"Elegiste")+(como?" eligió a ":" a ")+s.pick});}
     else if(s.adm){const a=s.adm,q={resetear:"¿Resetear el draft? Se borran todas las elecciones.",borrar:"¿Borrar el draft completo, con sus links?",sorteo:"¿Asignar al azar los turnos pendientes?"};if(q[a]&&!confirm(q[a]))return;drPost({accion:a,msg:({iniciar:"Draft iniciado",pausar:"Draft en pausa",reanudar:"Draft reanudado",saltar:"Turno saltado",deshacer:"Se deshizo la última acción",sorteo:"Sorteo final aplicado",resetear:"Draft reseteado",borrar:"Draft borrado",avisar:""})[a]});}
-    else if(s.copy){try{navigator.clipboard.writeText(s.copy);b.textContent="¡Copiado!";}catch(err){}}
+    else if(s.copy){try{navigator.clipboard.writeText(s.copy).catch(()=>{});b.textContent="¡Copiado!";}catch(err){}}
     else if(s.pool){const L=parsePool($("drPool").value);if(!L.length){DR.err="No encontré jugadores en el texto pegado";renderDraft();return;}DR.poolTxt="";const con=L.filter(x=>x.o).length;drPost({accion:"pool",jugadores:L,msg:"Lista cargada: "+L.length+" jugadores ("+con+" con cuota)"});}
     else if(s.espn){const ta=$("drPool"),msg=$("drPoolMsg");msg.textContent="Consultando ESPN…";
       fetch(DRAFT_URL+"?campo=1&t="+encodeURIComponent(DR.id)+"&n="+encodeURIComponent((get(DR.id)||{}).n||"")).then(r=>r.json()).then(j=>{
@@ -1008,6 +1011,20 @@ function iniciarDraftUI(){
     else if(s.avtelx){if(!confirm("¿Quitar el número de "+s.avtelx+"? Dejará de recibir avisos."))return;drPost({accion:"avisos_tel",p:s.avtelx,tel:"",msg:"Número de "+s.avtelx+" quitado"});}
     else if(s.grupos){DR.grupos=null;drPost({accion:"grupos"});}
     else if(s.gid){if(!confirm("¿Enviar los avisos del draft al grupo «"+s.gnom+"»? Se enviará un mensaje de prueba."))return;DR.grupos=null;drPost({accion:"grupo_set",id:s.gid,nombre:s.gnom});}
+    else if(s.ia){const ta=$("drPool"),msg=$("drPoolMsg"),t=get(DR.id)||{},antes=parsePool(ta.value).map(x=>x.n);
+      if(!confirm("¿Buscar las cuotas con la API de Anthropic? Tiene un costo pequeño por uso (aprox. 0,15 a 0,25 USD)."))return;
+      b.disabled=true;msg.textContent="🤖 Buscando cuotas en la web… puede tardar hasta 1 minuto.";
+      fetch(CUOTAS_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({k:DADM||"",n:t.n||DR.id,ini:t.ini||"",fin:t.fin||"",jugadores:antes})}).then(r=>r.json()).then(j=>{
+        if(!j.ok)throw new Error(j.error);
+        const ya=new Set(parsePool(j.lista.join("\n")).map(x=>norm(x.n))),resto=antes.filter(n=>!ya.has(norm(n)));
+        ta.value=j.lista.join("\n")+(resto.length?"\n"+resto.join("\n"):"");DR.poolTxt=ta.value;
+        msg.textContent="✅ "+j.lista.length+" jugadores con cuota"+(j.fuente?" · Fuente: "+j.fuente:"")+" · costo aprox. US$ "+String(j.costo).replace(".",",")+". Revisa y pulsa “Cargar lista pegada”.";
+      }).catch(err=>{msg.textContent="⚠️ "+(err.message||"No se pudo buscar las cuotas");}).finally(()=>{b.disabled=false;});}
+    else if(s.claude){const t=get(DR.id)||{},nombres=parsePool($("drPool").value).map(x=>x.n);
+      DR.consulta="Prepárame la lista de cuotas para el draft de Distinguidos Tour.\nTorneo: "+(t.n||DR.id)+" (PGA Tour"+(t.ini?", "+t.ini+(t.fin?" a "+t.fin:""):"")+").\nBusca las cuotas para ganar más recientes (FanDuel de preferencia; si no, otra casa conocida o el artículo de cuotas de pgatour.com).\nEntrégame un bloque de texto para copiar: una línea por jugador con el formato \"Nombre Apellido +1600\", ordenado de mejor a peor cotizado, y al final \"FUENTE: <casa> · <fecha>\"."+(nombres.length?"\nCampo según ESPN (usa estos mismos nombres):\n"+nombres.join("\n"):"");
+      renderDraft();try{navigator.clipboard.writeText(DR.consulta).catch(()=>{});}catch(err){}}
+    else if(s.copiarconsulta){try{navigator.clipboard.writeText(DR.consulta).catch(()=>{});b.textContent="¡Copiada!";}catch(err){}}
+    else if(s.cerrarconsulta){DR.consulta="";renderDraft();}
     else if(s.todos){DR.todos=true;drPintarLista();}
     else if(s.salir){e.preventDefault();localStorage.removeItem("dt_admin");DADM=null;DR.admin=false;DR.firma="";drCargar();}
   });

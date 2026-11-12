@@ -100,6 +100,10 @@ Cada participante elige sus jugadores desde la página con su **link personal**,
 - Siempre tienes en tu panel el aviso **manual** por WhatsApp y el botón **🔔 Enviar aviso automático**.
 - Si Green API no está configurado, el sistema usa TextMeBot (variable `TEXTMEBOT_APIKEY`, mensajes privados) o CallMeBot.
 
+**Cuotas para la lista de jugadores (dos caminos):**
+- **💬 Pedir cuotas a Claude (gratis):** pulsa primero “Completar con el campo de ESPN” y luego este botón. Se arma y se copia una consulta con el torneo y los inscritos. Pégala en tu chat con Claude, copia su respuesta, pégala en el recuadro y pulsa “Cargar lista pegada”. La línea “FUENTE:” se ignora sola.
+- **🤖 Buscar cuotas con IA (API, pagado):** solo funciona si creas en Vercel la variable `ANTHROPIC_API_KEY` (Sensitive, Production y Preview) con una clave de la Claude Console (platform.claude.com). Busca las cuotas en la web, llena el recuadro y muestra la fuente y el costo aproximado de esa búsqueda (del orden de 0,15–0,25 USD con Sonnet 5.5). Opcional: `ANTHROPIC_MODEL=claude-haiku-5-5` para un costo menor.
+
 Los nombres de la lista deben coincidir con los del leaderboard para que lleguen las posiciones (las tildes no importan).
 
 ## 4. Plan B: escribir posiciones a mano
