@@ -1,0 +1,14 @@
+name: Recordatorios del draft
+# Cada 10 minutos le pide a la página que revise los drafts en curso:
+# pasa los turnos vencidos y envía los avisos y recordatorios por WhatsApp que correspondan.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+jobs:
+  recordar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Revisar drafts y enviar recordatorios
+        run: curl -sS --max-time 60 "https://distinguidostour.vercel.app/api/draft?recordar=1" || true

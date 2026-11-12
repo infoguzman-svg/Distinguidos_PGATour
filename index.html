@@ -848,7 +848,7 @@ let DRAFTS={},DR={id:null,d:null,yo:null,admin:false,err:"",msg:"",filtro:"",tod
 function aplicarDrafts(){if(!D)return;D.torneos.forEach(t=>{const s=DRAFTS[t.id];if(s)t.sel=Object.assign({},t.sel,s);});memo={};}
 async function cargarDrafts(){try{const r=await fetch(DRAFT_URL+"?todos=1");const j=await r.json();if(j.ok){DRAFTS=j.drafts||{};aplicarDrafts();}}catch(e){}}
 function selDe(d){const s={};(d.picks||[]).forEach(x=>(s[x.p]=s[x.p]||[]).push(x.j));return s;}
-function drRecibir(j){if("d" in j)DR.d=j.d;if(j.yo!==undefined)DR.yo=j.yo;if(j.admin!==undefined)DR.admin=!!j.admin;if(j.tokens)DR.tokens=j.tokens;if(j.avisos)DR.avisos=j.avisos;if(j.cfgAvisos)DR.cfgAvisos=j.cfgAvisos;if(j.misAvisos)DR.misAvisos=j.misAvisos;DR.err="";if(DR.admin&&D&&DR.tokens&&!DR.pidioLinks&&D.participantes.some(p=>!DR.tokens[p])){DR.pidioLinks=true;setTimeout(()=>drPost({accion:"links",participantes:D.participantes}),0);}if(j.d){DR.skew=(j.d.ahora||Date.now())-Date.now();DRAFTS[DR.id]=selDe(j.d);aplicarDrafts();}}
+function drRecibir(j){if("d" in j)DR.d=j.d;if(j.yo!==undefined)DR.yo=j.yo;if(j.admin!==undefined)DR.admin=!!j.admin;if(j.tokens)DR.tokens=j.tokens;if(j.avisos)DR.avisos=j.avisos;if(j.cfgAvisos)DR.cfgAvisos=j.cfgAvisos;if(j.misAvisos)DR.misAvisos=j.misAvisos;if(j.modoAvisos)DR.modoAvisos=j.modoAvisos;DR.err="";if(DR.admin&&D&&DR.tokens&&!DR.pidioLinks&&D.participantes.some(p=>!DR.tokens[p])){DR.pidioLinks=true;setTimeout(()=>drPost({accion:"links",participantes:D.participantes}),0);}if(j.d){DR.skew=(j.d.ahora||Date.now())-Date.now();DRAFTS[DR.id]=selDe(j.d);aplicarDrafts();}}
 async function drCargar(){
   if(!D)return;DR.id=DR.id||elegir();
   let firma=DR.firma;
@@ -865,7 +865,8 @@ async function drCargar(){
 async function drPost(o){
   try{const r=await fetch(DRAFT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(Object.assign({t:DR.id,k:DADM||DTK||""},o))});const j=await r.json();if(!j.ok)throw new Error(j.error);drRecibir(j);DR.msg=o.msg||"";
     if(j.envio&&DR.admin)DR.msg=(DR.msg?DR.msg+" · ":"")+(j.envio.ok?"🔔 Aviso por WhatsApp enviado a "+j.envio.p:"No se pudo enviar el aviso a "+j.envio.p+" ("+j.envio.detalle+")");
-    if(j.prueba)DR.msg=j.prueba.ok?"🔔 Avisos activados: te enviamos un mensaje de prueba por WhatsApp.":"Tus datos quedaron guardados, pero CallMeBot respondió: “"+j.prueba.detalle+"”. Revisa el número y la APIKEY.";}
+    if(j.prueba&&o.accion==="avisos_tel")DR.msg=j.prueba.ok?"📲 Número guardado para "+o.p+": le enviamos un WhatsApp de prueba.":"Número guardado para "+o.p+", pero el envío de prueba respondió: “"+j.prueba.detalle+"”.";
+    else if(j.prueba)DR.msg=j.prueba.ok?"🔔 Avisos activados: te enviamos un mensaje de prueba por WhatsApp.":"Tus datos quedaron guardados, pero el envío de prueba respondió: “"+j.prueba.detalle+"”. Revisa el número.";}
   catch(e){DR.err=e.message||"No se pudo conectar con el draft";DR.msg="";}
   DR.firma="";DR.msgT=Date.now();renderDraft();
   const t0=DR.msgT;setTimeout(()=>{if(DR.msgT===t0&&DR.msg){DR.msg="";const e=document.querySelector("#draft .dr-ok");if(e)e.remove();}},8000);   // los avisos verdes se borran solos a los 8 s
@@ -901,6 +902,8 @@ function drFormCrear(t){
 const CMB_NUM="+34 623 78 64 49";
 function drAvisos(){
   if(!DR.yo)return"";const m=DR.misAvisos||{};
+  if(!m.activo&&DR.modoAvisos==="textmebot")return `<div class="card dr-adm"><h4>🔔 Activa tus avisos por WhatsApp</h4><p class="hint">Escribe tu celular y pulsa Activar: te llegará un WhatsApp de prueba desde el número del administrador. Después te avisaremos cuando sea tu turno.</p>
+  <div class="dr-btns"><input id="avTel" placeholder="+56912345678" value="${esc(DR.avTel||"")}" style="width:170px"><button data-avreg="1" class="dr-pri">Activar avisos</button></div></div>`;
   if(m.activo)return `<div class="card dr-adm"><h4>🔔 Avisos por WhatsApp: activados</h4><p>Te avisaremos al número ${esc(m.tel)} cuando sea tu turno, y te recordaremos mientras no elijas.</p><div class="dr-btns"><button data-avquitar="1">Desactivar avisos</button></div></div>`;
   return `<div class="card dr-adm"><h4>🔔 Activa tus avisos por WhatsApp</h4><p class="hint">Así te llega un mensaje cuando sea tu turno. Se hace una sola vez:</p>
   <ol class="dr-pasos"><li>Agrega a tus contactos el número de CallMeBot <b>${CMB_NUM}</b>.</li><li>Envíale por WhatsApp este mensaje: <b>I allow callmebot to send me messages</b> (<a target="_blank" rel="noopener" href="https://wa.me/${CMB_NUM.replace(/\D/g,"")}?text=${encodeURIComponent("I allow callmebot to send me messages")}">abrir WhatsApp con el mensaje listo</a>).</li><li>Te responde con tu <b>APIKEY</b> (un número). Escríbelo aquí junto a tu celular:</li></ol>
@@ -913,8 +916,9 @@ function drLinks(){
   const c=DR.cfgAvisos||{cada:30,desde:23,hasta:8};
   return `<h4>Avisos automáticos por WhatsApp</h4><p class="hint">Se avisa al participante cuando empieza su turno y se le recuerda cada cierto tiempo mientras no elija, salvo en el horario de silencio (hora de Chile). Cada uno activa sus avisos desde su link.</p>
   <div class="dr-btns"><label>Recordar cada <input type="number" id="avCada" min="5" value="${c.cada}" style="width:70px"> min</label><label>Silencio de <input type="number" id="avDesde" min="0" max="23" value="${c.desde}" style="width:60px"> a <input type="number" id="avHasta" min="0" max="23" value="${c.hasta}" style="width:60px"> h</label><button data-avcfg="1">Guardar</button></div>
+  ${DR.modoAvisos==="textmebot"?`<h4>Números para los avisos (TextMeBot)</h4><p class="hint">Los avisos salen desde tu WhatsApp conectado a TextMeBot. Escribe el celular de cada uno con código de país; al guardar le llega un WhatsApp de prueba. También pueden inscribirse ellos desde su link.</p>`+D.participantes.map((p,i)=>`<div class="dr-link"><span class="who">${avDe(p)}${esc(p)}</span><input id="avt${i}" placeholder="${esc((DR.avisos||{})[p]?"actual: "+DR.avisos[p]:"+56912345678")}"><button data-avtel="${esc(p)}" data-i="${i}">Guardar y probar</button>${(DR.avisos||{})[p]?`<button data-avtelx="${esc(p)}">Quitar</button>`:""}</div>`).join(""):""}
   <h4>Links personales (permanentes)</h4><p class="hint">Cada participante tiene un solo link para toda la temporada: sirve en todos los drafts y lo puede guardar en favoritos. Si pasa algo, usa “Cambiar link”: el anterior deja de funcionar al instante.</p>`+D.participantes.map(p=>{const t=tk[p],L=t?base+"?d="+t:"";
-    const avi=DR.avisos?(DR.avisos[p]?'<span class="dr-tag">🔔 avisos</span>':'<span class="dr-tag rojo">🔕 sin avisos</span>'):"";
+    const avi=DR.avisos?(DR.avisos[p]?`<span class="dr-tag">🔔 ${esc(DR.avisos[p])}</span>`:'<span class="dr-tag rojo">🔕 sin avisos</span>'):"";
     return `<div class="dr-link"><span class="who">${avDe(p)}${esc(p)} ${avi}</span>${t?`<input readonly value="${esc(L)}"><button data-copy="${esc(L)}">Copiar</button><a target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("🐍 Distinguidos Tour · "+p+", este es tu link personal para los drafts de la temporada (guárdalo en favoritos): "+L)}">WhatsApp</a><button data-nuevolink="${esc(p)}">🔄 Cambiar link</button>`:`<span class="hint">generando…</span>`}</div>`;}).join("");
 }
 function drPanelAdmin(d){
@@ -990,9 +994,11 @@ function iniciarDraftUI(){
     else if(s.crear){const orden=[...document.querySelectorAll("[data-ord]")].map(x=>x.value);if(new Set(orden).size!==orden.length){DR.err="El orden tiene participantes repetidos";renderDraft();return;}
       drPost({accion:"crear",n:(get(DR.id)||{}).n,orden,rondas:+$("drRondas").value,lead:+$("drLead").value,limite:$("drLimite").value?new Date($("drLimite").value).toISOString():"",msg:"Draft creado: ahora carga la lista de jugadores y comparte los links"});}
     else if(s.nuevolink){if(!confirm("¿Cambiar el link de "+s.nuevolink+"? El link actual dejará de funcionar y tendrás que enviarle el nuevo."))return;drPost({accion:"nuevo_link",p:s.nuevolink,msg:"Link nuevo para "+s.nuevolink+": envíaselo (el anterior ya no funciona)"});}
-    else if(s.avreg){DR.avTel=$("avTel").value;DR.avKey=$("avKey").value;drPost({accion:"avisos_registrar",tel:DR.avTel,key:DR.avKey});}
+    else if(s.avreg){DR.avTel=$("avTel").value;DR.avKey=$("avKey")?$("avKey").value:"";drPost({accion:"avisos_registrar",tel:DR.avTel,key:DR.avKey});}
     else if(s.avquitar){if(!confirm("¿Desactivar tus avisos por WhatsApp?"))return;drPost({accion:"avisos_quitar",msg:"Avisos desactivados"});}
     else if(s.avcfg)drPost({accion:"avisos_cfg",cada:+$("avCada").value,desde:+$("avDesde").value,hasta:+$("avHasta").value,msg:"Configuración de avisos guardada"});
+    else if(s.avtel){const v=$("avt"+s.i).value.trim();if(!v){DR.err="Escribe el número de "+s.avtel;renderDraft();return;}drPost({accion:"avisos_tel",p:s.avtel,tel:v});}
+    else if(s.avtelx){if(!confirm("¿Quitar el número de "+s.avtelx+"? Dejará de recibir avisos."))return;drPost({accion:"avisos_tel",p:s.avtelx,tel:"",msg:"Número de "+s.avtelx+" quitado"});}
     else if(s.todos){DR.todos=true;drPintarLista();}
     else if(s.salir){e.preventDefault();localStorage.removeItem("dt_admin");DADM=null;DR.admin=false;DR.firma="";drCargar();}
   });

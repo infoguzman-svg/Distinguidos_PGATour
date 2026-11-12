@@ -6,6 +6,9 @@ const R_TOK = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TO
 const ADMIN = process.env.DRAFT_ADMIN_KEY || "";
 const ESPN = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard";
 const CMB = "https://api.callmebot.com/whatsapp.php";
+const TMB = "https://api.textmebot.com/send.php";
+const TMB_KEY = process.env.TEXTMEBOT_APIKEY || "";      // si existe, los avisos salen desde el WhatsApp del administrador (TextMeBot)
+const MODO = TMB_KEY ? "textmebot" : "callmebot";
 const TZ = "America/Santiago";
 const CAS = "local v=redis.call('GET',KEYS[1]) if (v==false and ARGV[1]=='') or v==ARGV[1] then redis.call('SET',KEYS[1],ARGV[2]) return 1 end return 0";
 
@@ -89,9 +92,12 @@ function textoAviso(st, av, link) {
 async function enviarWhatsApp(cuenta, texto) {
   if (!cuenta) return { ok: false, detalle: "no tiene avisos activados" };
   try {
-    const r = await fetch(`${CMB}?phone=${encodeURIComponent(cuenta.tel)}&text=${encodeURIComponent(texto)}&apikey=${encodeURIComponent(cuenta.key)}`, { signal: AbortSignal.timeout(9000) });
+    const url = MODO === "textmebot"
+      ? `${TMB}?recipient=${encodeURIComponent(String(cuenta.tel).replace(/\D/g, ""))}&apikey=${encodeURIComponent(TMB_KEY)}&text=${encodeURIComponent(texto)}`
+      : `${CMB}?phone=${encodeURIComponent(cuenta.tel)}&text=${encodeURIComponent(texto)}&apikey=${encodeURIComponent(cuenta.key)}`;
+    const r = await fetch(url, { signal: AbortSignal.timeout(12000) });
     const t = (await r.text()).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 180);
-    return { ok: r.ok && !/(invalid|incorrect|wrong|error|not activated|apikey is not)/i.test(t), detalle: t };
+    return { ok: r.ok && !/(invalid|incorrect|wrong|error|not activated|apikey is not|not connected|expired|disconnected)/i.test(t), detalle: t };
   } catch (e) { return { ok: false, detalle: e.message || "sin respuesta de CallMeBot" }; }
 }
 async function avisar(av, st, cuentas, tokens, base) {
@@ -216,7 +222,7 @@ module.exports = async (req, res) => {
       const tokens = vTk ? JSON.parse(vTk) : {}, cuentas = vAv ? JSON.parse(vAv) : {}, cfg = Object.assign({ cada: 30, desde: 23, hasta: 8 }, vCfg ? JSON.parse(vCfg) : {});
       let st = vSt ? JSON.parse(vSt) : null, raw = vSt || "";
       const esAdmin = !!(ADMIN && q.k === ADMIN), yo = quien(tokens, q.k);
-      const extra = esAdmin ? { tokens, avisos: Object.fromEntries(Object.keys(tokens).map(p => [p, !!cuentas[p]])), cfgAvisos: cfg } : {};
+      const extra = esAdmin ? { tokens, avisos: Object.fromEntries(Object.keys(tokens).map(p => [p, cuentas[p] ? ocultar(cuentas[p].tel) : ""])), cfgAvisos: cfg, modoAvisos: MODO } : { modoAvisos: MODO };
       if (yo) extra.misAvisos = cuentas[yo] ? { activo: true, tel: ocultar(cuentas[yo].tel) } : { activo: false };
       for (let i = 0; i < 3; i++) {
         if (i > 0) ({ st, raw } = await leer(id));
@@ -232,7 +238,7 @@ module.exports = async (req, res) => {
       const b = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
       const esAdmin = !!(ADMIN && b.k === ADMIN);
       const tokens = await leerJSON(TK, {}), cuentas = await leerJSON(AV, {}), cfg = await config(), yo = quien(tokens, b.k);
-      const extra = esAdmin ? { tokens, avisos: Object.fromEntries(Object.keys(tokens).map(p => [p, !!cuentas[p]])), cfgAvisos: cfg } : {};
+      const extra = esAdmin ? { tokens, avisos: Object.fromEntries(Object.keys(tokens).map(p => [p, cuentas[p] ? ocultar(cuentas[p].tel) : ""])), cfgAvisos: cfg, modoAvisos: MODO } : { modoAvisos: MODO };
       // ----- links permanentes -----
       if (b.accion === "links" || b.accion === "nuevo_link") {
         if (!esAdmin) return res.status(403).json({ ok: false, error: "Solo el administrador puede hacer esto" });
@@ -246,19 +252,35 @@ module.exports = async (req, res) => {
         if (!yo) return res.status(403).json({ ok: false, error: "Abre tu link personal para activar tus avisos" });
         const tel = String(b.tel || "").replace(/[\s\-()]/g, ""), key = String(b.key || "").trim();
         if (!/^\+?\d{8,15}$/.test(tel)) return res.status(400).json({ ok: false, error: "Número no válido: escríbelo con código de país, por ejemplo +56912345678" });
-        if (!/^[A-Za-z0-9]{3,40}$/.test(key)) return res.status(400).json({ ok: false, error: "La APIKEY no parece válida: copia solo el número que te envió CallMeBot" });
+        if (MODO === "callmebot" && !/^[A-Za-z0-9]{3,40}$/.test(key)) return res.status(400).json({ ok: false, error: "La APIKEY no parece válida: copia solo el número que te envió CallMeBot" });
         cuentas[yo] = { tel: tel.startsWith("+") ? tel : "+" + tel, key }; await guardarJSON(AV, cuentas);
         const prueba = await enviarWhatsApp(cuentas[yo], `✅ ${yo}: tus avisos del draft de Distinguidos Tour quedaron activados. Te escribiremos cuando sea tu turno.`);
         if (!prueba.ok && /(invalid|incorrect|wrong|not activated|apikey is not)/i.test(prueba.detalle || "")) {   // CallMeBot rechazó los datos: no se guardan
           delete cuentas[yo]; await guardarJSON(AV, cuentas);
           return res.status(400).json({ ok: false, error: "CallMeBot rechazó los datos (“" + prueba.detalle + "”). Revisa tu número y la APIKEY que te envió el bot." });
         }
-        return res.status(200).json({ ok: true, yo, misAvisos: { activo: true, tel: ocultar(cuentas[yo].tel) }, prueba });
+        return res.status(200).json({ ok: true, yo, misAvisos: { activo: true, tel: ocultar(cuentas[yo].tel) }, prueba, modoAvisos: MODO });
       }
       if (b.accion === "avisos_quitar") {
         if (!yo) return res.status(403).json({ ok: false, error: "Abre tu link personal" });
         delete cuentas[yo]; await guardarJSON(AV, cuentas);
         return res.status(200).json({ ok: true, yo, misAvisos: { activo: false } });
+      }
+      if (b.accion === "avisos_tel") {
+        if (!esAdmin) return res.status(403).json({ ok: false, error: "Solo el administrador puede hacer esto" });
+        const p = String(b.p || "").slice(0, 60), tel = String(b.tel || "").replace(/[\s\-()]/g, "");
+        if (!p) return res.status(400).json({ ok: false, error: "Falta el participante" });
+        let prueba = null;
+        if (!tel) delete cuentas[p];
+        else {
+          if (!/^\+?\d{8,15}$/.test(tel)) return res.status(400).json({ ok: false, error: "Número no válido: escríbelo con código de país, por ejemplo +56912345678" });
+          if (MODO === "callmebot") return res.status(400).json({ ok: false, error: "Con CallMeBot cada participante debe activar sus avisos desde su link" });
+          cuentas[p] = { tel: tel.startsWith("+") ? tel : "+" + tel };
+          prueba = await enviarWhatsApp(cuentas[p], `✅ ${p}: quedaste inscrito para recibir por WhatsApp los avisos del draft de Distinguidos Tour.`);
+        }
+        await guardarJSON(AV, cuentas);
+        const avisos = Object.fromEntries(Object.keys(tokens).map(q => [q, cuentas[q] ? ocultar(cuentas[q].tel) : ""]));
+        return res.status(200).json({ ok: true, admin: true, ...extra, avisos, prueba });
       }
       if (b.accion === "avisos_cfg") {
         if (!esAdmin) return res.status(403).json({ ok: false, error: "Solo el administrador puede hacer esto" });
