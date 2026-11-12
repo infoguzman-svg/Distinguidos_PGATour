@@ -864,10 +864,11 @@ async function drCargar(){
 }
 async function drPost(o){
   try{const r=await fetch(DRAFT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(Object.assign({t:DR.id,k:DADM||DTK||""},o))});const j=await r.json();if(!j.ok)throw new Error(j.error);drRecibir(j);DR.msg=o.msg||"";
-    if(j.envio)DR.msg=(DR.msg?DR.msg+" · ":"")+(j.envio.ok?"🔔 Aviso por WhatsApp enviado a "+j.envio.p:"No se pudo enviar el aviso a "+j.envio.p+" ("+j.envio.detalle+")");
+    if(j.envio&&DR.admin)DR.msg=(DR.msg?DR.msg+" · ":"")+(j.envio.ok?"🔔 Aviso por WhatsApp enviado a "+j.envio.p:"No se pudo enviar el aviso a "+j.envio.p+" ("+j.envio.detalle+")");
     if(j.prueba)DR.msg=j.prueba.ok?"🔔 Avisos activados: te enviamos un mensaje de prueba por WhatsApp.":"Tus datos quedaron guardados, pero CallMeBot respondió: “"+j.prueba.detalle+"”. Revisa el número y la APIKEY.";}
   catch(e){DR.err=e.message||"No se pudo conectar con el draft";DR.msg="";}
-  DR.firma="";renderDraft();
+  DR.firma="";DR.msgT=Date.now();renderDraft();
+  const t0=DR.msgT;setTimeout(()=>{if(DR.msgT===t0&&DR.msg){DR.msg="";const e=document.querySelector("#draft .dr-ok");if(e)e.remove();}},8000);   // los avisos verdes se borran solos a los 8 s
 }
 const fmtT=ms=>{if(ms<=0)return"0:00";if(ms>=864e5){const dd=Math.floor(ms/864e5),hh=Math.floor(ms%864e5/36e5);return dd+" d "+hh+" h";}const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+"h ":"")+(h?String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0");};
 function relojTexto(){const d=DR.d;if(!d)return"";const ahora=Date.now()+DR.skew;
