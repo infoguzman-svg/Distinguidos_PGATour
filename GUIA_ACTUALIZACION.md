@@ -91,6 +91,12 @@ Cada participante elige sus jugadores desde la página con su **link personal**,
 7. Pasada la fecha límite, cada turno tiene 10 minutos; si alguien no elige, pasa al siguiente y después puede elegir lo que le falta (“acá estoy”). Al final puedes usar **Sorteo final** para completar al azar a quien no eligió.
 8. Botones del administrador: Pausar, Saltar turno, Deshacer, Resetear (por ejemplo si se retira una primera elección, Art. 11) y Borrar.
 
+**Avisos por WhatsApp (CallMeBot):**
+- Cada participante los activa una vez desde su link, en la pestaña 🐍 Draft: agrega el número de CallMeBot, le envía “I allow callmebot to send me messages”, recibe su APIKEY y la escribe en la página con su celular. Le llega un mensaje de prueba.
+- Al empezar su turno le llega “🐍 te toca elegir” con su link, y un recordatorio cada 30 minutos mientras no elija (configurable en tu panel), salvo en el horario de silencio (por defecto de 23 a 8, hora de Chile).
+- Los recordatorios los dispara el archivo `.github/workflows/avisos.yml` cada 10 minutos (GitHub puede atrasarse unos minutos).
+- Siempre tienes en tu panel el aviso **manual** por WhatsApp (lo envías tú) y el botón **🔔 Enviar aviso automático** para forzarlo en cualquier momento.
+
 Los nombres de la lista deben coincidir con los del leaderboard para que lleguen las posiciones (las tildes no importan).
 
 ## 4. Plan B: escribir posiciones a mano

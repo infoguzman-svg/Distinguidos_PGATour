@@ -1,15 +1,19 @@
-// Vercel Function: draft en serpiente para Distinguidos Tour.
-// Guarda el estado en Upstash Redis (se conecta desde Vercel > Storage). La clave de administrador va en la variable DRAFT_ADMIN_KEY.
+// Vercel Function: draft en serpiente para Distinguidos Tour, con avisos por WhatsApp (CallMeBot).
+// Guarda el estado en Upstash Redis (Vercel > Storage). La clave de administrador va en la variable DRAFT_ADMIN_KEY.
 const crypto = require("crypto");
 const R_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const R_TOK = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 const ADMIN = process.env.DRAFT_ADMIN_KEY || "";
 const ESPN = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard";
+const CMB = "https://api.callmebot.com/whatsapp.php";
+const TZ = "America/Santiago";
 const CAS = "local v=redis.call('GET',KEYS[1]) if (v==false and ARGV[1]=='') or v==ARGV[1] then redis.call('SET',KEYS[1],ARGV[2]) return 1 end return 0";
 
 const norm = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const clave = id => "draft:" + id;
-const TK = "draft:tokens";                       // links permanentes: { participante: código }
+const TK = "draft:tokens";          // links permanentes: { participante: código }
+const AV = "draft:avisos";          // avisos por WhatsApp: { participante: { tel, key } }  (privado)
+const AVC = "draft:avisos_cfg";     // { cada: minutos, desde: hora, hasta: hora }
 const nuevoToken = () => crypto.randomBytes(9).toString("base64url");
 async function redis(cmd) {
   const r = await fetch(R_URL, { method: "POST", headers: { Authorization: "Bearer " + R_TOK, "Content-Type": "application/json" }, body: JSON.stringify(cmd) });
@@ -17,18 +21,23 @@ async function redis(cmd) {
   if (j.error) throw new Error(j.error);
   return j.result;
 }
+async function leerJSON(k, def) { const v = await redis(["GET", k]); return v ? JSON.parse(v) : def; }
+async function guardarJSON(k, v) { await redis(["SET", k, JSON.stringify(v)]); }
 async function leer(id) { const v = await redis(["GET", clave(id)]); return v ? { st: JSON.parse(v), raw: v } : { st: null, raw: "" }; }
-async function leerTokens() { const v = await redis(["GET", TK]); return v ? JSON.parse(v) : {}; }
-async function guardarTokens(tk) { await redis(["SET", TK, JSON.stringify(tk)]); }
 async function guardar(id, raw, st) { return (await redis(["EVAL", CAS, "1", clave(id), raw, JSON.stringify(st)])) === 1; }
+async function config() { return Object.assign({ cada: 30, desde: 23, hasta: 8 }, await leerJSON(AVC, {})); }
 
 function turnos(orden, rondas) { const s = []; for (let r = 0; r < rondas; r++) (r % 2 ? [...orden].reverse() : orden).forEach(p => s.push({ p, r })); return s; }
 function foto(st) { return JSON.stringify({ picks: st.picks, ptr: st.ptr, pend: st.pend, turnoDesde: st.turnoDesde, estado: st.estado }); }
 function respaldo(st) { st.hist = (st.hist || []).concat([foto(st)]).slice(-12); }
 function tomados(st) { return new Set(st.picks.map(x => norm(x.j))); }
 function cuantos(st, p) { return st.picks.filter(x => x.p === p).length; }
+function quien(tokens, k) { if (!k) return null; for (const [p, t] of Object.entries(tokens || {})) if (t === k) return p; return null; }
+function elegirEvento(evs, nombre) { const nt = norm(nombre); return evs.find(e => [e.name, e.shortName].some(c => { const n = norm(c); return n && (n.includes(nt) || nt.includes(n)); })) || (evs.length === 1 ? evs[0] : null); }
+const ocultar = tel => "…" + String(tel).slice(-4);
+const horaCL = (ms, o) => new Date(ms).toLocaleString("es-CL", Object.assign({ timeZone: TZ, hour: "2-digit", minute: "2-digit" }, o || {}));
 
-// Aplica los turnos vencidos (lead time) sin necesidad de un proceso aparte
+// ----- turnos vencidos (lead time), sin proceso aparte -----
 function avanzar(st, ahora) {
   let cambio = false;
   if (st.estado !== "en curso") return false;
@@ -47,16 +56,51 @@ function cerrar(st) {
   if (st.estado === "en curso" && st.ptr >= st.slots.length && !Object.values(st.pend).some(Boolean)) { st.estado = "terminado"; return true; }
   return false;
 }
-function publico(st, admin) {
+function vencimiento(st) { const lim = st.limite ? Date.parse(st.limite) : null; return st.ptr < st.slots.length && st.estado === "en curso" && lim && Date.now() >= lim ? Math.max(st.turnoDesde || 0, lim) + st.lead * 60000 : null; }
+function publico(st) {
   const o = { ...st }; delete o.hist; delete o.tokens;
-  const lim = st.limite ? Date.parse(st.limite) : null, ahora = Date.now();
   o.actual = st.ptr < st.slots.length ? st.slots[st.ptr] : null;
-  o.vence = o.actual && st.estado === "en curso" && lim && ahora >= lim ? Math.max(st.turnoDesde || 0, lim) + st.lead * 60000 : null;
-  o.ahora = ahora; o.puedeDeshacer = !!(st.hist && st.hist.length);
+  o.vence = vencimiento(st); o.ahora = Date.now(); o.puedeDeshacer = !!(st.hist && st.hist.length);
   return o;
 }
-function quien(tokens, k) { if (!k) return null; for (const [p, t] of Object.entries(tokens || {})) if (t === k) return p; return null; }
-function elegirEvento(evs, nombre) { const nt = norm(nombre); return evs.find(e => [e.name, e.shortName].some(c => { const n = norm(c); return n && (n.includes(nt) || nt.includes(n)); })) || (evs.length === 1 ? evs[0] : null); }
+
+// ----- avisos por WhatsApp -----
+function enSilencio(ahora, cfg) {
+  const h = Number(new Intl.DateTimeFormat("en-US", { timeZone: TZ, hour: "2-digit", hour12: false }).format(new Date(ahora))) % 24;
+  if (cfg.desde === cfg.hasta) return false;
+  return cfg.desde > cfg.hasta ? (h >= cfg.desde || h < cfg.hasta) : (h >= cfg.desde && h < cfg.hasta);
+}
+// Decide si corresponde avisar al participante de turno: al empezar su turno, y luego cada "cada" minutos (fuera del horario de silencio)
+function decidirAviso(st, ahora, cfg, forzar) {
+  if (st.estado !== "en curso" || st.ptr >= st.slots.length) return null;
+  if (!forzar && enSilencio(ahora, cfg)) return null;
+  const a = st.aviso || {}, nuevo = a.ptr !== st.ptr;
+  if (!forzar && !nuevo && ahora - (a.t || 0) < cfg.cada * 60000) return null;
+  st.aviso = { ptr: st.ptr, t: ahora, n: nuevo ? 1 : (a.n || 0) + 1 };
+  return { p: st.slots[st.ptr].p, r: st.slots[st.ptr].r, tipo: nuevo ? "turno" : "recordatorio" };
+}
+function textoAviso(st, av, link) {
+  const lim = st.limite ? Date.parse(st.limite) : null, vence = vencimiento(st);
+  let t = av.tipo === "turno" ? `🐍 *Draft ${st.n}*\n${av.p}, ¡te toca elegir! (ronda ${av.r + 1})` : `⏰ *Recordatorio · Draft ${st.n}*\n${av.p}, sigue siendo tu turno (ronda ${av.r + 1}).`;
+  if (vence) t += `\n⏱️ Tienes hasta las ${horaCL(vence)} (hora de Chile).`;
+  else if (lim && Date.now() < lim) t += `\n🗓️ Fecha límite: ${horaCL(lim, { weekday: "short", day: "2-digit", month: "2-digit" })}.`;
+  return t + `\n👉 ${link}`;
+}
+async function enviarWhatsApp(cuenta, texto) {
+  if (!cuenta) return { ok: false, detalle: "no tiene avisos activados" };
+  try {
+    const r = await fetch(`${CMB}?phone=${encodeURIComponent(cuenta.tel)}&text=${encodeURIComponent(texto)}&apikey=${encodeURIComponent(cuenta.key)}`, { signal: AbortSignal.timeout(9000) });
+    const t = (await r.text()).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 180);
+    return { ok: r.ok && !/(invalid|incorrect|wrong|error|not activated|apikey is not)/i.test(t), detalle: t };
+  } catch (e) { return { ok: false, detalle: e.message || "sin respuesta de CallMeBot" }; }
+}
+async function avisar(av, st, cuentas, tokens, base) {
+  if (!av) return null;
+  const link = base + "/?d=" + (tokens[av.p] || "");
+  const r = await enviarWhatsApp(cuentas[av.p], textoAviso(st, av, link));
+  return { p: av.p, tipo: av.tipo, ok: r.ok, detalle: r.detalle };
+}
+const baseDe = req => process.env.SITIO_URL || ("https://" + ((req.headers || {})["x-forwarded-host"] || (req.headers || {}).host || "distinguidostour.vercel.app"));
 
 async function accion(b, st, esAdmin, yo) {
   const ahora = Date.now(), A = b.accion;
@@ -83,19 +127,9 @@ async function accion(b, st, esAdmin, yo) {
       soloAdmin();
       st.pool = (b.jugadores || []).filter(x => x && x.n).slice(0, 400).map(x => ({ n: String(x.n).slice(0, 60), o: x.o ? String(x.o).slice(0, 12) : "" }));
       return st;
-    case "pool_espn": {
-      soloAdmin();
-      const r = await fetch(ESPN, { headers: { "User-Agent": "Mozilla/5.0" }, signal: AbortSignal.timeout(8000) });
-      const ev = elegirEvento((await r.json()).events || [], st.n);
-      const comp = ev && ev.competitions && ev.competitions[0] ? ev.competitions[0].competitors || [] : [];
-      if (!comp.length) throw new Error("ESPN no devolvió el campo de este torneo todavía");
-      const ya = new Set(st.pool.map(x => norm(x.n)));
-      comp.map(c => (c.athlete || {}).displayName).filter(n => n && !ya.has(norm(n))).forEach(n => st.pool.push({ n, o: "" }));
-      return st;
-    }
     case "iniciar":
       soloAdmin(); if (!st.pool.length) throw new Error("Primero carga la lista de jugadores");
-      st.estado = "en curso"; st.turnoDesde = ahora; st.log.push({ t: ahora, tipo: "inicio" }); cerrar(st); return st;
+      st.estado = "en curso"; st.turnoDesde = ahora; st.aviso = null; st.log.push({ t: ahora, tipo: "inicio" }); cerrar(st); return st;
     case "pausar": soloAdmin(); if (st.estado === "en curso") { st.estado = "pausado"; st.log.push({ t: ahora, tipo: "pausa" }); } return st;
     case "reanudar": soloAdmin(); if (st.estado === "pausado") { st.estado = "en curso"; st.turnoDesde = ahora; st.log.push({ t: ahora, tipo: "reanuda" }); } return st;
     case "elegir": {
@@ -133,7 +167,7 @@ async function accion(b, st, esAdmin, yo) {
     }
     case "resetear":
       soloAdmin(); respaldo(st);
-      st.picks = []; st.ptr = 0; st.pend = {}; st.estado = "preparando"; st.turnoDesde = null; st.log.push({ t: ahora, tipo: "reseteo" }); return st;
+      st.picks = []; st.ptr = 0; st.pend = {}; st.estado = "preparando"; st.turnoDesde = null; st.aviso = null; st.log.push({ t: ahora, tipo: "reseteo" }); return st;
     default: throw new Error("Acción desconocida");
   }
 }
@@ -146,7 +180,7 @@ module.exports = async (req, res) => {
   if (req.method === "OPTIONS") return res.status(204).end();
   if (!R_URL || !R_TOK) return res.status(500).json({ ok: false, error: "Falta conectar la base de datos (Upstash Redis) al proyecto en Vercel" });
   try {
-    const q = req.query || {};
+    const q = req.query || {}, base = baseDe(req);
     if (req.method === "GET") {
       if (q.campo) {   // campo del torneo según ESPN (solo nombres), para completar el recuadro de la lista
         const r = await fetch(ESPN, { headers: { "User-Agent": "Mozilla/5.0" }, signal: AbortSignal.timeout(8000) });
@@ -161,45 +195,102 @@ module.exports = async (req, res) => {
         ids.forEach((id, i) => { if (!vals[i]) return; const st = JSON.parse(vals[i]); const sel = {}; st.picks.forEach(x => (sel[x.p] = sel[x.p] || []).push(x.j)); if (st.picks.length) out[id] = sel; });
         return res.status(200).json({ ok: true, drafts: out });
       }
+      if (q.recordar) {
+        const tokens = await leerJSON(TK, {}), cuentas = await leerJSON(AV, {}), cfg = await config();   // lo llama GitHub Actions cada 10 minutos: turnos vencidos + avisos y recordatorios pendientes
+        const ids = (await redis(["SMEMBERS", "drafts"])) || [], envios = [];
+        for (const id of ids) {
+          for (let i = 0; i < 3; i++) {
+            const { st, raw } = await leer(id); if (!st || st.estado !== "en curso") break;
+            const ahora = Date.now(), c = avanzar(st, ahora), av = decidirAviso(st, ahora, cfg, false);
+            if (!c && !av) break;
+            if (!(await guardar(id, raw, st))) continue;
+            if (av) envios.push(await avisar(av, st, cuentas, tokens, base));
+            break;
+          }
+        }
+        return res.status(200).json({ ok: true, envios });
+      }
       const id = String(q.t || "").slice(0, 120); if (!id) return res.status(400).json({ ok: false, error: "Falta el torneo" });
-      const tokens = await leerTokens(), esAdmin = !!(ADMIN && q.k === ADMIN), yo = quien(tokens, q.k), extra = esAdmin ? { tokens } : {};
+      // una sola lectura a la base de datos por consulta (la página se actualiza cada pocos segundos)
+      const [vTk, vAv, vCfg, vSt] = (await redis(["MGET", TK, AV, AVC, clave(id)])) || [];
+      const tokens = vTk ? JSON.parse(vTk) : {}, cuentas = vAv ? JSON.parse(vAv) : {}, cfg = Object.assign({ cada: 30, desde: 23, hasta: 8 }, vCfg ? JSON.parse(vCfg) : {});
+      let st = vSt ? JSON.parse(vSt) : null, raw = vSt || "";
+      const esAdmin = !!(ADMIN && q.k === ADMIN), yo = quien(tokens, q.k);
+      const extra = esAdmin ? { tokens, avisos: Object.fromEntries(Object.keys(tokens).map(p => [p, !!cuentas[p]])), cfgAvisos: cfg } : {};
+      if (yo) extra.misAvisos = cuentas[yo] ? { activo: true, tel: ocultar(cuentas[yo].tel) } : { activo: false };
       for (let i = 0; i < 3; i++) {
-        const { st, raw } = await leer(id);
+        if (i > 0) ({ st, raw } = await leer(id));
         if (!st) return res.status(200).json({ ok: true, d: null, yo, admin: esAdmin, ...extra });
-        if (avanzar(st, Date.now()) && !(await guardar(id, raw, st))) continue;
-        return res.status(200).json({ ok: true, d: publico(st, esAdmin), yo, admin: esAdmin, ...extra });
+        const ahora = Date.now(), c = avanzar(st, ahora), av = decidirAviso(st, ahora, cfg, false);
+        if ((c || av) && !(await guardar(id, raw, st))) continue;
+        if (av) await avisar(av, st, cuentas, tokens, base);
+        return res.status(200).json({ ok: true, d: publico(st), yo, admin: esAdmin, ...extra });
       }
       return res.status(409).json({ ok: false, error: "Intenta de nuevo" });
     }
     if (req.method === "POST") {
       const b = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
       const esAdmin = !!(ADMIN && b.k === ADMIN);
-      if (b.accion === "links" || b.accion === "nuevo_link") {      // crear los que falten / dar un link nuevo (anula el anterior)
+      const tokens = await leerJSON(TK, {}), cuentas = await leerJSON(AV, {}), cfg = await config(), yo = quien(tokens, b.k);
+      const extra = esAdmin ? { tokens, avisos: Object.fromEntries(Object.keys(tokens).map(p => [p, !!cuentas[p]])), cfgAvisos: cfg } : {};
+      // ----- links permanentes -----
+      if (b.accion === "links" || b.accion === "nuevo_link") {
         if (!esAdmin) return res.status(403).json({ ok: false, error: "Solo el administrador puede hacer esto" });
-        const tk = await leerTokens();
-        if (b.accion === "links") (b.participantes || []).map(p => String(p).slice(0, 60)).forEach(p => { if (p && !tk[p]) tk[p] = nuevoToken(); });
-        else { const p = String(b.p || "").slice(0, 60); if (!p) return res.status(400).json({ ok: false, error: "Falta el participante" }); tk[p] = nuevoToken(); }
-        await guardarTokens(tk);
-        return res.status(200).json({ ok: true, tokens: tk, admin: true });
+        if (b.accion === "links") (b.participantes || []).map(p => String(p).slice(0, 60)).forEach(p => { if (p && !tokens[p]) tokens[p] = nuevoToken(); });
+        else { const p = String(b.p || "").slice(0, 60); if (!p) return res.status(400).json({ ok: false, error: "Falta el participante" }); tokens[p] = nuevoToken(); }
+        await guardarJSON(TK, tokens);
+        return res.status(200).json({ ok: true, admin: true, ...extra, tokens });
+      }
+      // ----- avisos por WhatsApp -----
+      if (b.accion === "avisos_registrar") {
+        if (!yo) return res.status(403).json({ ok: false, error: "Abre tu link personal para activar tus avisos" });
+        const tel = String(b.tel || "").replace(/[\s\-()]/g, ""), key = String(b.key || "").trim();
+        if (!/^\+?\d{8,15}$/.test(tel)) return res.status(400).json({ ok: false, error: "Número no válido: escríbelo con código de país, por ejemplo +56912345678" });
+        if (!/^[A-Za-z0-9]{3,40}$/.test(key)) return res.status(400).json({ ok: false, error: "La APIKEY no parece válida: copia solo el número que te envió CallMeBot" });
+        cuentas[yo] = { tel: tel.startsWith("+") ? tel : "+" + tel, key }; await guardarJSON(AV, cuentas);
+        const prueba = await enviarWhatsApp(cuentas[yo], `✅ ${yo}: tus avisos del draft de Distinguidos Tour quedaron activados. Te escribiremos cuando sea tu turno.`);
+        if (!prueba.ok && /(invalid|incorrect|wrong|not activated|apikey is not)/i.test(prueba.detalle || "")) {   // CallMeBot rechazó los datos: no se guardan
+          delete cuentas[yo]; await guardarJSON(AV, cuentas);
+          return res.status(400).json({ ok: false, error: "CallMeBot rechazó los datos (“" + prueba.detalle + "”). Revisa tu número y la APIKEY que te envió el bot." });
+        }
+        return res.status(200).json({ ok: true, yo, misAvisos: { activo: true, tel: ocultar(cuentas[yo].tel) }, prueba });
+      }
+      if (b.accion === "avisos_quitar") {
+        if (!yo) return res.status(403).json({ ok: false, error: "Abre tu link personal" });
+        delete cuentas[yo]; await guardarJSON(AV, cuentas);
+        return res.status(200).json({ ok: true, yo, misAvisos: { activo: false } });
+      }
+      if (b.accion === "avisos_cfg") {
+        if (!esAdmin) return res.status(403).json({ ok: false, error: "Solo el administrador puede hacer esto" });
+        const n = { cada: Math.min(Math.max(+b.cada || 30, 0.05), 720), desde: Math.min(Math.max(+b.desde || 0, 0), 23), hasta: Math.min(Math.max(+b.hasta || 0, 0), 23) };
+        await guardarJSON(AVC, n);
+        return res.status(200).json({ ok: true, admin: true, ...extra, cfgAvisos: n });
       }
       const id = String(b.t || "").slice(0, 120); if (!id) return res.status(400).json({ ok: false, error: "Falta el torneo" });
-      const tokens = await leerTokens();
-      if (b.accion === "crear" && esAdmin) {                          // asegura un link permanente para cada participante del orden
+      if (b.accion === "crear" && esAdmin) {           // asegura un link permanente para cada participante del orden
         let cambio = false; (b.orden || []).forEach(p => { if (p && !tokens[p]) { tokens[p] = nuevoToken(); cambio = true; } });
-        if (cambio) await guardarTokens(tokens);
+        if (cambio) await guardarJSON(TK, tokens);
       }
-      const extra = esAdmin ? { tokens } : {};
       if (b.accion === "borrar") {
         if (!esAdmin) return res.status(403).json({ ok: false, error: "Solo el administrador puede hacer esto" });
         await redis(["DEL", clave(id)]); await redis(["SREM", "drafts", id]); return res.status(200).json({ ok: true, d: null, admin: true, ...extra });
       }
       for (let i = 0; i < 4; i++) {
         const { st, raw } = await leer(id);
-        const yo = quien(tokens, b.k);
-        const nuevo = await accion(b, st, esAdmin, yo);
+        let nuevo, av;
+        if (b.accion === "avisar") {                     // aviso automático forzado por el administrador (ignora el silencio)
+          if (!esAdmin) return res.status(403).json({ ok: false, error: "Solo el administrador puede hacer esto" });
+          if (!st) return res.status(400).json({ ok: false, error: "No hay draft creado para este torneo" });
+          avanzar(st, Date.now()); av = decidirAviso(st, Date.now(), cfg, true); nuevo = st;
+          if (!av) return res.status(400).json({ ok: false, error: "No hay un turno en curso" });
+        } else {
+          nuevo = await accion(b, st, esAdmin, yo);
+          av = decidirAviso(nuevo, Date.now(), cfg, false);
+        }
         if (await guardar(id, raw, nuevo)) {
           if (!st) await redis(["SADD", "drafts", id]);
-          return res.status(200).json({ ok: true, d: publico(nuevo, esAdmin), yo, admin: esAdmin, ...extra });
+          const envio = av ? await avisar(av, nuevo, cuentas, tokens, base) : null;
+          return res.status(200).json({ ok: true, d: publico(nuevo), yo, admin: esAdmin, ...extra, envio });
         }
       }
       return res.status(409).json({ ok: false, error: "Otro participante eligió al mismo tiempo; intenta de nuevo" });
