@@ -917,7 +917,7 @@ function drLinks(){
   if(!DR.admin)return"";
   const base=location.origin+location.pathname,tk=DR.tokens||{};
   const c=DR.cfgAvisos||{cada:30,desde:23,hasta:8};
-  return `<h4>Avisos automáticos por WhatsApp</h4><p class="hint">Se avisa al participante cuando empieza su turno y se le recuerda cada cierto tiempo mientras no elija, salvo en el horario de silencio (hora de Chile). Cada uno activa sus avisos desde su link.</p>
+  return `<h4>Avisos automáticos por WhatsApp</h4><p class="hint">Se avisa cuando empieza cada turno y se recuerda cada cierto tiempo mientras no se elija, salvo en el horario de silencio (hora de Chile). ${DR.modoAvisos==="greenapi"?"Los avisos llegan al grupo de WhatsApp que elijas abajo.":"Cada uno activa sus avisos desde su link."}</p>
   <div class="dr-btns"><label>Recordar cada <input type="number" id="avCada" min="5" value="${c.cada}" style="width:70px"> min</label><label>Silencio de <input type="number" id="avDesde" min="0" max="23" value="${c.desde}" style="width:60px"> a <input type="number" id="avHasta" min="0" max="23" value="${c.hasta}" style="width:60px"> h</label><button data-avcfg="1">Guardar</button></div>
   ${DR.modoAvisos==="greenapi"?`<h4>Grupo de WhatsApp para los avisos (Green API)</h4><p class="hint">Los avisos de turno y los recordatorios llegan a un solo grupo (el plan gratis de Green API admite 3 chats y un grupo cuenta como uno). En el grupo nunca se envían los links personales, solo la dirección de la página.</p>
   <p>${DR.grupoAvisos?`Grupo actual: <b>${esc(DR.grupoAvisos)}</b>`:`<span class="dr-tag rojo">Aún no eliges el grupo</span>`}${DR.estadoGreen?` · WhatsApp en Green API: ${DR.estadoGreen==="authorized"?"✅ conectado":"⚠️ "+esc(DR.estadoGreen)}`:""}</p>
