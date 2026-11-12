@@ -8,7 +8,19 @@ const ESPN = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard"
 const CMB = "https://api.callmebot.com/whatsapp.php";
 const TMB = "https://api.textmebot.com/send.php";
 const TMB_KEY = process.env.TEXTMEBOT_APIKEY || "";      // si existe, los avisos salen desde el WhatsApp del administrador (TextMeBot)
-const MODO = TMB_KEY ? "textmebot" : "callmebot";
+// Green API (gratis): avisos a UN grupo de WhatsApp (el plan gratuito permite 3 chats y un grupo cuenta como uno)
+const GA_URL = (process.env.GREENAPI_URL || "https://api.green-api.com").replace(/\/+$/, "");
+const GA_ID = process.env.GREENAPI_ID || "", GA_TOKEN = process.env.GREENAPI_TOKEN || "";
+const MODO = GA_ID && GA_TOKEN ? "greenapi" : TMB_KEY ? "textmebot" : "callmebot";
+const gaUrl = metodo => `${GA_URL}/waInstance${GA_ID}/${metodo}/${GA_TOKEN}`;
+async function enviarGrupo(cfg, texto) {
+  if (!cfg.grupo || !cfg.grupo.id) return { ok: false, detalle: "falta elegir el grupo de WhatsApp en el panel" };
+  try {
+    const r = await fetch(gaUrl("sendMessage"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chatId: cfg.grupo.id, message: texto }), signal: AbortSignal.timeout(12000) });
+    const t = await r.text(); let j = {}; try { j = JSON.parse(t); } catch (e) {}
+    return { ok: r.ok && !!j.idMessage, detalle: j.idMessage ? "enviado al grupo " + (cfg.grupo.nombre || "") : t.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 180) || ("error " + r.status) };
+  } catch (e) { return { ok: false, detalle: e.message || "sin respuesta de Green API" }; }
+}
 const TZ = "America/Santiago";
 const CAS = "local v=redis.call('GET',KEYS[1]) if (v==false and ARGV[1]=='') or v==ARGV[1] then redis.call('SET',KEYS[1],ARGV[2]) return 1 end return 0";
 
@@ -100,8 +112,12 @@ async function enviarWhatsApp(cuenta, texto) {
     return { ok: r.ok && !/(invalid|incorrect|wrong|error|not activated|apikey is not|not connected|expired|disconnected)/i.test(t), detalle: t };
   } catch (e) { return { ok: false, detalle: e.message || "sin respuesta de CallMeBot" }; }
 }
-async function avisar(av, st, cuentas, tokens, base) {
+async function avisar(av, st, cuentas, tokens, base, cfg) {
   if (!av) return null;
+  if (MODO === "greenapi") {             // al grupo: nunca el link personal, solo la dirección de la página
+    const r = await enviarGrupo(cfg, textoAviso(st, av, base + "/"));
+    return { p: av.p, tipo: av.tipo, ok: r.ok, detalle: r.detalle };
+  }
   const link = base + "/?d=" + (tokens[av.p] || "");
   const r = await enviarWhatsApp(cuentas[av.p], textoAviso(st, av, link));
   return { p: av.p, tipo: av.tipo, ok: r.ok, detalle: r.detalle };
@@ -210,7 +226,7 @@ module.exports = async (req, res) => {
             const ahora = Date.now(), c = avanzar(st, ahora), av = decidirAviso(st, ahora, cfg, false);
             if (!c && !av) break;
             if (!(await guardar(id, raw, st))) continue;
-            if (av) envios.push(await avisar(av, st, cuentas, tokens, base));
+            if (av) envios.push(await avisar(av, st, cuentas, tokens, base, cfg));
             break;
           }
         }
@@ -223,13 +239,14 @@ module.exports = async (req, res) => {
       let st = vSt ? JSON.parse(vSt) : null, raw = vSt || "";
       const esAdmin = !!(ADMIN && q.k === ADMIN), yo = quien(tokens, q.k);
       const extra = esAdmin ? { tokens, avisos: Object.fromEntries(Object.keys(tokens).map(p => [p, cuentas[p] ? ocultar(cuentas[p].tel) : ""])), cfgAvisos: cfg, modoAvisos: MODO } : { modoAvisos: MODO };
+      extra.grupoAvisos = cfg.grupo ? cfg.grupo.nombre : null;
       if (yo) extra.misAvisos = cuentas[yo] ? { activo: true, tel: ocultar(cuentas[yo].tel) } : { activo: false };
       for (let i = 0; i < 3; i++) {
         if (i > 0) ({ st, raw } = await leer(id));
         if (!st) return res.status(200).json({ ok: true, d: null, yo, admin: esAdmin, ...extra });
         const ahora = Date.now(), c = avanzar(st, ahora), av = decidirAviso(st, ahora, cfg, false);
         if ((c || av) && !(await guardar(id, raw, st))) continue;
-        if (av) await avisar(av, st, cuentas, tokens, base);
+        if (av) await avisar(av, st, cuentas, tokens, base, cfg);
         return res.status(200).json({ ok: true, d: publico(st), yo, admin: esAdmin, ...extra });
       }
       return res.status(409).json({ ok: false, error: "Intenta de nuevo" });
@@ -239,6 +256,24 @@ module.exports = async (req, res) => {
       const esAdmin = !!(ADMIN && b.k === ADMIN);
       const tokens = await leerJSON(TK, {}), cuentas = await leerJSON(AV, {}), cfg = await config(), yo = quien(tokens, b.k);
       const extra = esAdmin ? { tokens, avisos: Object.fromEntries(Object.keys(tokens).map(p => [p, cuentas[p] ? ocultar(cuentas[p].tel) : ""])), cfgAvisos: cfg, modoAvisos: MODO } : { modoAvisos: MODO };
+      extra.grupoAvisos = cfg.grupo ? cfg.grupo.nombre : null;
+      // ----- grupo de WhatsApp (Green API) -----
+      if (b.accion === "grupos" || b.accion === "grupo_set") {
+        if (!esAdmin) return res.status(403).json({ ok: false, error: "Solo el administrador puede hacer esto" });
+        if (MODO !== "greenapi") return res.status(400).json({ ok: false, error: "Green API no está configurado en Vercel (faltan GREENAPI_ID y GREENAPI_TOKEN)" });
+        if (b.accion === "grupos") {
+          let estado = "";
+          try { estado = ((await (await fetch(gaUrl("getStateInstance"), { signal: AbortSignal.timeout(9000) })).json()) || {}).stateInstance || ""; } catch (e) {}
+          const r = await fetch(gaUrl("getContacts"), { signal: AbortSignal.timeout(12000) });
+          const lista = await r.json().catch(() => []);
+          const grupos = (Array.isArray(lista) ? lista : []).filter(c => String(c.id || "").endsWith("@g.us")).map(c => ({ id: c.id, nombre: c.name || c.contactName || c.id }));
+          return res.status(200).json({ ok: true, admin: true, ...extra, grupos, estadoGreen: estado });
+        }
+        const id = String(b.id || ""); if (!id.endsWith("@g.us")) return res.status(400).json({ ok: false, error: "Elige un grupo de la lista" });
+        cfg.grupo = { id, nombre: String(b.nombre || id).slice(0, 80) }; await guardarJSON(AVC, cfg);
+        const prueba = await enviarGrupo(cfg, "✅ Este grupo recibirá los avisos de turno del draft de Distinguidos Tour.");
+        return res.status(200).json({ ok: true, admin: true, ...extra, cfgAvisos: cfg, grupoAvisos: cfg.grupo.nombre, prueba });
+      }
       // ----- links permanentes -----
       if (b.accion === "links" || b.accion === "nuevo_link") {
         if (!esAdmin) return res.status(403).json({ ok: false, error: "Solo el administrador puede hacer esto" });
@@ -284,7 +319,7 @@ module.exports = async (req, res) => {
       }
       if (b.accion === "avisos_cfg") {
         if (!esAdmin) return res.status(403).json({ ok: false, error: "Solo el administrador puede hacer esto" });
-        const n = { cada: Math.min(Math.max(+b.cada || 30, 0.05), 720), desde: Math.min(Math.max(+b.desde || 0, 0), 23), hasta: Math.min(Math.max(+b.hasta || 0, 0), 23) };
+        const n = { ...cfg, cada: Math.min(Math.max(+b.cada || 30, 0.05), 720), desde: Math.min(Math.max(+b.desde || 0, 0), 23), hasta: Math.min(Math.max(+b.hasta || 0, 0), 23) };
         await guardarJSON(AVC, n);
         return res.status(200).json({ ok: true, admin: true, ...extra, cfgAvisos: n });
       }
@@ -311,7 +346,7 @@ module.exports = async (req, res) => {
         }
         if (await guardar(id, raw, nuevo)) {
           if (!st) await redis(["SADD", "drafts", id]);
-          const envio = av ? await avisar(av, nuevo, cuentas, tokens, base) : null;
+          const envio = av ? await avisar(av, nuevo, cuentas, tokens, base, cfg) : null;
           return res.status(200).json({ ok: true, d: publico(nuevo), yo, admin: esAdmin, ...extra, envio });
         }
       }

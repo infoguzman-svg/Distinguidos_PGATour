@@ -848,7 +848,7 @@ let DRAFTS={},DR={id:null,d:null,yo:null,admin:false,err:"",msg:"",filtro:"",tod
 function aplicarDrafts(){if(!D)return;D.torneos.forEach(t=>{const s=DRAFTS[t.id];if(s)t.sel=Object.assign({},t.sel,s);});memo={};}
 async function cargarDrafts(){try{const r=await fetch(DRAFT_URL+"?todos=1");const j=await r.json();if(j.ok){DRAFTS=j.drafts||{};aplicarDrafts();}}catch(e){}}
 function selDe(d){const s={};(d.picks||[]).forEach(x=>(s[x.p]=s[x.p]||[]).push(x.j));return s;}
-function drRecibir(j){if("d" in j)DR.d=j.d;if(j.yo!==undefined)DR.yo=j.yo;if(j.admin!==undefined)DR.admin=!!j.admin;if(j.tokens)DR.tokens=j.tokens;if(j.avisos)DR.avisos=j.avisos;if(j.cfgAvisos)DR.cfgAvisos=j.cfgAvisos;if(j.misAvisos)DR.misAvisos=j.misAvisos;if(j.modoAvisos)DR.modoAvisos=j.modoAvisos;DR.err="";if(DR.admin&&D&&DR.tokens&&!DR.pidioLinks&&D.participantes.some(p=>!DR.tokens[p])){DR.pidioLinks=true;setTimeout(()=>drPost({accion:"links",participantes:D.participantes}),0);}if(j.d){DR.skew=(j.d.ahora||Date.now())-Date.now();DRAFTS[DR.id]=selDe(j.d);aplicarDrafts();}}
+function drRecibir(j){if("d" in j)DR.d=j.d;if(j.yo!==undefined)DR.yo=j.yo;if(j.admin!==undefined)DR.admin=!!j.admin;if(j.tokens)DR.tokens=j.tokens;if(j.avisos)DR.avisos=j.avisos;if(j.cfgAvisos)DR.cfgAvisos=j.cfgAvisos;if(j.misAvisos)DR.misAvisos=j.misAvisos;if(j.modoAvisos)DR.modoAvisos=j.modoAvisos;if(j.grupoAvisos!==undefined)DR.grupoAvisos=j.grupoAvisos;if(j.grupos)DR.grupos=j.grupos;if(j.estadoGreen!==undefined)DR.estadoGreen=j.estadoGreen;DR.err="";if(DR.admin&&D&&DR.tokens&&!DR.pidioLinks&&D.participantes.some(p=>!DR.tokens[p])){DR.pidioLinks=true;setTimeout(()=>drPost({accion:"links",participantes:D.participantes}),0);}if(j.d){DR.skew=(j.d.ahora||Date.now())-Date.now();DRAFTS[DR.id]=selDe(j.d);aplicarDrafts();}}
 async function drCargar(){
   if(!D)return;DR.id=DR.id||elegir();
   let firma=DR.firma;
@@ -865,7 +865,9 @@ async function drCargar(){
 async function drPost(o){
   try{const r=await fetch(DRAFT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(Object.assign({t:DR.id,k:DADM||DTK||""},o))});const j=await r.json();if(!j.ok)throw new Error(j.error);drRecibir(j);DR.msg=o.msg||"";
     if(j.envio&&DR.admin)DR.msg=(DR.msg?DR.msg+" · ":"")+(j.envio.ok?"🔔 Aviso por WhatsApp enviado a "+j.envio.p:"No se pudo enviar el aviso a "+j.envio.p+" ("+j.envio.detalle+")");
-    if(j.prueba&&o.accion==="avisos_tel")DR.msg=j.prueba.ok?"📲 Número guardado para "+o.p+": le enviamos un WhatsApp de prueba.":"Número guardado para "+o.p+", pero el envío de prueba respondió: “"+j.prueba.detalle+"”.";
+    if(o.accion==="grupos")DR.msg=(j.grupos||[]).length?"Encontré "+j.grupos.length+" grupo(s) de WhatsApp: elige el del draft.":"No encontré grupos. Revisa que tu WhatsApp esté conectado en Green API y que pertenezcas al grupo.";
+    if(j.prueba&&o.accion==="grupo_set")DR.msg=j.prueba.ok?"📲 Grupo «"+o.nombre+"» conectado: enviamos un mensaje de prueba al grupo.":"Grupo guardado, pero el envío de prueba respondió: “"+j.prueba.detalle+"”.";
+    else if(j.prueba&&o.accion==="avisos_tel")DR.msg=j.prueba.ok?"📲 Número guardado para "+o.p+": le enviamos un WhatsApp de prueba.":"Número guardado para "+o.p+", pero el envío de prueba respondió: “"+j.prueba.detalle+"”.";
     else if(j.prueba)DR.msg=j.prueba.ok?"🔔 Avisos activados: te enviamos un mensaje de prueba por WhatsApp.":"Tus datos quedaron guardados, pero el envío de prueba respondió: “"+j.prueba.detalle+"”. Revisa el número.";}
   catch(e){DR.err=e.message||"No se pudo conectar con el draft";DR.msg="";}
   DR.firma="";DR.msgT=Date.now();renderDraft();
@@ -902,6 +904,7 @@ function drFormCrear(t){
 const CMB_NUM="+34 623 78 64 49";
 function drAvisos(){
   if(!DR.yo)return"";const m=DR.misAvisos||{};
+  if(DR.modoAvisos==="greenapi")return `<div class="card dr-adm"><h4>🔔 Avisos de turno</h4><p>${DR.grupoAvisos?`Los avisos llegan al grupo de WhatsApp <b>${esc(DR.grupoAvisos)}</b>: ahí verás cuando sea tu turno.`:"El administrador está configurando el grupo de WhatsApp para los avisos."} Para elegir, entra a esta página desde tu celular (tu link ya quedó guardado).</p></div>`;
   if(!m.activo&&DR.modoAvisos==="textmebot")return `<div class="card dr-adm"><h4>🔔 Activa tus avisos por WhatsApp</h4><p class="hint">Escribe tu celular y pulsa Activar: te llegará un WhatsApp de prueba desde el número del administrador. Después te avisaremos cuando sea tu turno.</p>
   <div class="dr-btns"><input id="avTel" placeholder="+56912345678" value="${esc(DR.avTel||"")}" style="width:170px"><button data-avreg="1" class="dr-pri">Activar avisos</button></div></div>`;
   if(m.activo)return `<div class="card dr-adm"><h4>🔔 Avisos por WhatsApp: activados</h4><p>Te avisaremos al número ${esc(m.tel)} cuando sea tu turno, y te recordaremos mientras no elijas.</p><div class="dr-btns"><button data-avquitar="1">Desactivar avisos</button></div></div>`;
@@ -916,9 +919,13 @@ function drLinks(){
   const c=DR.cfgAvisos||{cada:30,desde:23,hasta:8};
   return `<h4>Avisos automáticos por WhatsApp</h4><p class="hint">Se avisa al participante cuando empieza su turno y se le recuerda cada cierto tiempo mientras no elija, salvo en el horario de silencio (hora de Chile). Cada uno activa sus avisos desde su link.</p>
   <div class="dr-btns"><label>Recordar cada <input type="number" id="avCada" min="5" value="${c.cada}" style="width:70px"> min</label><label>Silencio de <input type="number" id="avDesde" min="0" max="23" value="${c.desde}" style="width:60px"> a <input type="number" id="avHasta" min="0" max="23" value="${c.hasta}" style="width:60px"> h</label><button data-avcfg="1">Guardar</button></div>
+  ${DR.modoAvisos==="greenapi"?`<h4>Grupo de WhatsApp para los avisos (Green API)</h4><p class="hint">Los avisos de turno y los recordatorios llegan a un solo grupo (el plan gratis de Green API admite 3 chats y un grupo cuenta como uno). En el grupo nunca se envían los links personales, solo la dirección de la página.</p>
+  <p>${DR.grupoAvisos?`Grupo actual: <b>${esc(DR.grupoAvisos)}</b>`:`<span class="dr-tag rojo">Aún no eliges el grupo</span>`}${DR.estadoGreen?` · WhatsApp en Green API: ${DR.estadoGreen==="authorized"?"✅ conectado":"⚠️ "+esc(DR.estadoGreen)}`:""}</p>
+  <div class="dr-btns"><button data-grupos="1">🔎 Buscar mis grupos</button></div>
+  ${(DR.grupos||[]).map(g=>`<div class="dr-link"><span class="who">👥 ${esc(g.nombre)}</span><button data-gid="${esc(g.id)}" data-gnom="${esc(g.nombre)}">Usar este grupo</button></div>`).join("")}`:""}
   ${DR.modoAvisos==="textmebot"?`<h4>Números para los avisos (TextMeBot)</h4><p class="hint">Los avisos salen desde tu WhatsApp conectado a TextMeBot. Escribe el celular de cada uno con código de país; al guardar le llega un WhatsApp de prueba. También pueden inscribirse ellos desde su link.</p>`+D.participantes.map((p,i)=>`<div class="dr-link"><span class="who">${avDe(p)}${esc(p)}</span><input id="avt${i}" placeholder="${esc((DR.avisos||{})[p]?"actual: "+DR.avisos[p]:"+56912345678")}"><button data-avtel="${esc(p)}" data-i="${i}">Guardar y probar</button>${(DR.avisos||{})[p]?`<button data-avtelx="${esc(p)}">Quitar</button>`:""}</div>`).join(""):""}
   <h4>Links personales (permanentes)</h4><p class="hint">Cada participante tiene un solo link para toda la temporada: sirve en todos los drafts y lo puede guardar en favoritos. Si pasa algo, usa “Cambiar link”: el anterior deja de funcionar al instante.</p>`+D.participantes.map(p=>{const t=tk[p],L=t?base+"?d="+t:"";
-    const avi=DR.avisos?(DR.avisos[p]?`<span class="dr-tag">🔔 ${esc(DR.avisos[p])}</span>`:'<span class="dr-tag rojo">🔕 sin avisos</span>'):"";
+    const avi=DR.avisos&&DR.modoAvisos!=="greenapi"?(DR.avisos[p]?`<span class="dr-tag">🔔 ${esc(DR.avisos[p])}</span>`:'<span class="dr-tag rojo">🔕 sin avisos</span>'):"";
     return `<div class="dr-link"><span class="who">${avDe(p)}${esc(p)} ${avi}</span>${t?`<input readonly value="${esc(L)}"><button data-copy="${esc(L)}">Copiar</button><a target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("🐍 Distinguidos Tour · "+p+", este es tu link personal para los drafts de la temporada (guárdalo en favoritos): "+L)}">WhatsApp</a><button data-nuevolink="${esc(p)}">🔄 Cambiar link</button>`:`<span class="hint">generando…</span>`}</div>`;}).join("");
 }
 function drPanelAdmin(d){
@@ -999,6 +1006,8 @@ function iniciarDraftUI(){
     else if(s.avcfg)drPost({accion:"avisos_cfg",cada:+$("avCada").value,desde:+$("avDesde").value,hasta:+$("avHasta").value,msg:"Configuración de avisos guardada"});
     else if(s.avtel){const v=$("avt"+s.i).value.trim();if(!v){DR.err="Escribe el número de "+s.avtel;renderDraft();return;}drPost({accion:"avisos_tel",p:s.avtel,tel:v});}
     else if(s.avtelx){if(!confirm("¿Quitar el número de "+s.avtelx+"? Dejará de recibir avisos."))return;drPost({accion:"avisos_tel",p:s.avtelx,tel:"",msg:"Número de "+s.avtelx+" quitado"});}
+    else if(s.grupos){DR.grupos=null;drPost({accion:"grupos"});}
+    else if(s.gid){if(!confirm("¿Enviar los avisos del draft al grupo «"+s.gnom+"»? Se enviará un mensaje de prueba."))return;DR.grupos=null;drPost({accion:"grupo_set",id:s.gid,nombre:s.gnom});}
     else if(s.todos){DR.todos=true;drPintarLista();}
     else if(s.salir){e.preventDefault();localStorage.removeItem("dt_admin");DADM=null;DR.admin=false;DR.firma="";drCargar();}
   });

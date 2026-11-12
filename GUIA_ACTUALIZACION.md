@@ -91,13 +91,14 @@ Cada participante elige sus jugadores desde la página con su **link personal**,
 7. Pasada la fecha límite, cada turno tiene 10 minutos; si alguien no elige, pasa al siguiente y después puede elegir lo que le falta (“acá estoy”). Al final puedes usar **Sorteo final** para completar al azar a quien no eligió.
 8. Botones del administrador: Pausar, Saltar turno, Deshacer, Resetear (por ejemplo si se retira una primera elección, Art. 11) y Borrar.
 
-**Avisos por WhatsApp (TextMeBot, desde tu propio WhatsApp):**
-- Una sola vez: en Vercel, *Settings → Environment Variables*, crea `TEXTMEBOT_APIKEY` con la APIKEY de tu cuenta de TextMeBot (márcala Sensitive, en Production y Preview) y vuelve a publicar. Tu WhatsApp debe seguir conectado a TextMeBot (dispositivo vinculado).
-- En tu panel de 🐍 Draft, sección **Números para los avisos**, escribe el celular de cada uno (+569…) y pulsa **Guardar y probar**: le llega un WhatsApp de prueba desde tu número. También pueden inscribirse ellos desde su link.
-- Al empezar su turno le llega “🐍 te toca elegir” con su link, y un recordatorio cada 30 minutos mientras no elija (configurable), salvo en el horario de silencio (por defecto de 23 a 8, hora de Chile).
-- Los recordatorios los dispara `.github/workflows/avisos.yml` cada 10 minutos (GitHub puede atrasarse unos minutos).
-- Siempre tienes en tu panel el aviso **manual** por WhatsApp y el botón **🔔 Enviar aviso automático** para forzarlo.
-- Si no existe `TEXTMEBOT_APIKEY`, el sistema vuelve al modo CallMeBot (cada participante con su propia APIKEY).
+**Avisos por WhatsApp a un grupo (Green API, gratis):**
+- Una sola vez en Green API: crea una cuenta en console.green-api.com, crea una instancia del plan gratuito **Developer** y vincula un WhatsApp escaneando el QR (como WhatsApp Web). Ese WhatsApp debe estar en el grupo del draft.
+- En Vercel, *Settings → Environment Variables*, crea (Sensitive, en Production y Preview) `GREENAPI_URL` (el apiUrl de la consola, por ejemplo https://7103.api.greenapi.com), `GREENAPI_ID` (idInstance) y `GREENAPI_TOKEN` (apiTokenInstance). Vuelve a publicar.
+- En tu panel de 🐍 Draft, sección **Grupo de WhatsApp para los avisos**, pulsa **Buscar mis grupos** y elige el grupo: llega un mensaje de prueba.
+- Al empezar cada turno llega al grupo “🐍 Pedro, ¡te toca elegir!”, y un recordatorio cada 30 minutos mientras no elija (configurable), salvo en el horario de silencio (por defecto de 23 a 8, hora de Chile). En el grupo nunca se envían los links personales.
+- El plan gratuito permite 3 chats por mes: el grupo cuenta como uno. Los recordatorios los dispara `.github/workflows/avisos.yml` cada 10 minutos.
+- Siempre tienes en tu panel el aviso **manual** por WhatsApp y el botón **🔔 Enviar aviso automático**.
+- Si Green API no está configurado, el sistema usa TextMeBot (variable `TEXTMEBOT_APIKEY`, mensajes privados) o CallMeBot.
 
 Los nombres de la lista deben coincidir con los del leaderboard para que lleguen las posiciones (las tildes no importan).
 
