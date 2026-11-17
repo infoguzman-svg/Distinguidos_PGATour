@@ -128,7 +128,7 @@
    2
   ]
  },
- "actual": "austin-championship",
+ "actual": "the-rsm-classic",
  "torneos": [
   {
    "id": "sony-open",
@@ -1314,6 +1314,15 @@
     "José Miguel": [],
     "Benjamín": []
    }
+  },
+  {
+   "id": "the-rsm-classic",
+   "n": "The RSM Classic",
+   "c": "Top 2",
+   "ini": "2026-11-19",
+   "fin": "2026-11-22",
+   "m": "Nov",
+   "sel": {}
   }
  ]
 }
