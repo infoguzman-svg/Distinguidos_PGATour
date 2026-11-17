@@ -328,9 +328,9 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
 <h2>Art. 10 · Turnos y ausencias</h2>
 <ul>
 <li><p><strong>Contingencia.</strong> Un participante con una contingencia puede pedir a otro integrante que haga su elección, dentro de los mismos tiempos acordados.</p></li>
-<li><p><strong>Turno perdido.</strong> Nadie elige por el ausente: no se eligen jugadores al azar ni se escogen los siguientes mejor pagados en apuestas. Si en lead time un participante no elige dentro de sus 10 minutos, el turno pasa al siguiente; si pasan otros 10 minutos sin elección, pasa al siguiente, y así sucesivamente.</p></li>
-<li><p><strong>Regreso.</strong> Cuando el participante ausente vuelve, avisa (“acá estoy”) y elige los jugadores que le falten, a continuación de la última elección ya registrada, entre los jugadores que queden en la grilla en ese momento. Si nadie había elegido nada mientras tanto, puede elegir de inmediato.</p></li>
-<li><p><strong>Sorteo final.</strong> Si al terminar todos los demás participantes aún no completa su lista, se le asignan al azar jugadores de los que queden en la grilla.</p></li>
+<li><p><strong>Turno perdido.</strong> Mientras el draft está en curso, nadie elige por el ausente. Si en lead time un participante no elige dentro de sus 10 minutos, pierde su turno y este pasa al siguiente; si pasan otros 10 minutos sin elección, pasa al siguiente, y así sucesivamente.</p></li>
+<li><p><strong>Regreso.</strong> Cuando el participante ausente vuelve, avisa (“acá estoy”) y elige los jugadores que le falten, entre los que queden en la grilla en ese momento. Al participante que esté eligiendo en ese momento se le renuevan sus 10 minutos. Si hay varios pendientes, elige primero el que conteste primero.</p></li>
+<li><p><strong>Cierre automático.</strong> Al vencer el plazo del último turno, a quien aún no complete su lista se le asignan automáticamente los jugadores mejor cotizados que queden disponibles, de a uno y en el orden del draft, y el draft se cierra.</p></li>
 </ul>
 <h2>Art. 11 · Retiro de una primera elección durante el draft</h2>
 <p>Si, mientras el draft no ha terminado, se retira del torneo por lesión u otra razón <strong>uno de los jugadores elegidos en la primera elección de cualquiera de los 6 participantes</strong>, el draft completo se <strong>resetea</strong> y comienza de nuevo desde el inicio.</p>
@@ -933,7 +933,7 @@ function drLinks(){
 function drPanelAdmin(d){
   if(!DR.admin)return"";
   const base=location.origin+location.pathname,e=d.estado,tn=(get(DR.id)||{}).n||DR.id;
-  const btn=[e==="preparando"&&["iniciar","▶️ Iniciar draft"],e==="en curso"&&["pausar","⏸️ Pausar"],e==="pausado"&&["reanudar","▶️ Reanudar"],e==="en curso"&&["saltar","⏭️ Saltar turno"],d.puedeDeshacer&&["deshacer","↩️ Deshacer"],["sorteo","🎲 Sorteo final"],["resetear","🔄 Resetear draft"],["borrar","🗑️ Borrar draft"]].filter(Boolean);
+  const btn=[e==="preparando"&&["iniciar","▶️ Iniciar draft"],e==="en curso"&&["pausar","⏸️ Pausar"],e==="pausado"&&["reanudar","▶️ Reanudar"],e==="en curso"&&["saltar","⏭️ Saltar turno"],d.puedeDeshacer&&["deshacer","↩️ Deshacer"],["sorteo","⚡ Completar y cerrar"],["resetear","🔄 Resetear draft"],["borrar","🗑️ Borrar draft"]].filter(Boolean);
   let h=`<h2>🛠️ Panel del administrador</h2><div class="card dr-adm"><div class="dr-btns">${btn.map(([a,t])=>`<button data-adm="${a}"${a==="iniciar"?' class="dr-pri"':""}>${t}</button>`).join("")}</div>`;
   if(d.actual&&e==="en curso")h+=`<div class="dr-btns"><button data-adm="avisar">🔔 Enviar aviso automático a ${esc(d.actual.p)}</button></div>`;
   if(d.actual&&e==="en curso")h+=`<p><a class="dr-wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("🐍 Draft "+tn+": "+d.actual.p+", te toca elegir (ronda "+(d.actual.r+1)+"). Entra con tu link personal.")}">📣 Avisar a ${esc(d.actual.p)} por WhatsApp (manual, lo envías tú)</a></p>`;
@@ -976,7 +976,7 @@ function renderDraft(){
     h+=`<tr><td class="drr">${r+1} ${r%2?"←":"→"}</td>`+d.orden.map(p=>{
       const mios=(d.picks||[]).filter(y=>y.p===p),x=mios[r],n=mios.length;
       const esAct=act&&d.estado==="en curso"&&act.p===p&&n===r;
-      return `<td class="${esAct?"dr-act":""}">${x?`<b>${esc(x.j)}</b>${x.tarde?' <span class="dr-tag">tarde</span>':""}${x.azar?' <span class="dr-tag">azar</span>':""}`:(esAct?"⏳ eligiendo…":(d.pend[p]&&n===r?'<span class="dr-tag rojo">perdió turno</span>':"·"))}</td>`;}).join("")+"</tr>";
+      return `<td class="${esAct?"dr-act":""}">${x?`<b>${esc(x.j)}</b>${x.tarde?' <span class="dr-tag">tarde</span>':""}${x.azar?' <span class="dr-tag">azar</span>':""}${x.auto?' <span class="dr-tag">auto</span>':""}`:(esAct?"⏳ eligiendo…":(d.pend[p]&&n===r?'<span class="dr-tag rojo">perdió turno</span>':"·"))}</td>`;}).join("")+"</tr>";
   }
   h+=`</tbody></table></div>`;
   h+=drAvisos();
@@ -990,7 +990,7 @@ function iniciarDraftUI(){
   $("draft").addEventListener("click",e=>{
     const b=e.target.closest("button,a[data-salir]");if(!b)return;const s=b.dataset;
     if(s.pick){const como=DR.admin&&$("drComo")?$("drComo").value:undefined;if(!confirm("¿Confirmas a "+s.pick+(como?" para "+como:"")+"?"))return;drPost({accion:"elegir",j:s.pick,como,msg:(como||"Elegiste")+(como?" eligió a ":" a ")+s.pick});}
-    else if(s.adm){const a=s.adm,q={resetear:"¿Resetear el draft? Se borran todas las elecciones.",borrar:"¿Borrar el draft completo, con sus links?",sorteo:"¿Asignar al azar los turnos pendientes?"};if(q[a]&&!confirm(q[a]))return;drPost({accion:a,msg:({iniciar:"Draft iniciado",pausar:"Draft en pausa",reanudar:"Draft reanudado",saltar:"Turno saltado",deshacer:"Se deshizo la última acción",sorteo:"Sorteo final aplicado",resetear:"Draft reseteado",borrar:"Draft borrado",avisar:""})[a]});}
+    else if(s.adm){const a=s.adm,q={resetear:"¿Resetear el draft? Se borran todas las elecciones.",borrar:"¿Borrar el draft completo, con sus links?",sorteo:"¿Completar ahora los casilleros vacíos con los mejor cotizados disponibles y cerrar el draft?"};if(q[a]&&!confirm(q[a]))return;drPost({accion:a,msg:({iniciar:"Draft iniciado",pausar:"Draft en pausa",reanudar:"Draft reanudado",saltar:"Turno saltado",deshacer:"Se deshizo la última acción",sorteo:"Draft completado con los mejor cotizados disponibles",resetear:"Draft reseteado",borrar:"Draft borrado",avisar:""})[a]});}
     else if(s.copy){try{navigator.clipboard.writeText(s.copy).catch(()=>{});b.textContent="¡Copiado!";}catch(err){}}
     else if(s.pool){const L=parsePool($("drPool").value);if(!L.length){DR.err="No encontré jugadores en el texto pegado";renderDraft();return;}DR.poolTxt="";const con=L.filter(x=>x.o).length;drPost({accion:"pool",jugadores:L,msg:"Lista cargada: "+L.length+" jugadores ("+con+" con cuota)"});}
     else if(s.espn){const ta=$("drPool"),msg=$("drPoolMsg");msg.textContent="Consultando ESPN…";

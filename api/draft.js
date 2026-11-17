@@ -62,10 +62,34 @@ function avanzar(st, ahora) {
     if (ahora < vence) break;
     const p = st.slots[st.ptr].p;
     st.pend[p] = (st.pend[p] || 0) + 1; st.ptr++; st.turnoDesde = vence; cambio = true;
+    if (st.ptr >= st.slots.length) st.cierreAt = vence;
     st.log.push({ t: vence, tipo: "pierde turno", p });
+    (st.eventos = st.eventos || []).push({ tipo: "pierde", p });
+  }
+  // lead time: al terminar el plazo del último turno, los casilleros vacíos se completan solos y el draft se cierra
+  if (st.ptr >= st.slots.length && lim && ahora >= lim && Object.values(st.pend || {}).some(n => n > 0) && ahora >= (st.cierreAt || 0)) {
+    autocompletar(st, ahora); cambio = true;
   }
   if (cerrar(st)) cambio = true;
   return cambio;
+}
+// Completa a cada participante pendiente con los mejor cotizados aún disponibles (la lista está ordenada de mejor a peor),
+// repartiendo de a uno en el orden del draft para que sea parejo.
+function autocompletar(st, ahora) {
+  const libres = st.pool.filter(x => !tomados(st).has(norm(x.n)));
+  let hubo = true;
+  while (hubo && libres.length) {
+    hubo = false;
+    for (const p of st.orden) {
+      if ((st.pend[p] || 0) > 0 && cuantos(st, p) < st.rondas && libres.length) {
+        const j = libres.shift();
+        st.picks.push({ p, j: j.n, r: null, auto: true, t: ahora }); st.pend[p]--;
+        (st.eventos = st.eventos || []).push({ tipo: "auto", p, j: j.n }); hubo = true;
+      }
+    }
+  }
+  Object.keys(st.pend || {}).forEach(p => st.pend[p] = 0);
+  st.log.push({ t: ahora, tipo: "completado automático" });
 }
 function cerrar(st) {
   if (st.estado === "en curso" && st.ptr >= st.slots.length && !Object.values(st.pend).some(Boolean)) { st.estado = "terminado"; return true; }
@@ -86,20 +110,51 @@ function enSilencio(ahora, cfg) {
   return cfg.desde > cfg.hasta ? (h >= cfg.desde || h < cfg.hasta) : (h >= cfg.desde && h < cfg.hasta);
 }
 // Decide si corresponde avisar al participante de turno: al empezar su turno, y luego cada "cada" minutos (fuera del horario de silencio)
+const enLead = (st, ahora) => { const lim = st.limite ? Date.parse(st.limite) : null; return !!(lim && ahora >= lim); };
+const pendientes = st => Object.entries(st.pend || {}).filter(([, n]) => n > 0);
+// Decide si corresponde avisar: al empezar cada turno y luego cada "cada" minutos.
+// En lead time (desde la fecha límite) es urgente: se avisa cada turno de 10 min, aunque sea horario de silencio.
 function decidirAviso(st, ahora, cfg, forzar) {
-  if (st.estado !== "en curso" || st.ptr >= st.slots.length) return null;
-  if (!forzar && enSilencio(ahora, cfg)) return null;
-  const a = st.aviso || {}, nuevo = a.ptr !== st.ptr;
-  if (!forzar && !nuevo && ahora - (a.t || 0) < cfg.cada * 60000) return null;
-  st.aviso = { ptr: st.ptr, t: ahora, n: nuevo ? 1 : (a.n || 0) + 1 };
-  return { p: st.slots[st.ptr].p, r: st.slots[st.ptr].r, tipo: nuevo ? "turno" : "recordatorio" };
+  const urgente = enLead(st, ahora), ev = st.eventos || [];
+  if (st.estado === "terminado" && !st.avisoFin && st.picks.length) { st.avisoFin = true; st.eventos = []; return { tipo: "fin", eventos: ev, urgente }; }
+  if (st.estado !== "en curso") return null;
+  if (st.ptr >= st.slots.length) {               // pasaron todos los turnos pero hay pendientes
+    if (!ev.length) return null;
+    st.eventos = []; return { tipo: "pendientes", eventos: ev, urgente };
+  }
+  if (!forzar && !urgente && enSilencio(ahora, cfg)) return null;
+  const a = st.aviso || {}, nuevo = a.ptr !== st.ptr || !!st.avisoForzar;
+  const cada = urgente ? st.lead : cfg.cada;
+  if (!forzar && !nuevo && ahora - (a.t || 0) < cada * 60000) return null;
+  const renueva = !!st.avisoForzar && a.ptr === st.ptr;
+  st.aviso = { ptr: st.ptr, t: ahora, n: nuevo ? 1 : (a.n || 0) + 1 }; st.avisoForzar = false; st.eventos = [];
+  return { p: st.slots[st.ptr].p, r: st.slots[st.ptr].r, tipo: nuevo ? (renueva ? "renueva" : "turno") : "recordatorio", eventos: ev, urgente };
 }
 function textoAviso(st, av, link) {
-  const lim = st.limite ? Date.parse(st.limite) : null, vence = vencimiento(st);
-  let t = av.tipo === "turno" ? `🐍 *Draft ${st.n}*\n${av.p}, ¡te toca elegir! (ronda ${av.r + 1})` : `⏰ *Recordatorio · Draft ${st.n}*\n${av.p}, sigue siendo tu turno (ronda ${av.r + 1}).`;
-  if (vence) t += `\n⏱️ Tienes hasta las ${horaCL(vence)} (hora de Chile).`;
-  else if (lim && Date.now() < lim) t += `\n🗓️ Fecha límite: ${horaCL(lim, { weekday: "short", day: "2-digit", month: "2-digit" })}.`;
-  return t + `\n👉 ${link}`;
+  const lim = st.limite ? Date.parse(st.limite) : null, vence = vencimiento(st), pend = pendientes(st);
+  const lineas = [];
+  for (const e of av.eventos || []) {
+    if (e.tipo === "pierde") lineas.push(`⛔ *${e.p}* no eligió a tiempo y pierde su turno.`);
+    if (e.tipo === "tarde") lineas.push(`✅ *${e.p}* volvió (acá estoy) y eligió a *${e.j}*.`);
+    if (e.tipo === "auto") lineas.push(`🤖 A *${e.p}* se le asignó automáticamente a *${e.j}* (mejor cotizado disponible).`);
+  }
+  if (av.tipo === "fin") return [...lineas, `🏁 *Draft ${st.n} terminado.* Las alineaciones ya están en la página.`, `👉 ${link}`].join("\n");
+  if (av.tipo === "pendientes") return [...lineas, `⛔ *Draft ${st.n}:* pasaron todos los turnos.`,
+    `Pendientes por elegir: ${pend.map(([p, n]) => `*${p}* (${n})`).join(", ")}. Pueden elegir apenas entren (acá estoy); el primero que conteste, elige primero.`,
+    ...(st.cierreAt && enLead(st, Date.now()) ? [`⏱️ Hasta las *${horaCL(st.cierreAt)}*; después se completa automáticamente con los mejor cotizados disponibles y el draft se cierra.`] : []), `👉 ${link}`].join("\n");
+  if (av.urgente) {
+    if (av.tipo === "renueva") lineas.push(`🔄 *${av.p}*, se renuevan tus ${Math.round(st.lead)} minutos.`);
+    else lineas.push(`🚨🔴 *LEAD TIME · Draft ${st.n}*`, av.tipo === "recordatorio" ? `*${av.p}*, ¡sigue siendo tu turno! (ronda ${av.r + 1})` : `*${av.p}*, ¡te toca! (ronda ${av.r + 1})`);
+    if (vence) lineas.push(`⏱️ Tienes *${st.lead >= 1 ? Math.round(st.lead) + " minutos" : "unos segundos"}*, hasta las *${horaCL(vence)}*, o tu turno pasa al siguiente.`);
+  } else {
+    lineas.push(av.tipo === "recordatorio" ? `⏰ *Recordatorio · Draft ${st.n}*` : `🐍 *Draft ${st.n}*`,
+      av.tipo === "recordatorio" ? `${av.p}, sigue siendo tu turno (ronda ${av.r + 1}).` : `${av.p}, ¡te toca elegir! (ronda ${av.r + 1})`);
+    if (lim && Date.now() < lim) lineas.push(`🗓️ Fecha límite: ${horaCL(lim, { weekday: "short", day: "2-digit", month: "2-digit" })} (hora de Chile)`);
+  }
+  const otros = pend.filter(([p]) => p !== av.p);
+  if (av.urgente && otros.length) lineas.push(`⏳ Pendientes (pueden elegir apenas entren): ${otros.map(([p, n]) => `${p} (${n})`).join(", ")}.`);
+  lineas.push(`👉 ${link}`);
+  return lineas.join("\n");
 }
 async function enviarWhatsApp(cuenta, texto) {
   if (!cuenta) return { ok: false, detalle: "no tiene avisos activados" };
@@ -114,6 +169,11 @@ async function enviarWhatsApp(cuenta, texto) {
 }
 async function avisar(av, st, cuentas, tokens, base, cfg) {
   if (!av) return null;
+  if (!av.p) {                           // fin del draft o pendientes: solo tiene sentido en el grupo
+    if (MODO !== "greenapi") return null;
+    const r = await enviarGrupo(cfg, textoAviso(st, av, base + "/"));
+    return { p: "grupo", tipo: av.tipo, ok: r.ok, detalle: r.detalle };
+  }
   if (MODO === "greenapi") {             // al grupo: nunca el link personal, solo la dirección de la página
     const r = await enviarGrupo(cfg, textoAviso(st, av, base + "/"));
     return { p: av.p, tipo: av.tipo, ok: r.ok, detalle: r.detalle };
@@ -151,7 +211,7 @@ async function accion(b, st, esAdmin, yo) {
       return st;
     case "iniciar":
       soloAdmin(); if (!st.pool.length) throw new Error("Primero carga la lista de jugadores");
-      st.estado = "en curso"; st.turnoDesde = ahora; st.aviso = null; st.log.push({ t: ahora, tipo: "inicio" }); cerrar(st); return st;
+      st.estado = "en curso"; st.turnoDesde = ahora; st.aviso = null; st.eventos = []; st.avisoFin = false; st.avisoForzar = false; st.cierreAt = null; st.log.push({ t: ahora, tipo: "inicio" }); cerrar(st); return st;
     case "pausar": soloAdmin(); if (st.estado === "en curso") { st.estado = "pausado"; st.log.push({ t: ahora, tipo: "pausa" }); } return st;
     case "reanudar": soloAdmin(); if (st.estado === "pausado") { st.estado = "en curso"; st.turnoDesde = ahora; st.log.push({ t: ahora, tipo: "reanuda" }); } return st;
     case "elegir": {
@@ -165,23 +225,27 @@ async function accion(b, st, esAdmin, yo) {
       const suTurno = st.ptr < st.slots.length && st.slots[st.ptr].p === p;
       if (!suTurno && !(st.pend[p] > 0)) throw new Error("No es tu turno");
       respaldo(st);
-      if (suTurno) { st.picks.push({ p, j: j.n, r: st.slots[st.ptr].r, t: ahora }); st.ptr++; st.turnoDesde = ahora; }
-      else { st.picks.push({ p, j: j.n, r: null, tarde: true, t: ahora }); st.pend[p]--; }
+      if (suTurno) {
+        const limE = st.limite ? Date.parse(st.limite) : 0, inicio = Math.max(st.turnoDesde || 0, limE);
+        st.picks.push({ p, j: j.n, r: st.slots[st.ptr].r, t: ahora }); st.ptr++; st.turnoDesde = ahora;
+        if (st.ptr >= st.slots.length) {
+          st.cierreAt = inicio + st.lead * 60000;   // los pendientes pueden elegir hasta que habría vencido ese último turno
+          if (Object.values(st.pend || {}).some(n => n > 0)) (st.eventos = st.eventos || []).push({ tipo: "cierre" });
+        }
+      }
+      else {
+        st.picks.push({ p, j: j.n, r: null, tarde: true, t: ahora }); st.pend[p]--;
+        (st.eventos = st.eventos || []).push({ tipo: "tarde", p, j: j.n });
+        if (enLead(st, ahora) && st.ptr < st.slots.length) { st.turnoDesde = ahora; st.avisoForzar = true; }   // se renuevan los minutos del que está eligiendo
+      }
       st.log.push({ t: ahora, tipo: "elige", p, j: j.n }); cerrar(st); return st;
     }
     case "saltar":
       soloAdmin(); if (st.estado !== "en curso" || st.ptr >= st.slots.length) throw new Error("No hay turno que saltar");
-      respaldo(st); { const p = st.slots[st.ptr].p; st.pend[p] = (st.pend[p] || 0) + 1; st.ptr++; st.turnoDesde = ahora; st.log.push({ t: ahora, tipo: "salto", p }); }
+      respaldo(st); { const p = st.slots[st.ptr].p; st.pend[p] = (st.pend[p] || 0) + 1; st.ptr++; st.turnoDesde = ahora; st.log.push({ t: ahora, tipo: "salto", p }); (st.eventos = st.eventos || []).push({ tipo: "pierde", p }); if (st.ptr >= st.slots.length) st.cierreAt = ahora + st.lead * 60000; }
       cerrar(st); return st;
     case "sorteo": {
-      soloAdmin(); respaldo(st);
-      const libres = st.pool.filter(x => !tomados(st).has(norm(x.n)));
-      for (const p of st.orden) {
-        let falta = Math.min(st.pend[p] || 0, st.rondas - cuantos(st, p));
-        while (falta-- > 0 && libres.length) { const j = libres.splice(crypto.randomInt(libres.length), 1)[0]; st.picks.push({ p, j: j.n, r: null, azar: true, t: ahora }); }
-        st.pend[p] = 0;
-      }
-      st.log.push({ t: ahora, tipo: "sorteo final" }); cerrar(st); return st;
+      soloAdmin(); respaldo(st); autocompletar(st, ahora); cerrar(st); return st;
     }
     case "deshacer": {
       soloAdmin(); if (!st.hist || !st.hist.length) throw new Error("No hay nada que deshacer");
@@ -189,7 +253,7 @@ async function accion(b, st, esAdmin, yo) {
     }
     case "resetear":
       soloAdmin(); respaldo(st);
-      st.picks = []; st.ptr = 0; st.pend = {}; st.estado = "preparando"; st.turnoDesde = null; st.aviso = null; st.log.push({ t: ahora, tipo: "reseteo" }); return st;
+      st.picks = []; st.ptr = 0; st.pend = {}; st.estado = "preparando"; st.turnoDesde = null; st.aviso = null; st.eventos = []; st.avisoFin = false; st.avisoForzar = false; st.cierreAt = null; st.log.push({ t: ahora, tipo: "reseteo" }); return st;
     default: throw new Error("Acción desconocida");
   }
 }
