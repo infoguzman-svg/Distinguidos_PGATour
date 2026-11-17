@@ -78,7 +78,7 @@ for r in filas("Puestos manuales"):
 
 # --- Pagos (opcional): archivo aparte Pagos_AAAA.xlsx con Premios, Corte y Campeones manuales ---
 pagos = {"premios": {"Major": [15000, 5000], "Elite": [10000, 5000], "Top 1": [4000, 3000], "Top 2": [3000, 2000]},
-         "corte": {"cuota": 2000, "redondeo": 100}}
+         "corte": {"cuota": 2000, "redondeo": 100, "beneficencia": 2000}}
 archivos_pagos = sorted(RAIZ.glob("Pagos_*.xlsx"))
 if archivos_pagos:
     wp = openpyxl.load_workbook(archivos_pagos[-1], data_only=True)
@@ -94,12 +94,13 @@ if archivos_pagos:
             etiqueta, valor = txt(wp["Premios"].cell(fila, 5).value).lower(), wp["Premios"].cell(fila, 6).value
             if isinstance(valor, (int, float)) and "cuota" in etiqueta: pagos["corte"]["cuota"] = int(valor)
             if isinstance(valor, (int, float)) and "redondeo" in etiqueta: pagos["corte"]["redondeo"] = int(valor)
+            if isinstance(valor, (int, float)) and "benef" in etiqueta: pagos["corte"]["beneficencia"] = int(valor)
     por_id = {t["id"]: t for t in torneos}
     for r in filas_p("Corte"):
         t = por_id.get(slug(txt(r[0]))); rol = txt(r[2]).lower()
-        if not t or not txt(r[1]) or rol[:3] not in ("pag", "gan"):
+        if not t or not txt(r[1]) or rol[:3] not in ("pag", "gan", "ben"):
             print(f"ADVERTENCIA: fila de Corte no reconocida: {txt(r[0])} / {txt(r[1])} / {rol}"); continue
-        t.setdefault("corte", {"pagan": [], "ganan": []})["pagan" if rol.startswith("pag") else "ganan"].append(txt(r[1]))
+        t.setdefault("corte", {"pagan": [], "ganan": [], "benef": []})[{"pag": "pagan", "gan": "ganan", "ben": "benef"}[rol[:3]]].append(txt(r[1]))
     for r in filas_p("Campeones manuales"):
         t = por_id.get(slug(txt(r[0])))
         if not t or not txt(r[1]):

@@ -73,6 +73,39 @@ Además de la tarea de GitHub (cada 10 minutos aprox.), la página consulta cada
 Es la última pestaña de la web y muestra el reglamento de la temporada 2027, con el encabezado "Temporada 2027". El texto está dentro de `index.html` y se ve igual que el Word `Costituzione_Reglamento_Distinguidos_2027.docx`. Para cambiarlo, edita el Word y pídeme que actualice la pestaña (o edita el texto directamente en `index.html`, dentro de la sección `id="v-c"`).
 - Los participantes cuentan desde su primer torneo con selecciones: los meses anteriores a que alguien se sumara no lo incluyen en los pagos.
 
+## 3f. Draft en la web (pestaña 🐍 Draft)
+Cada participante elige sus jugadores desde la página con su **link personal**, en serpiente (1→6, 6→1). Las elecciones se usan directamente en la página: no hace falta llenar la hoja *Selecciones* del Excel para ese torneo.
+
+**Una sola vez (en Vercel):**
+1. *Storage* → conecta **Upstash Redis** (plan gratuito) al proyecto `distinguidos_tour`. Vercel agrega solo las variables de conexión.
+2. *Settings → Environment Variables* → crea `DRAFT_ADMIN_KEY` con una clave que solo tú conozcas.
+3. Sube `api/draft.js` al repositorio (carpeta `api`, junto a `leaderboard.js`) y vuelve a publicar.
+
+**Cada torneo:**
+1. Agrega el torneo en la hoja *Torneos* del Excel (nombre, clase, Inicio, Fin, Actual) y súbelo. No llenes *Selecciones*.
+2. Abre la página con `?admin=TU_CLAVE` al final de la dirección (solo la primera vez en cada equipo; queda guardada). Entra a **🐍 Draft**.
+3. Revisa el orden propuesto (el campeón del torneo anterior primero), la fecha límite (día anterior a las 20:00) y los minutos por turno, y pulsa **Crear draft**.
+4. Pega la lista de jugadores con sus cuotas, uno por línea (por ejemplo `Ryan Gerard +1500`; puedes pedírsela a Claude cada semana). Luego pulsa **🌐 Completar con el campo de ESPN** para sumar al recuadro al resto de los inscritos, sin cuota, y después **Cargar lista pegada**. Se ordena sola de mejor a peor cotizado; los que no tienen cuota quedan al final.
+5. Pulsa **Iniciar draft**. Los links personales son **permanentes**: se envían una sola vez en la temporada (botón WhatsApp del panel) y sirven en todos los drafts. Si alguno se filtra o hay un problema, **🔄 Cambiar link** le genera uno nuevo y el anterior deja de funcionar al instante.
+6. Cada participante abre su link: cuando le toca, ve “¡Te toca!” y el botón **Elegir**. Todos ven el tablero actualizado cada pocos segundos.
+7. Pasada la fecha límite, cada turno tiene 10 minutos; si alguien no elige, pasa al siguiente y después puede elegir lo que le falta (“acá estoy”). Al final puedes usar **Sorteo final** para completar al azar a quien no eligió.
+8. Botones del administrador: Pausar, Saltar turno, Deshacer, Resetear (por ejemplo si se retira una primera elección, Art. 11) y Borrar.
+
+**Avisos por WhatsApp a un grupo (Green API, gratis):**
+- Una sola vez en Green API: crea una cuenta en console.green-api.com, crea una instancia del plan gratuito **Developer** y vincula un WhatsApp escaneando el QR (como WhatsApp Web). Ese WhatsApp debe estar en el grupo del draft.
+- En Vercel, *Settings → Environment Variables*, crea (Sensitive, en Production y Preview) `GREENAPI_URL` (el apiUrl de la consola, por ejemplo https://7103.api.greenapi.com), `GREENAPI_ID` (idInstance) y `GREENAPI_TOKEN` (apiTokenInstance). Vuelve a publicar.
+- En tu panel de 🐍 Draft, sección **Grupo de WhatsApp para los avisos**, pulsa **Buscar mis grupos** y elige el grupo: llega un mensaje de prueba.
+- Al empezar cada turno llega al grupo “🐍 Pedro, ¡te toca elegir!”, y un recordatorio cada 30 minutos mientras no elija (configurable), salvo en el horario de silencio (por defecto de 23 a 8, hora de Chile). En el grupo nunca se envían los links personales.
+- El plan gratuito permite 3 chats por mes: el grupo cuenta como uno. Los recordatorios los dispara `.github/workflows/avisos.yml` cada 10 minutos.
+- Siempre tienes en tu panel el aviso **manual** por WhatsApp y el botón **🔔 Enviar aviso automático**.
+- Si Green API no está configurado, el sistema usa TextMeBot (variable `TEXTMEBOT_APIKEY`, mensajes privados) o CallMeBot.
+
+**Cuotas para la lista de jugadores (dos caminos):**
+- **💬 Pedir cuotas a Claude (gratis):** pulsa primero “Completar con el campo de ESPN” y luego este botón. Se arma y se copia una consulta con el torneo y los inscritos. Pégala en tu chat con Claude, copia su respuesta, pégala en el recuadro y pulsa “Cargar lista pegada”. La línea “FUENTE:” se ignora sola.
+- **🤖 Buscar cuotas con IA (API, pagado):** solo funciona si creas en Vercel la variable `ANTHROPIC_API_KEY` (Sensitive, Production y Preview) con una clave de la Claude Console (platform.claude.com). Busca las cuotas en la web, llena el recuadro y muestra la fuente y el costo aproximado de esa búsqueda (del orden de 0,15–0,25 USD con Sonnet 5.5). Opcional: `ANTHROPIC_MODEL=claude-haiku-5-5` para un costo menor.
+
+Los nombres de la lista deben coincidir con los del leaderboard para que lleguen las posiciones (las tildes no importan).
+
 ## 4. Plan B: escribir posiciones a mano
 Abre `data\manual.json` con el Bloc de notas y escribe (el `id` del torneo es el nombre en minúsculas, sin tildes y con guiones; míralo en `data\datos.json`):
 ```json

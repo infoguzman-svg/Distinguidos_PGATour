@@ -1,0 +1,4 @@
+Copia el CONTENIDO de esta carpeta dentro de tu carpeta del repositorio
+(C:\Users\infog\Desktop\Golf 2027\Distinguidos_PGATour) y acepta "Reemplazar".
+No borres nada de tu carpeta: este paquete solo agrega o reemplaza archivos.
+La carpeta .github puede estar oculta en Windows: Vista > Mostrar > Elementos ocultos.

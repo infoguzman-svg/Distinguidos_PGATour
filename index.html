@@ -129,6 +129,41 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
 .reg tbody tr:nth-child(even) td{background:var(--soft)}
 .reg .callout{background:#f1fbc8;border-left:5px solid var(--lime);padding:8px 12px;border-radius:6px}
 @media(max-width:560px){nav{overflow-x:auto;scrollbar-width:none}nav button{flex:0 0 auto;padding:11px 14px}.reg{padding:4px 12px 16px}.reg th,.reg td{padding:7px 5px;font-size:.78rem}}
+.dr-top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.dr-top h3{margin:6px 0 2px;font:700 1.35rem "Space Grotesk",system-ui,sans-serif}
+.dr-k{font:700 .7rem "Space Grotesk",system-ui,sans-serif;letter-spacing:.25em;background:#000;color:var(--lime);padding:4px 10px;border-radius:99px}
+.dr-sub{color:var(--mut);font-size:.85rem}
+.dr-badge{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:4px 12px 4px 5px;font-size:.85rem;margin-left:6px}
+.dr-badge .av{width:26px;height:26px;margin:0}
+.dr-badge.adm{background:#000;color:var(--lime);border-color:#000;padding-left:12px}.dr-badge.ro{padding-left:12px;color:var(--mut)}
+.dr-err{background:#fde8e8;border:1px solid #f5b5b5;color:#8a1c1c;padding:8px 12px;border-radius:10px}
+.dr-ok{background:#f3fbdc;border:1px solid #c6f613;padding:8px 12px;border-radius:10px}
+.dr-reloj{font:600 .9rem "Space Grotesk",system-ui,sans-serif;margin:6px 0 10px;min-height:1.2em}
+.dr-turno{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dr-turno.yo{background:#000;color:#fff;border-color:#000;box-shadow:0 0 0 3px rgba(198,246,19,.45)}.dr-turno.yo b{color:var(--lime)}
+.drb th,.drb td{text-align:center;white-space:normal;min-width:108px}
+.drb th .who{justify-content:center}
+.drb td.drr{min-width:58px;font-weight:700;color:var(--mut)}
+.drb td.dr-act{background:#f3fbdc;box-shadow:inset 0 0 0 2px var(--lime);animation:drPulso 1.4s ease-in-out infinite}
+@keyframes drPulso{50%{box-shadow:inset 0 0 0 4px var(--lime)}}
+@media(prefers-reduced-motion:reduce){.drb td.dr-act{animation:none}}
+.dr-tag{font-size:.68rem;padding:1px 6px;border-radius:99px;background:#eceae0;color:var(--mut)}.dr-tag.rojo{background:#fde8e8;color:#8a1c1c}
+.dr-buscar{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);font:inherit;margin:4px 0 10px;background:var(--card);color:var(--ink)}
+.dr-lista{padding:4px 12px}
+.dr-j{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}.dr-j:last-child{border:0}
+.dr-n{width:28px;color:var(--mut);font-size:.8rem;text-align:right}.dr-nm{flex:1;font-weight:600}.dr-o{color:var(--mut);font-variant-numeric:tabular-nums;font-size:.85rem;min-width:56px;text-align:right}
+.dr-j.tomado .dr-nm{text-decoration:line-through;color:var(--mut)}
+.dr-de .av{width:26px;height:26px;margin:0}
+.dr-j button,.dr-pri{background:#000;color:var(--lime);border:0;font-weight:700;padding:7px 14px;border-radius:10px;transition:transform .15s}.dr-j button:hover,.dr-pri:hover{transform:scale(1.06)}
+.dr-mas{margin:10px auto;display:block}
+.dr-adm h4{margin:16px 0 6px}.dr-adm textarea{width:100%;border-radius:10px;border:1px solid var(--line);padding:10px;font:inherit;background:var(--bg)}
+.dr-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.dr-btns input{padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit}
+.dr-link{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid var(--line)}.dr-link .who{min-width:130px}.dr-link input{flex:1;min-width:150px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:.78rem;color:var(--mut)}
+.dr-link a,.dr-wa{color:#128C7E;font-weight:700;text-decoration:none}
+.dr-pasos{margin:6px 0 8px 18px;padding:0}.dr-pasos li{margin:4px 0}
+.dr-consulta{margin-top:10px;padding:10px 12px;border:1px dashed var(--line);border-radius:12px;background:var(--bg)}.dr-consulta textarea{width:100%;font-size:.78rem;border-radius:8px;border:1px solid var(--line);padding:8px;background:var(--card)}
+.dr-orden{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:6px 0}
 .hint{font-size:.8rem;color:var(--mut);margin-top:10px}
 .rules{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.84rem}
 .rules span{background:var(--soft);border-radius:8px;padding:3px 9px}
@@ -151,6 +186,7 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
   </div>
   <nav>
     <button data-v="t" class="on">⛳ Torneo actual</button>
+    <button data-v="d">🐍 Draft</button>
     <button data-v="l">📅 Torneos</button>
     <button data-v="g">🏆 Tabla general</button>
     <button data-v="p">💰 Pagos</button>
@@ -162,6 +198,7 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
     <div class="chips" id="chips"></div>
     <div id="torneo"></div>
   </section>
+  <section id="v-d" class="sec"><div id="draft"></div></section>
   <section id="v-l" class="sec"><div id="lista"></div></section>
   <section id="v-g" class="sec"><div id="gral"></div></section>
   <section id="v-p" class="sec"><div id="pagos"></div></section>
@@ -799,12 +836,214 @@ function initReg(){
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{altura();spy();});
   altura();spy();
 }
-function show(v){
-  ["t","l","g","p","c"].forEach(x=>$("v-"+x).classList.toggle("on",x===v));
-  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
-  if(v==="g")renderGral();if(v==="p")renderPagos();if(v==="c")initReg();if(v==="t")renderTorneo();if(v==="l")renderLista();
+// ================= DRAFT (pestaña 🐍 Draft) =================
+const DRAFT_URL=window.DRAFT_URL||((location.hostname.endsWith("vercel.app")?"":"https://distinguidostour.vercel.app")+"/api/draft");
+let DTK=null,DADM=null,ABRIR_DRAFT=false;
+try{const u=new URL(location.href),pd=u.searchParams.get("d"),pa=u.searchParams.get("admin");
+  if(pd){localStorage.setItem("dt_token",pd);ABRIR_DRAFT=true;}
+  if(pa){localStorage.setItem("dt_admin",pa);ABRIR_DRAFT=true;}
+  if(pd||pa){u.searchParams.delete("d");u.searchParams.delete("admin");history.replaceState(null,"",u.pathname+u.search+u.hash);}
+  DTK=localStorage.getItem("dt_token");DADM=localStorage.getItem("dt_admin");}catch(e){}
+const CUOTAS_URL=DRAFT_URL.replace(/draft$/,"cuotas");
+const ESTADO={preparando:"En preparación","en curso":"En curso",pausado:"En pausa",terminado:"Terminado ✅"};
+let DRAFTS={},DR={id:null,d:null,yo:null,admin:false,err:"",msg:"",filtro:"",todos:false,skew:0,como:"",firma:""},drInt=null,drRel=null;
+function aplicarDrafts(){if(!D)return;D.torneos.forEach(t=>{const s=DRAFTS[t.id];if(s)t.sel=Object.assign({},t.sel,s);});memo={};}
+async function cargarDrafts(){try{const r=await fetch(DRAFT_URL+"?todos=1");const j=await r.json();if(j.ok){DRAFTS=j.drafts||{};aplicarDrafts();}}catch(e){}}
+function selDe(d){const s={};(d.picks||[]).forEach(x=>(s[x.p]=s[x.p]||[]).push(x.j));return s;}
+function drRecibir(j){if("d" in j)DR.d=j.d;if(j.yo!==undefined)DR.yo=j.yo;if(j.admin!==undefined)DR.admin=!!j.admin;if(j.tokens)DR.tokens=j.tokens;if(j.avisos)DR.avisos=j.avisos;if(j.cfgAvisos)DR.cfgAvisos=j.cfgAvisos;if(j.misAvisos)DR.misAvisos=j.misAvisos;if(j.modoAvisos)DR.modoAvisos=j.modoAvisos;if(j.grupoAvisos!==undefined)DR.grupoAvisos=j.grupoAvisos;if(j.grupos)DR.grupos=j.grupos;if(j.estadoGreen!==undefined)DR.estadoGreen=j.estadoGreen;DR.err="";if(DR.admin&&D&&DR.tokens&&!DR.pidioLinks&&D.participantes.some(p=>!DR.tokens[p])){DR.pidioLinks=true;setTimeout(()=>drPost({accion:"links",participantes:D.participantes}),0);}if(j.d){DR.skew=(j.d.ahora||Date.now())-Date.now();DRAFTS[DR.id]=selDe(j.d);aplicarDrafts();}}
+async function drCargar(){
+  if(!D)return;DR.id=DR.id||elegir();
+  let firma=DR.firma;
+  try{const r=await fetch(DRAFT_URL+"?t="+encodeURIComponent(DR.id)+"&k="+encodeURIComponent(DADM||DTK||""));const j=await r.json();if(!j.ok)throw new Error(j.error);drRecibir(j);
+    const d=j.d;firma=JSON.stringify(d?[d.picks.length,d.estado,d.ptr,d.pend,d.pool.length,d.limite,d.lead,d.orden,j.yo,j.admin]:[null,j.yo,j.admin]);}
+  catch(e){DR.err=e.message||"No se pudo conectar con el draft";firma="error";}
+  if(vista()!=="d")return;
+  const foco=document.activeElement;
+  if(firma===DR.firma&&!DR.err)return;              // nada cambió: no se redibuja (el reloj corre aparte)
+  DR.firma=firma;
+  if(foco&&$("draft").contains(foco)&&/INPUT|TEXTAREA|SELECT/.test(foco.tagName)){drPintarLista();return;}
+  renderDraft();
 }
-const vista=()=>["t","l","g","p","c"].find(x=>$("v-"+x).classList.contains("on"));
+async function drPost(o){
+  try{const r=await fetch(DRAFT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(Object.assign({t:DR.id,k:DADM||DTK||""},o))});const j=await r.json();if(!j.ok)throw new Error(j.error);drRecibir(j);DR.msg=o.msg||"";
+    if(j.envio&&DR.admin)DR.msg=(DR.msg?DR.msg+" · ":"")+(j.envio.ok?"🔔 Aviso por WhatsApp enviado a "+j.envio.p:"No se pudo enviar el aviso a "+j.envio.p+" ("+j.envio.detalle+")");
+    if(o.accion==="grupos")DR.msg=(j.grupos||[]).length?"Encontré "+j.grupos.length+" grupo(s) de WhatsApp: elige el del draft.":"No encontré grupos. Revisa que tu WhatsApp esté conectado en Green API y que pertenezcas al grupo.";
+    if(j.prueba&&o.accion==="grupo_set")DR.msg=j.prueba.ok?"📲 Grupo «"+o.nombre+"» conectado: enviamos un mensaje de prueba al grupo.":"Grupo guardado, pero el envío de prueba respondió: “"+j.prueba.detalle+"”.";
+    else if(j.prueba&&o.accion==="avisos_tel")DR.msg=j.prueba.ok?"📲 Número guardado para "+o.p+": le enviamos un WhatsApp de prueba.":"Número guardado para "+o.p+", pero el envío de prueba respondió: “"+j.prueba.detalle+"”.";
+    else if(j.prueba)DR.msg=j.prueba.ok?"🔔 Avisos activados: te enviamos un mensaje de prueba por WhatsApp.":"Tus datos quedaron guardados, pero el envío de prueba respondió: “"+j.prueba.detalle+"”. Revisa el número.";}
+  catch(e){DR.err=e.message||"No se pudo conectar con el draft";DR.msg="";}
+  DR.firma="";DR.msgT=Date.now();renderDraft();
+  const t0=DR.msgT;setTimeout(()=>{if(DR.msgT===t0&&DR.msg){DR.msg="";const e=document.querySelector("#draft .dr-ok");if(e)e.remove();}},8000);   // los avisos verdes se borran solos a los 8 s
+}
+const fmtT=ms=>{if(ms<=0)return"0:00";if(ms>=864e5){const dd=Math.floor(ms/864e5),hh=Math.floor(ms%864e5/36e5);return dd+" d "+hh+" h";}const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+"h ":"")+(h?String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0");};
+function relojTexto(){const d=DR.d;if(!d)return"";const ahora=Date.now()+DR.skew;
+  if(d.estado==="en curso"&&d.vence)return"⏱️ Tiempo del turno: "+fmtT(d.vence-ahora);
+  if(d.limite){const l=Date.parse(d.limite);if(ahora<l)return"🗓️ Fecha límite: "+new Date(l).toLocaleString("es-CL",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})+" · faltan "+fmtT(l-ahora);}
+  return"";}
+function aLocal(v){const d=new Date(v);const z=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate())+"T"+z(d.getHours())+":"+z(d.getMinutes());}
+function ordenPropuesto(id){const ix=D.torneos.findIndex(t=>t.id===id);for(let j=ix-1;j>=0;j--){const r=calc(D.torneos[j]);if(r.place.some(p=>p>0))return D.participantes.map((p,i)=>({p,k:r.place[i]||99,i})).sort((a,b)=>a.k-b.k||a.i-b.i).map(x=>x.p);}return[...D.participantes];}
+function parsePool(txt){
+  const out=[],vistos=new Set();
+  String(txt||"").split(/\r?\n/).forEach((l,i)=>{
+    let s=l.replace(/\t/g," ").trim(),o="",pr=null,m;if(!s||/^(fuente|source)\s*:/i.test(s))return;
+    if((m=s.match(/(^|\s)([+-]\d{3,6})(?!\d)/))){o=m[2];const v=+m[2];pr=v>0?100/(v+100):-v/(-v+100);s=s.replace(m[2]," ");}
+    else if((m=s.match(/(\d+)\s*\/\s*(\d+)/))){o=m[1]+"/"+m[2];pr=+m[2]/(+m[1]+ +m[2]);s=s.replace(m[0]," ");}
+    else if((m=s.match(/(^|\s)(\d{1,4}[.,]\d{1,2})(?=\s|$)/))){const v=parseFloat(m[2].replace(",","."));if(v>1){o=m[2];pr=1/v;s=s.replace(m[2]," ");}}
+    s=s.replace(/^(T?\d+\.?\)?|[-–•*])\s+/,"").replace(/[^A-Za-zÀ-ÿ0-9'’.\- ]/g," ").replace(/\s+/g," ").trim();
+    if(s.length<3)return;const k=norm(s);if(vistos.has(k))return;vistos.add(k);out.push({n:s,o,pr,i});
+  });
+  return out.sort((a,b)=>((b.pr===null?-1:b.pr)-(a.pr===null?-1:a.pr))||a.i-b.i).map(x=>({n:x.n,o:x.o}));
+}
+const avDe=p=>{const i=D.participantes.indexOf(p);return i>=0?av(i):"";};
+function drFormCrear(t){
+  if(!t)return"<p class='hint'>Elige un torneo.</p>";
+  const prop=ordenPropuesto(t.id),lim=t.ini?aLocal(new Date(t.ini+"T20:00").getTime()-864e5):"";
+  return `<div class="card dr-adm"><h4>Crear el draft de ${esc(t.n)}</h4><p class="hint">Orden propuesto según el torneo anterior (el campeón elige primero, Art. 7 y 8). Puedes cambiarlo.</p>
+  <div class="dr-orden">${prop.map((p,i)=>`<label>${i+1}.° <select data-ord="${i}">${D.participantes.map(x=>`<option${x===p?" selected":""}>${esc(x)}</option>`).join("")}</select></label>`).join("")}</div>
+  <div class="dr-btns"><label>Rondas <input type="number" id="drRondas" min="1" max="8" value="4" style="width:60px"></label><label>Minutos por turno <input type="number" id="drLead" min="1" value="10" style="width:70px"></label><label>Fecha límite <input type="datetime-local" id="drLimite" value="${lim}"></label></div>
+  <div class="dr-btns"><button data-crear="1" class="dr-pri">✨ Crear draft</button></div></div>`;
+}
+const CMB_NUM="+34 623 78 64 49";
+function drAvisos(){
+  if(!DR.yo)return"";const m=DR.misAvisos||{};
+  if(DR.modoAvisos==="greenapi")return `<div class="card dr-adm"><h4>🔔 Avisos de turno</h4><p>${DR.grupoAvisos?`Los avisos llegan al grupo de WhatsApp <b>${esc(DR.grupoAvisos)}</b>: ahí verás cuando sea tu turno.`:"El administrador está configurando el grupo de WhatsApp para los avisos."} Para elegir, entra a esta página desde tu celular (tu link ya quedó guardado).</p></div>`;
+  if(!m.activo&&DR.modoAvisos==="textmebot")return `<div class="card dr-adm"><h4>🔔 Activa tus avisos por WhatsApp</h4><p class="hint">Escribe tu celular y pulsa Activar: te llegará un WhatsApp de prueba desde el número del administrador. Después te avisaremos cuando sea tu turno.</p>
+  <div class="dr-btns"><input id="avTel" placeholder="+56912345678" value="${esc(DR.avTel||"")}" style="width:170px"><button data-avreg="1" class="dr-pri">Activar avisos</button></div></div>`;
+  if(m.activo)return `<div class="card dr-adm"><h4>🔔 Avisos por WhatsApp: activados</h4><p>Te avisaremos al número ${esc(m.tel)} cuando sea tu turno, y te recordaremos mientras no elijas.</p><div class="dr-btns"><button data-avquitar="1">Desactivar avisos</button></div></div>`;
+  return `<div class="card dr-adm"><h4>🔔 Activa tus avisos por WhatsApp</h4><p class="hint">Así te llega un mensaje cuando sea tu turno. Se hace una sola vez:</p>
+  <ol class="dr-pasos"><li>Agrega a tus contactos el número de CallMeBot <b>${CMB_NUM}</b>.</li><li>Envíale por WhatsApp este mensaje: <b>I allow callmebot to send me messages</b> (<a target="_blank" rel="noopener" href="https://wa.me/${CMB_NUM.replace(/\D/g,"")}?text=${encodeURIComponent("I allow callmebot to send me messages")}">abrir WhatsApp con el mensaje listo</a>).</li><li>Te responde con tu <b>APIKEY</b> (un número). Escríbelo aquí junto a tu celular:</li></ol>
+  <div class="dr-btns"><input id="avTel" placeholder="+56912345678" value="${esc(DR.avTel||"")}" style="width:160px"><input id="avKey" placeholder="APIKEY" value="${esc(DR.avKey||"")}" style="width:120px"><button data-avreg="1" class="dr-pri">Activar avisos</button></div>
+  <p class="hint">Si el bot no responde en 2 minutos, revisa en callmebot.com que el número siga siendo el mismo.</p></div>`;
+}
+function drLinks(){
+  if(!DR.admin)return"";
+  const base=location.origin+location.pathname,tk=DR.tokens||{};
+  const c=DR.cfgAvisos||{cada:30,desde:23,hasta:8};
+  return `<h4>Avisos automáticos por WhatsApp</h4><p class="hint">Se avisa cuando empieza cada turno y se recuerda cada cierto tiempo mientras no se elija, salvo en el horario de silencio (hora de Chile). ${DR.modoAvisos==="greenapi"?"Los avisos llegan al grupo de WhatsApp que elijas abajo.":"Cada uno activa sus avisos desde su link."}</p>
+  <div class="dr-btns"><label>Recordar cada <input type="number" id="avCada" min="5" value="${c.cada}" style="width:70px"> min</label><label>Silencio de <input type="number" id="avDesde" min="0" max="23" value="${c.desde}" style="width:60px"> a <input type="number" id="avHasta" min="0" max="23" value="${c.hasta}" style="width:60px"> h</label><button data-avcfg="1">Guardar</button></div>
+  ${DR.modoAvisos==="greenapi"?`<h4>Grupo de WhatsApp para los avisos (Green API)</h4><p class="hint">Los avisos de turno y los recordatorios llegan a un solo grupo (el plan gratis de Green API admite 3 chats y un grupo cuenta como uno). En el grupo nunca se envían los links personales, solo la dirección de la página.</p>
+  <p>${DR.grupoAvisos?`Grupo actual: <b>${esc(DR.grupoAvisos)}</b>`:`<span class="dr-tag rojo">Aún no eliges el grupo</span>`}${DR.estadoGreen?` · WhatsApp en Green API: ${DR.estadoGreen==="authorized"?"✅ conectado":"⚠️ "+esc(DR.estadoGreen)}`:""}</p>
+  <div class="dr-btns"><button data-grupos="1">🔎 Buscar mis grupos</button></div>
+  ${(DR.grupos||[]).map(g=>`<div class="dr-link"><span class="who">👥 ${esc(g.nombre)}</span><button data-gid="${esc(g.id)}" data-gnom="${esc(g.nombre)}">Usar este grupo</button></div>`).join("")}`:""}
+  ${DR.modoAvisos==="textmebot"?`<h4>Números para los avisos (TextMeBot)</h4><p class="hint">Los avisos salen desde tu WhatsApp conectado a TextMeBot. Escribe el celular de cada uno con código de país; al guardar le llega un WhatsApp de prueba. También pueden inscribirse ellos desde su link.</p>`+D.participantes.map((p,i)=>`<div class="dr-link"><span class="who">${avDe(p)}${esc(p)}</span><input id="avt${i}" placeholder="${esc((DR.avisos||{})[p]?"actual: "+DR.avisos[p]:"+56912345678")}"><button data-avtel="${esc(p)}" data-i="${i}">Guardar y probar</button>${(DR.avisos||{})[p]?`<button data-avtelx="${esc(p)}">Quitar</button>`:""}</div>`).join(""):""}
+  <h4>Links personales (permanentes)</h4><p class="hint">Cada participante tiene un solo link para toda la temporada: sirve en todos los drafts y lo puede guardar en favoritos. Si pasa algo, usa “Cambiar link”: el anterior deja de funcionar al instante.</p>`+D.participantes.map(p=>{const t=tk[p],L=t?base+"?d="+t:"";
+    const avi=DR.avisos&&DR.modoAvisos!=="greenapi"?(DR.avisos[p]?`<span class="dr-tag">🔔 ${esc(DR.avisos[p])}</span>`:'<span class="dr-tag rojo">🔕 sin avisos</span>'):"";
+    return `<div class="dr-link"><span class="who">${avDe(p)}${esc(p)} ${avi}</span>${t?`<input readonly value="${esc(L)}"><button data-copy="${esc(L)}">Copiar</button><a target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("🐍 Distinguidos Tour · "+p+", este es tu link personal para los drafts de la temporada (guárdalo en favoritos): "+L)}">WhatsApp</a><button data-nuevolink="${esc(p)}">🔄 Cambiar link</button>`:`<span class="hint">generando…</span>`}</div>`;}).join("");
+}
+function drPanelAdmin(d){
+  if(!DR.admin)return"";
+  const base=location.origin+location.pathname,e=d.estado,tn=(get(DR.id)||{}).n||DR.id;
+  const btn=[e==="preparando"&&["iniciar","▶️ Iniciar draft"],e==="en curso"&&["pausar","⏸️ Pausar"],e==="pausado"&&["reanudar","▶️ Reanudar"],e==="en curso"&&["saltar","⏭️ Saltar turno"],d.puedeDeshacer&&["deshacer","↩️ Deshacer"],["sorteo","🎲 Sorteo final"],["resetear","🔄 Resetear draft"],["borrar","🗑️ Borrar draft"]].filter(Boolean);
+  let h=`<h2>🛠️ Panel del administrador</h2><div class="card dr-adm"><div class="dr-btns">${btn.map(([a,t])=>`<button data-adm="${a}"${a==="iniciar"?' class="dr-pri"':""}>${t}</button>`).join("")}</div>`;
+  if(d.actual&&e==="en curso")h+=`<div class="dr-btns"><button data-adm="avisar">🔔 Enviar aviso automático a ${esc(d.actual.p)}</button></div>`;
+  if(d.actual&&e==="en curso")h+=`<p><a class="dr-wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("🐍 Draft "+tn+": "+d.actual.p+", te toca elegir (ronda "+(d.actual.r+1)+"). Entra con tu link personal.")}">📣 Avisar a ${esc(d.actual.p)} por WhatsApp (manual, lo envías tú)</a></p>`;
+  h+=drLinks();
+  h+=`<h4>Lista de jugadores (${d.pool.length})</h4><p class="hint">1) Pega la lista con cuotas, uno por línea (por ejemplo “Ryan Gerard +1500”). 2) Pulsa “Completar con el campo de ESPN” para sumar al recuadro al resto de los inscritos, sin cuota. 3) Pulsa “Cargar lista pegada”: se ordena de mejor a peor cotizado (los sin cuota quedan al final) y reemplaza la lista anterior.</p>
+  <textarea id="drPool" rows="8" placeholder="Ryan Gerard +1500&#10;Ben Griffin +1500&#10;…">${esc(DR.poolTxt||"")}</textarea><div class="dr-btns"><button data-espn="1">🌐 Completar con el campo de ESPN</button><button data-ia="1">🤖 Buscar cuotas con IA (API)</button><button data-claude="1">💬 Pedir cuotas a Claude (gratis)</button><button data-pool="1" class="dr-pri">📋 Cargar lista pegada</button><span id="drPoolMsg" class="hint"></span></div>
+  ${DR.consulta?`<div class="dr-consulta"><p class="hint"><b>Consulta lista para Claude.</b> Cópiala, pégala en tu chat con Claude y luego pega su respuesta en el recuadro de arriba y pulsa “Cargar lista pegada”.</p><textarea readonly rows="6">${esc(DR.consulta)}</textarea><div class="dr-btns"><button data-copiarconsulta="1" class="dr-pri">📋 Copiar consulta</button><a class="dr-wa" target="_blank" rel="noopener" href="https://claude.ai/new">Abrir Claude ↗</a><button data-cerrarconsulta="1">Cerrar</button></div></div>`:""}`;
+  if(!d.picks.length)h+=`<h4>Fecha límite y tiempo por turno</h4><div class="dr-btns"><input type="datetime-local" id="drLimite" value="${d.limite?aLocal(d.limite):""}"><label>Minutos por turno <input type="number" id="drLead" min="1" value="${d.lead}" style="width:70px"></label><button data-conf="1">Guardar</button></div>`;
+  return h+`<p class="hint">¿No eres el administrador en este equipo? <a href="#" data-salir="1">Salir del modo administrador</a>.</p></div>`;
+}
+function drPintarLista(){
+  const d=DR.d;if(!d||!$("drLista"))return;
+  const de={};(d.picks||[]).forEach(x=>de[norm(x.j)]=x.p);
+  const act=d.actual,pend=DR.yo?(d.pend[DR.yo]||0):0;
+  const puede=d.estado==="en curso"&&(DR.admin||(DR.yo&&((act&&act.p===DR.yo)||pend>0)));
+  const f=norm(DR.filtro);let l=d.pool.map((x,i)=>Object.assign({i},x)).filter(x=>!f||norm(x.n).includes(f));
+  const total=l.length;if(!DR.todos&&!f)l=l.slice(0,80);
+  $("drLista").innerHTML=(l.map(x=>{const o=de[norm(x.n)];return `<div class="dr-j${o?" tomado":""}"><span class="dr-n">${x.i+1}</span><span class="dr-nm">${esc(x.n)}</span><span class="dr-o">${esc(x.o||"")}</span>${o?`<span class="dr-de" title="${esc(o)}">${avDe(o)}</span>`:(puede?`<button data-pick="${esc(x.n)}">Elegir</button>`:"")}</div>`;}).join("")||"<p class='hint'>No hay jugadores con ese nombre.</p>")+(total>l.length?`<button class="dr-mas" data-todos="1">Ver los ${total} jugadores</button>`:"");
+}
+function renderDraft(){
+  const el=$("draft");if(!el||!D)return;
+  if(!DR.id)DR.id=elegir();
+  const d=DR.d,t=get(DR.id),hoy=new Date().toISOString().slice(0,10);
+  const opciones=D.torneos.filter(x=>x.ini&&x.fin&&dMas(x.fin,3)>=hoy);
+  let h=`<div class="dr-top"><div><span class="dr-k">DRAFT</span><h3>${esc(t?t.n:DR.id)}</h3><span class="dr-sub">${d?(ESTADO[d.estado]||d.estado)+" · "+d.orden.length+" participantes · "+d.rondas+" rondas en serpiente":"Sin draft creado"}</span></div><div class="dr-who">${DR.admin?`<span class="dr-badge adm">🛠️ Administrador</span>`:""}${DR.yo?`<span class="dr-badge">${avDe(DR.yo)} Estás como <b>${esc(DR.yo)}</b></span>`:(DR.admin?"":`<span class="dr-badge ro">👀 Solo lectura</span>`)}</div></div>`;
+  if(DR.admin&&opciones.length>1)h+=`<div class="bar"><select id="drTorneo">${opciones.map(x=>`<option value="${esc(x.id)}"${x.id===DR.id?" selected":""}>${esc(x.m||"")} · ${esc(x.n)}</option>`).join("")}</select></div>`;
+  if(DR.err)h+=`<p class="dr-err">⚠️ ${esc(DR.err)}</p>`;
+  if(DR.msg)h+=`<p class="dr-ok">✅ ${esc(DR.msg)}</p>`;
+  if(!d){el.innerHTML=h+(DR.admin?drFormCrear(t)+`<div class="card dr-adm">${drLinks()}</div>`:`<div class="card"><p>El draft de este torneo todavía no está abierto. Cuando el administrador lo cree, aquí verás el tablero y tu turno.</p></div>`)+drAvisos();return;}
+  const act=d.actual,miTurno=!!(DR.yo&&act&&act.p===DR.yo&&d.estado==="en curso"),pend=DR.yo?(d.pend[DR.yo]||0):0,sel=selDe(d);
+  h+=`<div class="dr-reloj" id="drReloj">${relojTexto()}</div>`;
+  if(miTurno)h+=`<div class="dr-turno yo">🟢 <b>¡Te toca!</b> Elige tu jugador de la ronda ${act.r+1} en la lista de abajo.</div>`;
+  else if(pend>0&&d.estado==="en curso")h+=`<div class="dr-turno yo">⏰ <b>Perdiste ${pend===1?"un turno":pend+" turnos"}.</b> Puedes elegir ahora (“acá estoy”): tu elección queda después de la última registrada.</div>`;
+  else if(act&&d.estado==="en curso")h+=`<div class="dr-turno">Turno de ${avDe(act.p)} <b>${esc(act.p)}</b> · ronda ${act.r+1}</div>`;
+  else if(d.estado==="terminado")h+=`<div class="dr-turno">🏁 Draft terminado. Las alineaciones ya aparecen en <b>Torneo actual</b>.</div>`;
+  else if(d.estado==="preparando")h+=`<div class="dr-turno">El administrador está preparando el draft.</div>`;
+  else if(d.estado==="pausado")h+=`<div class="dr-turno">⏸️ Draft en pausa.</div>`;
+  h+=`<div class="card scroll"><table class="drb"><thead><tr><th>Ronda</th>${d.orden.map(p=>`<th><div class="who">${avDe(p)}${esc(p)}</div></th>`).join("")}</tr></thead><tbody>`;
+  for(let r=0;r<d.rondas;r++){
+    h+=`<tr><td class="drr">${r+1} ${r%2?"←":"→"}</td>`+d.orden.map(p=>{
+      const mios=(d.picks||[]).filter(y=>y.p===p),x=mios[r],n=mios.length;
+      const esAct=act&&d.estado==="en curso"&&act.p===p&&n===r;
+      return `<td class="${esAct?"dr-act":""}">${x?`<b>${esc(x.j)}</b>${x.tarde?' <span class="dr-tag">tarde</span>':""}${x.azar?' <span class="dr-tag">azar</span>':""}`:(esAct?"⏳ eligiendo…":(d.pend[p]&&n===r?'<span class="dr-tag rojo">perdió turno</span>':"·"))}</td>`;}).join("")+"</tr>";
+  }
+  h+=`</tbody></table></div>`;
+  h+=drAvisos();
+  h+=drPanelAdmin(d);
+  h+=`<h2>Jugadores del torneo <span class="tag">${d.pool.length} · de mejor a peor cotizado</span></h2>`;
+  if(DR.admin&&d.estado==="en curso")h+=`<div class="bar"><span>Elegir como:</span><select id="drComo">${d.orden.map(p=>`<option${(DR.como||(act&&act.p))===p?" selected":""}>${esc(p)}</option>`).join("")}</select></div>`;
+  h+=`<input id="drBuscar" class="dr-buscar" placeholder="🔎 Buscar jugador…" value="${esc(DR.filtro)}" autocomplete="off"><div class="card dr-lista" id="drLista"></div>`;
+  el.innerHTML=h;drPintarLista();
+}
+function iniciarDraftUI(){
+  $("draft").addEventListener("click",e=>{
+    const b=e.target.closest("button,a[data-salir]");if(!b)return;const s=b.dataset;
+    if(s.pick){const como=DR.admin&&$("drComo")?$("drComo").value:undefined;if(!confirm("¿Confirmas a "+s.pick+(como?" para "+como:"")+"?"))return;drPost({accion:"elegir",j:s.pick,como,msg:(como||"Elegiste")+(como?" eligió a ":" a ")+s.pick});}
+    else if(s.adm){const a=s.adm,q={resetear:"¿Resetear el draft? Se borran todas las elecciones.",borrar:"¿Borrar el draft completo, con sus links?",sorteo:"¿Asignar al azar los turnos pendientes?"};if(q[a]&&!confirm(q[a]))return;drPost({accion:a,msg:({iniciar:"Draft iniciado",pausar:"Draft en pausa",reanudar:"Draft reanudado",saltar:"Turno saltado",deshacer:"Se deshizo la última acción",sorteo:"Sorteo final aplicado",resetear:"Draft reseteado",borrar:"Draft borrado",avisar:""})[a]});}
+    else if(s.copy){try{navigator.clipboard.writeText(s.copy).catch(()=>{});b.textContent="¡Copiado!";}catch(err){}}
+    else if(s.pool){const L=parsePool($("drPool").value);if(!L.length){DR.err="No encontré jugadores en el texto pegado";renderDraft();return;}DR.poolTxt="";const con=L.filter(x=>x.o).length;drPost({accion:"pool",jugadores:L,msg:"Lista cargada: "+L.length+" jugadores ("+con+" con cuota)"});}
+    else if(s.espn){const ta=$("drPool"),msg=$("drPoolMsg");msg.textContent="Consultando ESPN…";
+      fetch(DRAFT_URL+"?campo=1&t="+encodeURIComponent(DR.id)+"&n="+encodeURIComponent((get(DR.id)||{}).n||"")).then(r=>r.json()).then(j=>{
+        if(!j.ok)throw new Error(j.error);if(!j.jugadores.length)throw new Error("ESPN todavía no publica el campo de este torneo. Prueba más cerca del inicio.");
+        const ya=new Set(parsePool(ta.value).map(x=>norm(x.n))),nuevos=j.jugadores.filter(n=>!ya.has(norm(n)));
+        ta.value=(ta.value.trim()?ta.value.trim()+"\n":"")+nuevos.join("\n");DR.poolTxt=ta.value;
+        msg.textContent="✅ ESPN ("+j.evento+"): "+j.jugadores.length+" inscritos; se sumaron "+nuevos.length+" que no estaban. Revisa y pulsa “Cargar lista pegada”.";
+      }).catch(err=>{msg.textContent="⚠️ "+(err.message||"No se pudo consultar ESPN");});}
+    else if(s.conf)drPost({accion:"configurar",limite:$("drLimite").value?new Date($("drLimite").value).toISOString():"",lead:+$("drLead").value,msg:"Configuración guardada"});
+    else if(s.crear){const orden=[...document.querySelectorAll("[data-ord]")].map(x=>x.value);if(new Set(orden).size!==orden.length){DR.err="El orden tiene participantes repetidos";renderDraft();return;}
+      drPost({accion:"crear",n:(get(DR.id)||{}).n,orden,rondas:+$("drRondas").value,lead:+$("drLead").value,limite:$("drLimite").value?new Date($("drLimite").value).toISOString():"",msg:"Draft creado: ahora carga la lista de jugadores y comparte los links"});}
+    else if(s.nuevolink){if(!confirm("¿Cambiar el link de "+s.nuevolink+"? El link actual dejará de funcionar y tendrás que enviarle el nuevo."))return;drPost({accion:"nuevo_link",p:s.nuevolink,msg:"Link nuevo para "+s.nuevolink+": envíaselo (el anterior ya no funciona)"});}
+    else if(s.avreg){DR.avTel=$("avTel").value;DR.avKey=$("avKey")?$("avKey").value:"";drPost({accion:"avisos_registrar",tel:DR.avTel,key:DR.avKey});}
+    else if(s.avquitar){if(!confirm("¿Desactivar tus avisos por WhatsApp?"))return;drPost({accion:"avisos_quitar",msg:"Avisos desactivados"});}
+    else if(s.avcfg)drPost({accion:"avisos_cfg",cada:+$("avCada").value,desde:+$("avDesde").value,hasta:+$("avHasta").value,msg:"Configuración de avisos guardada"});
+    else if(s.avtel){const v=$("avt"+s.i).value.trim();if(!v){DR.err="Escribe el número de "+s.avtel;renderDraft();return;}drPost({accion:"avisos_tel",p:s.avtel,tel:v});}
+    else if(s.avtelx){if(!confirm("¿Quitar el número de "+s.avtelx+"? Dejará de recibir avisos."))return;drPost({accion:"avisos_tel",p:s.avtelx,tel:"",msg:"Número de "+s.avtelx+" quitado"});}
+    else if(s.grupos){DR.grupos=null;drPost({accion:"grupos"});}
+    else if(s.gid){if(!confirm("¿Enviar los avisos del draft al grupo «"+s.gnom+"»? Se enviará un mensaje de prueba."))return;DR.grupos=null;drPost({accion:"grupo_set",id:s.gid,nombre:s.gnom});}
+    else if(s.ia){const ta=$("drPool"),msg=$("drPoolMsg"),t=get(DR.id)||{},antes=parsePool(ta.value).map(x=>x.n);
+      if(!confirm("¿Buscar las cuotas con la API de Anthropic? Tiene un costo pequeño por uso (aprox. 0,15 a 0,25 USD)."))return;
+      b.disabled=true;msg.textContent="🤖 Buscando cuotas en la web… puede tardar hasta 1 minuto.";
+      fetch(CUOTAS_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({k:DADM||"",n:t.n||DR.id,ini:t.ini||"",fin:t.fin||"",jugadores:antes})}).then(r=>r.json()).then(j=>{
+        if(!j.ok)throw new Error(j.error);
+        const ya=new Set(parsePool(j.lista.join("\n")).map(x=>norm(x.n))),resto=antes.filter(n=>!ya.has(norm(n)));
+        ta.value=j.lista.join("\n")+(resto.length?"\n"+resto.join("\n"):"");DR.poolTxt=ta.value;
+        msg.textContent="✅ "+j.lista.length+" jugadores con cuota"+(j.fuente?" · Fuente: "+j.fuente:"")+" · costo aprox. US$ "+String(j.costo).replace(".",",")+". Revisa y pulsa “Cargar lista pegada”.";
+      }).catch(err=>{msg.textContent="⚠️ "+(err.message||"No se pudo buscar las cuotas");}).finally(()=>{b.disabled=false;});}
+    else if(s.claude){const t=get(DR.id)||{},nombres=parsePool($("drPool").value).map(x=>x.n);
+      DR.consulta="Prepárame la lista de cuotas para el draft de Distinguidos Tour.\nTorneo: "+(t.n||DR.id)+" (PGA Tour"+(t.ini?", "+t.ini+(t.fin?" a "+t.fin:""):"")+").\nBusca las cuotas para ganar más recientes (FanDuel de preferencia; si no, otra casa conocida o el artículo de cuotas de pgatour.com).\nEntrégame un bloque de texto para copiar: una línea por jugador con el formato \"Nombre Apellido +1600\", ordenado de mejor a peor cotizado, y al final \"FUENTE: <casa> · <fecha>\"."+(nombres.length?"\nCampo según ESPN (usa estos mismos nombres):\n"+nombres.join("\n"):"");
+      renderDraft();try{navigator.clipboard.writeText(DR.consulta).catch(()=>{});}catch(err){}}
+    else if(s.copiarconsulta){try{navigator.clipboard.writeText(DR.consulta).catch(()=>{});b.textContent="¡Copiada!";}catch(err){}}
+    else if(s.cerrarconsulta){DR.consulta="";renderDraft();}
+    else if(s.todos){DR.todos=true;drPintarLista();}
+    else if(s.salir){e.preventDefault();localStorage.removeItem("dt_admin");DADM=null;DR.admin=false;DR.firma="";drCargar();}
+  });
+  $("draft").addEventListener("input",e=>{if(e.target.id==="drBuscar"){DR.filtro=e.target.value;drPintarLista();}if(e.target.id==="drPool")DR.poolTxt=e.target.value;if(e.target.id==="avTel")DR.avTel=e.target.value;if(e.target.id==="avKey")DR.avKey=e.target.value;});
+  $("draft").addEventListener("change",e=>{if(e.target.id==="drTorneo"){DR.id=e.target.value;DR.d=null;DR.msg="";DR.firma="";drCargar();}if(e.target.id==="drComo")DR.como=e.target.value;});
+}
+function drVista(activa){
+  if(activa){DR.firma="";renderDraft();drCargar();
+    if(!drInt)drInt=setInterval(()=>{if(document.visibilityState==="visible")drCargar();},5000);
+    if(!drRel)drRel=setInterval(()=>{const r=$("drReloj");if(r)r.textContent=relojTexto();},1000);}
+  else{clearInterval(drInt);drInt=null;clearInterval(drRel);drRel=null;}
+}
+
+function show(v){
+  ["t","d","l","g","p","c"].forEach(x=>$("v-"+x).classList.toggle("on",x===v));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  drVista(v==="d");if(v==="g")renderGral();if(v==="p")renderPagos();if(v==="c")initReg();if(v==="t")renderTorneo();if(v==="l")renderLista();
+}
+const vista=()=>["t","d","l","g","p","c"].find(x=>$("v-"+x).classList.contains("on"));
 function elegir(){
   const h=new Date().toISOString().slice(0,10),m=D.actual&&get(D.actual);
   const terminado=t=>t&&t.fin&&h>dMas(t.fin,1);
@@ -832,13 +1071,13 @@ async function iniciar(){
   try{D=window.__DATOS__?window.__DATOS__.D:await dato("datos","__D");}
   catch(e){$("status").textContent="No se pudieron cargar los datos. Abre la página publicada en GitHub Pages, o espera a que Actions genere data/datos.js y haz Pull.";return;}
   document.title="Distinguidos PGA Tour "+(D.temporada||"");$("año").textContent=D.temporada||"";
-  cur=elegir();
+  cur=elegir();DR.id=cur;iniciarDraftUI();cargarDrafts().then(()=>{const v=vista();if(v&&v!=="d")show(v);});
   document.querySelector("nav").addEventListener("click",e=>{const b=e.target.closest("button");if(b)show(b.dataset.v);});
   $("chips").addEventListener("click",e=>{const b=e.target.closest("[data-id]");if(b){cur=b.dataset.id;renderTorneo();}});
   $("pagos").addEventListener("click",e=>{const b=e.target.closest("[data-mes]");if(b){mesSel=b.dataset.mes;renderPagos();}});
   $("lista").addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b){cur=b.dataset.open;show("t");scrollTo(0,0);}});
-  await cargar(true);show("t");
-  if(!window.__DATOS__){setInterval(()=>cargar(false),300000);vivo();setInterval(()=>{if(document.visibilityState==="visible")vivo();},60000);}
+  await cargar(true);show(ABRIR_DRAFT?"d":"t");
+  if(!window.__DATOS__){setInterval(()=>{cargar(false);cargarDrafts();},300000);vivo();setInterval(()=>{if(document.visibilityState==="visible")vivo();},60000);}
 }
 iniciar();
 </script>

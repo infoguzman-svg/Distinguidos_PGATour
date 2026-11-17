@@ -107,14 +107,10 @@ def main():
                 del actual["torneos"][t["id"]]; cambio = True
                 print(f"[{t['n']}] se borraron posiciones anteriores que no eran válidas")
             continue
-        mios = {}
         for jugadores in t["sel"].values():
             for j in jugadores:
-                if norm(j) in todas: mios[norm(j)] = todas[norm(j)]
-                else: print(f"[{t['n']}] no encontrado en el leaderboard: {j}")
-        if not mios:
-            print(f"[{t['n']}] ningún jugador coincidió. Ejemplos del leaderboard: {[nombre(c) for c in comp[:5]]}")
-            continue
+                if norm(j) not in todas: print(f"[{t['n']}] no encontrado en el leaderboard: {j}")
+        mios = dict(todas)   # se guarda todo el campo: así también sirven las elecciones hechas en el draft de la web
         if actual["torneos"].get(t["id"]) != mios:
             actual["torneos"][t["id"]] = mios; cambio = True
         print(f"[{t['n']}] {len(mios)} jugadores con posición")
