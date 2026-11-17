@@ -30,7 +30,8 @@
   },
   "corte": {
    "cuota": 2000,
-   "redondeo": 100
+   "redondeo": 100,
+   "beneficencia": 2000
   }
  },
  "escalaPos": [
@@ -497,7 +498,8 @@
      "Cristóbal",
      "Pedro",
      "José Miguel"
-    ]
+    ],
+    "benef": []
    }
   },
   {
@@ -548,7 +550,8 @@
     ],
     "ganan": [
      "Cristóbal"
-    ]
+    ],
+    "benef": []
    }
   },
   {
@@ -599,7 +602,8 @@
     "ganan": [
      "Sebastián",
      "Cafeta"
-    ]
+    ],
+    "benef": []
    }
   },
   {
@@ -650,7 +654,8 @@
     ],
     "ganan": [
      "Pedro"
-    ]
+    ],
+    "benef": []
    }
   },
   {
@@ -701,7 +706,8 @@
     ],
     "ganan": [
      "Cristóbal"
-    ]
+    ],
+    "benef": []
    }
   },
   {
@@ -912,7 +918,8 @@
     ],
     "ganan": [
      "José Miguel"
-    ]
+    ],
+    "benef": []
    }
   },
   {
@@ -1003,7 +1010,8 @@
      "Cristóbal",
      "Cafeta",
      "José Miguel"
-    ]
+    ],
+    "benef": []
    }
   },
   {
@@ -1031,7 +1039,8 @@
     ],
     "ganan": [
      "Sebastián"
-    ]
+    ],
+    "benef": []
    }
   },
   {
@@ -1082,7 +1091,8 @@
     "ganan": [
      "Sebastián",
      "Cristóbal"
-    ]
+    ],
+    "benef": []
    }
   },
   {
@@ -1193,7 +1203,8 @@
     ],
     "ganan": [
      "Cafeta"
-    ]
+    ],
+    "benef": []
    }
   },
   {
