@@ -3,7 +3,7 @@
 ## 1. Qué herramientas son y qué hace cada una
 | Pieza | Para qué sirve | Quién la maneja |
 |---|---|---|
-| **Excel** (`Selecciones_2026.xlsx`) | Es el único lugar donde cargas torneos y jugadores elegidos. | Tú |
+| **Excel** (`Selecciones_2027.xlsx`) | Es el único lugar donde cargas torneos y jugadores elegidos. | Tú |
 | **GitHub** (tu repositorio) | Guarda los archivos y los publica como página web gratuita (GitHub Pages). | Tú, desde el escritorio |
 | **GitHub Actions** (tarea programada) | Cada 10 minutos lee el leaderboard, calcula y vuelve a publicar la página. | Se ejecuta sola |
 | **La página** (`index.html`) | Muestra clasificación, torneo actual y calendario a tus amigos. | Nadie: se actualiza sola |
@@ -13,7 +13,7 @@ Tus amigos solo ven la página. Solo tú puedes cambiar la planilla.
 ## 2. Rutina para cada torneo nuevo (5 minutos)
 Ejemplo ilustrativo: el *Butterfield Bermuda Championship*, clase Top 2, del 22 al 25 de octubre. Los jugadores del ejemplo son inventados; usa los de tus amigos.
 
-1. **Abre la planilla.** Ve a `Escritorio\Distinguidos_PGATour` y abre `Selecciones_2026.xlsx`.
+1. **Abre la planilla.** Ve a `Escritorio\Distinguidos_PGATour` y abre `Selecciones_2027.xlsx`.
 2. **Hoja `Torneos`: agrega una fila AL FINAL.** El orden de la hoja es el orden del calendario (se usa para los desempates).
 
    | Torneo | Clase | Inicio | Fin | Actual (Sí) | Mes |
@@ -52,16 +52,16 @@ Ejemplo ilustrativo: el *Butterfield Bermuda Championship*, clase Top 2, del 22 
 - Primer día: abre el registro (sección 3) y confirma que diga "20 jugadores con posición". Si hay jugadores "no encontrado", corrige la ortografía en el Excel según el leaderboard.
 - Cuando termine el torneo y el resultado final esté cargado, no hace falta hacer nada. Al pasar al torneo siguiente, mueves el "Sí" de *Actual*.
 
-## 3c. Pestaña Pagos (Pagos_2026.xlsx)
-La pestaña **Pagos** calcula sola cuánto recibe y cuánto debe pagar cada participante, mes a mes. Se alimenta de `Selecciones_2026.xlsx` (posiciones) y del archivo `Pagos_2026.xlsx` (reglas y corte), que va en la carpeta principal del repositorio.
+## 3c. Pestaña Pagos (Pagos_2027.xlsx)
+La pestaña **Pagos** calcula sola cuánto recibe y cuánto debe pagar cada participante, mes a mes. Se alimenta de `Selecciones_2027.xlsx` (posiciones) y del archivo `Pagos_2027.xlsx` (reglas y corte), que va en la carpeta principal del repositorio.
 - **Premios automáticos:** en cada torneo con resultados, el **Ganador** (1° de la polla) y el **Campeón** (dueño del jugador que ganó el torneo real) reciben el premio de la clase (hoja `Premios`). Si son la misma persona, recibe ambos. Cada premio lo pagan en partes iguales los demás participantes.
-- **Corte (manual):** después de cada torneo con corte, anota en la hoja `Corte` de `Pagos_2026.xlsx` una fila por participante con su **Rol** (nombre del torneo igual al de `Selecciones_2026.xlsx`): **Gana** (pasó el corte con sus 4 jugadores y recibe el bono), **Paga** (no lo logró) o **Beneficencia** (no pasó ninguno de sus 4 jugadores; anótalo también como Paga). Cada uno de los que pagan aporta una cuota fija de $2.000, y las cuotas se reparten en partes iguales entre los que ganan (con 6 participantes el reparto es siempre exacto; el redondeo a $100 solo se usa en los torneos de 2026 con 5 participantes). Quien queda en Beneficencia paga además $2.000 extra, que se acumula aparte como pago especial y no entra en el neto entre participantes. **Si nadie gana el bono, no se paga nada.** Si el torneo no tiene corte, no anotes nada.
+- **Corte (manual):** después de cada torneo con corte, anota en la hoja `Corte` de `Pagos_2027.xlsx` una fila por participante con su **Rol** (nombre del torneo igual al de `Selecciones_2027.xlsx`): **Gana** (pasó el corte con sus 4 jugadores y recibe el bono) o **Paga** (no lo logró). Cada uno de los que pagan aporta una cuota fija de $2.000, y las cuotas se reparten en partes iguales entre los que ganan (con 6 participantes el reparto es siempre exacto; el redondeo a $100 solo se usa en los torneos de 2026 con 5 participantes). **Si nadie gana el bono, no se paga nada.** Si el torneo no tiene corte, no anotes nada.
 - **Torneos sin jugadores cargados:** si solo tienes los puestos, anota al campeón en `Campeones manuales`.
 - **Primer módulo (mes):** al abrir la pestaña aparece el mes del torneo marcado como *Actual*, con una tabla como tu Excel: cada torneo en una columna (clase, ganador y campeón), lo que gana cada participante y, a la derecha, el acumulado del mes (premios ganados, premios que paga, corte y neto). Los otros meses se eligen con la botonera de arriba.
 - **Mes cerrado:** son los meses anteriores al mes del torneo marcado como *Actual*. El mes en curso se muestra como provisorio (⏳) porque las posiciones pueden cambiar.
 - **Seis o más participantes:** la regla es la misma; cada premio lo pagan en partes iguales todos los demás.
 - **Liquidación:** en cada mes, la página muestra el neto de cada uno y la lista de quién le paga a quién con el menor número de transferencias.
-- Para cambiar los montos de los premios o la cuota del corte, edita las hojas `Premios` de `Pagos_2026.xlsx` y sube el archivo como siempre.
+- Para cambiar los montos de los premios o la cuota del corte, edita las hojas `Premios` de `Pagos_2027.xlsx` y sube el archivo como siempre.
 
 ## 3d. Actualización en vivo (Vercel)
 Además de la tarea de GitHub (cada 10 minutos aprox.), la página consulta cada 60 segundos la función `api/leaderboard.js` de Vercel, que lee el leaderboard de ESPN. Mientras el torneo marcado como *Actual* esté en su ventana de fechas (de un día antes del Inicio a un día después del Fin) y alguien tenga la página abierta, el encabezado dice "🔴 En vivo" y las posiciones se actualizan solas, sin esperar a GitHub.
@@ -129,8 +129,17 @@ Guarda y publica. Lo escrito aquí tiene prioridad sobre lo automático y aparec
 | Aparece "No se pudo cargar data/datos.json" | Abriste `index.html` con doble clic. Usa el link de tu página publicada. |
 | Los puntos de un torneo no cuadran | Revisa que cada participante tenga 4 jugadores y que el nombre del jugador coincida con el leaderboard. |
 
-## 7. Temporada 2027
-Crea un repositorio nuevo para 2027 (así 2026 queda guardado como historial), copia la carpeta del proyecto, borra `Selecciones_2026.xlsx` y deja `plantillas\Plantilla_vacia.xlsx` renombrada como `Selecciones_2027.xlsx` en la raíz. También vacía `data\posiciones.json` (`{"actualizado":"","torneos":{}}`).
+## 7. Temporadas: actual y archivadas
+La página muestra arriba un botón por temporada. La **actual** se arma con `Selecciones_2027.xlsx` y `Pagos_2027.xlsx` (el nombre que aparece en el título va en la hoja **Temporada** del Excel, por ejemplo *Pre-Temporada 2027*). Las **archivadas** son una foto fija guardada en `data\archivo\<id>\` y se ven con `?temporada=<id>` (solo consulta, sin draft ni actualización en vivo). La lista de archivadas está en `data\temporadas.json`.
+
+Los links personales del draft no cambian al pasar de temporada.
+
+**Para archivar la Pre-Temporada 2027 y empezar la Temporada 2027** (pídeselo a Claude o hazlo así):
+1. Crea la carpeta `data\archivo\pre2027\` y copia ahí `data\datos.json`, `data\posiciones.json` y `data\manual.json`. En esa copia de `datos.json` cambia `"nombre"` a `"Pre-Temporada 2027"`.
+2. Agrega la entrada en `data\temporadas.json`: `{"id":"pre2027","n":"Pre-Temporada 2027"}` (la más nueva primero).
+3. En `Selecciones_2027.xlsx` borra los torneos y selecciones de la pre-temporada, y en la hoja Temporada escribe *Temporada 2027*. En `Pagos_2027.xlsx` borra las filas de Corte y Campeones manuales.
+4. Deja `data\posiciones.json` como `{"actualizado":"","torneos":{}}`.
+5. Commit y Push.
 
 ## 8. Limitaciones que debes conocer
 - La fuente de posiciones es una API **no oficial** de ESPN. Puede cambiar o bloquearse sin aviso, y revisa sus términos de uso. Se probó con datos simulados, no contra la fuente real.

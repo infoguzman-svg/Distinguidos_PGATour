@@ -18,6 +18,11 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple
 .hero h1 b{color:var(--lime)}
 .sub{opacity:.8;font-size:.85rem;margin:4px 0 0}
 nav{display:flex;gap:6px}
+.temps{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.temps a{font-size:.75rem;font-weight:700;letter-spacing:.02em;text-decoration:none;color:#fff;padding:5px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06)}
+.temps a:hover{border-color:var(--lime)}
+.temps a.on{background:var(--lime);border-color:var(--lime);color:#000}
+.arch{background:#fbf5dc;border:1px solid #ecd98f;color:#5c4a06;border-radius:12px;padding:9px 12px;font-size:.85rem;margin-bottom:14px}
 nav button{flex:1;max-width:220px;border:0;background:rgba(255,255,255,.1);color:#fff;font:inherit;font-weight:600;font-size:.92rem;padding:11px 10px;border-radius:12px 12px 0 0;cursor:pointer}
 nav button.on{background:var(--bg);color:var(--g1)}
 main{max-width:980px;margin:0 auto;padding:18px 14px 50px}
@@ -190,6 +195,7 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
     <div>
       <h1>Distinguidos <b>PGA Tour</b> <span id="año"></span></h1>
       <p class="sub" id="status">Cargando…</p>
+      <div class="temps" id="temps"></div>
     </div>
   </div>
   <nav>
@@ -611,13 +617,23 @@ const av=i=>`<span class="av" style="background:${COL[i%COL.length]}22;border:2p
 const get=id=>D.torneos.find(t=>t.id===id);
 async function jget(u){const r=await fetch(u+"?t="+Date.now());if(!r.ok)throw new Error(u);return r.json();}
 function cargarJs(n,v){return new Promise((ok,no)=>{const s=document.createElement("script");s.src="data/"+n+".js?t="+Date.now();s.onload=()=>window[v]?ok(window[v]):no(new Error(n));s.onerror=()=>no(new Error(n));document.head.appendChild(s);});}
-async function dato(n,v){try{return await jget("data/"+n+".json");}catch(e){return await cargarJs(n,v);}}
+// Temporadas: la actual vive en data/; las archivadas en data/archivo/<id>/ (se ven con ?temporada=<id>, solo consulta)
+const TEMP=(()=>{try{return (new URL(location.href).searchParams.get("temporada")||"").replace(/[^a-z0-9-]/gi,"");}catch(e){return "";}})();
+const DDIR=TEMP?"data/archivo/"+TEMP+"/":"data/";
+async function dato(n,v){try{return await jget(DDIR+n+".json");}catch(e){if(TEMP)throw e;return await cargarJs(n,v);}}
+async function temporadas(){
+  let arch=[],nomAct=TEMP?"":(D.nombre||"Temporada "+(D.temporada||""));
+  try{arch=(await jget("data/temporadas.json")).archivo||[];}catch(e){}
+  if(TEMP){try{const a=await jget("data/datos.json");nomAct=a.nombre||"Temporada "+(a.temporada||"");}catch(e){nomAct="Temporada actual";}}
+  if(!arch.length&&!TEMP){$("temps").innerHTML="";return;}
+  $("temps").innerHTML=`<a href="${location.pathname}"${TEMP?"":' class="on"'}>${esc(nomAct)}</a>`+arch.map(x=>`<a href="${location.pathname}?temporada=${encodeURIComponent(x.id)}"${TEMP===x.id?' class="on"':""}>📦 ${esc(x.n)}</a>`).join("");
+}
 function pts(p){if(p<1)return 0;for(const [a,b,v] of D.escalaPos)if(p>=a&&p<=b)return v;return 0;}
 const API=window.API_URL||((location.hostname.endsWith("vercel.app")?"":"https://distinguidostour.vercel.app")+"/api/leaderboard");
 const LIVE={};                      // id del torneo -> {pos, at}
 const dMas=(f,n)=>{const d=new Date(f+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
 async function vivo(){
-  if(!D)return;
+  if(!D||TEMP)return;
   const t=get(elegir());if(!t||!t.ini||!t.fin)return;
   const hoy=new Date().toISOString().slice(0,10);
   if(hoy<dMas(t.ini,-1)||hoy>dMas(t.fin,1))return;                 // solo durante la ventana del torneo
@@ -746,7 +762,7 @@ function idx(nombres){return (nombres||[]).map(x=>D.participantes.findIndex(p=>n
 function pagosTorneo(t){
   const ps=D.participantes,r=calc(t);
   if(!r.place.some(p=>p>0))return null;
-  const z=()=>ps.map(()=>0),recP=z(),payP=z(),recC=z(),payC=z(),payB=z(),pg=D.pagos||{},pr=(pg.premios||{})[t.c]||[0,0];
+  const z=()=>ps.map(()=>0),recP=z(),payP=z(),recC=z(),payC=z(),pg=D.pagos||{},pr=(pg.premios||{})[t.c]||[0,0];
   const todos=ps.map((_,i)=>i),ixT=D.torneos.indexOf(t);
   const pri=ps.map(p=>{const k=D.torneos.findIndex(x=>(x.sel[p]||[]).length>0);return k<0?Infinity:k;});
   const act=todos.filter(i=>t.puestos?ixT>=pri[i]:(t.sel[ps[i]]||[]).length>0);   // activos en este torneo
@@ -754,26 +770,25 @@ function pagosTorneo(t){
   const cam=t.campeones?idx(t.campeones):(t.puestos?[]:todos.filter(i=>(t.sel[ps[i]]||[]).some(n=>parse(pos(t,n).v)===1)));
   const repartir=(S,monto)=>{if(!S.length||!monto)return;const pagan=act.filter(i=>!S.includes(i));S.forEach(i=>recP[i]+=monto/S.length);pagan.forEach(i=>payP[i]+=monto/pagan.length);};
   repartir(gan,pr[0]);repartir(cam,pr[1]);
-  let benef=0;const co=t.corte;
+  const co=t.corte;
   if(co){
-    const cfg=pg.corte||{},cu=cfg.cuota||2000,rd=cfg.redondeo||100,bf=cfg.beneficencia===undefined?2000:cfg.beneficencia;
-    const G_=idx(co.ganan),Bn=idx(co.benef),P_=[...new Set([...idx(co.pagan),...Bn])].filter(i=>!G_.includes(i));
+    const cfg=pg.corte||{},cu=cfg.cuota||2000,rd=cfg.redondeo||100;
+    const G_=idx(co.ganan),P_=[...new Set([...idx(co.pagan),...idx(co.benef)])].filter(i=>!G_.includes(i));
     if(G_.length&&P_.length){                      // sin ganadores del bono no se paga nada
       if(act.length>=6){P_.forEach(i=>payC[i]+=cu);G_.forEach(i=>recC[i]+=cu*P_.length/G_.length);}   // 6 participantes: cuota fija y reparto exacto
       else{const c1=Math.ceil(cu/G_.length/rd)*rd;P_.forEach(i=>payC[i]+=c1*G_.length);G_.forEach(i=>recC[i]+=c1*P_.length);}   // torneos de 2026 (5 participantes)
-      Bn.forEach(i=>{payB[i]+=bf;benef+=bf;});     // pago especial a beneficencia (aparte del neto entre participantes)
     }
   }
-  return{recP,payP,recC,payC,payB,gan,cam,pr,benef,corte:co||null};
+  return{recP,payP,recC,payC,gan,cam,pr,corte:co||null};
 }
 function meses(){
   const o=[],mp={},ps=D.participantes,z=()=>ps.map(()=>0);
   D.torneos.forEach(t=>{if(!t.m)return;if(!mp[t.m]){mp[t.m]={m:t.m,ts:[]};o.push(mp[t.m]);}mp[t.m].ts.push(t);});
-  o.forEach(x=>{x.netP=z();x.netC=z();x.gP=z();x.pP=z();x.bn=z();x.benef=0;x.jug=0;
-    x.det=x.ts.map(t=>{const p=pagosTorneo(t);if(p){x.jug++;ps.forEach((_,i)=>{x.netP[i]+=p.recP[i]-p.payP[i];x.netC[i]+=p.recC[i]-p.payC[i];x.gP[i]+=p.recP[i];x.pP[i]+=p.payP[i];x.bn[i]+=p.payB[i];});x.benef+=p.benef;}return{t,p};});
+  o.forEach(x=>{x.netP=z();x.netC=z();x.gP=z();x.pP=z();x.jug=0;
+    x.det=x.ts.map(t=>{const p=pagosTorneo(t);if(p){x.jug++;ps.forEach((_,i)=>{x.netP[i]+=p.recP[i]-p.payP[i];x.netC[i]+=p.recC[i]-p.payC[i];x.gP[i]+=p.recP[i];x.pP[i]+=p.payP[i];});}return{t,p};});
     x.net=x.netP.map((v,i)=>v+x.netC[i]);});
   const ta=get(elegir());const act=ta&&ta.m?ta.m:(o.filter(x=>x.jug).slice(-1)[0]||{}).m;
-  o.forEach(x=>{x.cerrado=x.jug>0&&mi(x.m)<mi(act);});
+  o.forEach(x=>{x.cerrado=x.jug>0&&(!!TEMP||mi(x.m)<mi(act));});   // en una temporada archivada todos los meses quedan cerrados
   return{lista:o,act};
 }
 function transferencias(net){
@@ -793,31 +808,30 @@ function renderPagos(){
   if(!vis.length){$("pagos").innerHTML="<p class='hint'>Aún no hay torneos con resultados para calcular pagos.</p>";return;}
   if(!mesSel||!vis.some(x=>x.m===mesSel))mesSel=(vis.find(x=>x.m===act)||vis[vis.length-1]).m;
   const x=vis.find(y=>y.m===mesSel),cerr=x.cerrado,N=ps.length,mn=MESN[x.m]||x.m;
-  const sum=k=>ps.map((_,i)=>lista.reduce((s,y)=>s+y[k][i],0)),tp=sum("netP"),tc=sum("netC"),tot=sum("net"),tb=sum("bn");
+  const sum=k=>ps.map((_,i)=>lista.reduce((s,y)=>s+y[k][i],0)),tp=sum("netP"),tc=sum("netC"),tot=sum("net");
   const sg=a=>a.reduce((s,v)=>s+v,0);
   let h=`<h2>Pagos de ${esc(mn)} <span class="cerr ${cerr?"ok":""}">${cerr?"Mes cerrado":"Mes en curso · se acumula con cada torneo"}</span></h2>`;
   h+=`<div class="chips">`+vis.map(y=>`<button class="chip${y.m===mesSel?" on":""}" data-mes="${esc(y.m)}"><i style="--c:#c6f613"></i>${esc(y.m)}${y.cerrado?" 🔒":" ⏳"}</button>`).join("")+`</div>`;
-  h+=`<div class="card scroll"><table class="gm"><thead><tr><th class="sk">TORNEO</th>`+x.det.map(({t})=>`<th class="tc" style="--c:${ccol(t.c)}">${esc(t.c)}</th>`).join("")+`<th rowspan="4" class="tt">Premios<br>ganados</th><th rowspan="4" class="tt">Premios<br>que paga</th><th rowspan="4" class="tt">Corte</th><th rowspan="4" class="nt">Neto<br>del mes</th><th rowspan="4" class="tt">Benefi-<br>cencia</th></tr>`;
+  h+=`<div class="card scroll"><table class="gm"><thead><tr><th class="sk">TORNEO</th>`+x.det.map(({t})=>`<th class="tc" style="--c:${ccol(t.c)}">${esc(t.c)}</th>`).join("")+`<th rowspan="4" class="tt">Premios<br>ganados</th><th rowspan="4" class="tt">Premios<br>que paga</th><th rowspan="4" class="tt">Corte</th><th rowspan="4" class="nt">Neto<br>del mes</th></tr>`;
   h+=`<tr><th class="sk" style="background:var(--soft);color:var(--ink)"></th>`+x.det.map(({t})=>`<th class="tn">${esc(t.n)}</th>`).join("")+`</tr>`;
   const nm=a=>a.length?a.map(i=>esc(ps[i])).join(", "):"–";
   h+=`<tr><th class="sk" style="background:var(--card);color:var(--ink)">⛳ Ganador</th>`+x.det.map(({p})=>`<td class="wr">${p?nm(p.gan):"·"}</td>`).join("")+`</tr>`;
   h+=`<tr><th class="sk" style="background:var(--card);color:var(--ink)">👑 Campeón</th>`+x.det.map(({p})=>`<td class="wr">${p?nm(p.cam):"·"}</td>`).join("")+`</tr></thead><tbody>`;
   ps.forEach((_,i)=>{
     h+=`<tr><td class="sk"><div class="who">${av(i)}${esc(ps[i])}</div></td>`+x.det.map(({p})=>`<td>${p&&p.recP[i]>0?`<b class="pos">${CLP(p.recP[i])}</b>`:`<span class="mut">${p?"$0":"·"}</span>`}</td>`).join("");
-    h+=`<td class="tt">${x.gP[i]?CLP(x.gP[i]):"$0"}</td><td class="tt ${x.pP[i]?"neg":""}">${x.pP[i]?CLP(-x.pP[i]):"$0"}</td><td class="tt ${cls(x.netC[i])}">${x.netC[i]?CLP(x.netC[i]):"$0"}</td><td class="nt ${cls(x.net[i])}">${CLP(x.net[i])}</td><td class="tt ${x.bn[i]?"neg":""}">${x.bn[i]?CLP(-x.bn[i]):"$0"}</td></tr>`;});
-  h+=`</tbody><tfoot><tr><td class="sk">REPARTO</td>`+x.det.map(({p})=>`<td>${p?CLP(sg(p.recP)):"·"}</td>`).join("")+`<td>${CLP(sg(x.gP))}</td><td>${sg(x.pP)?CLP(-sg(x.pP)):"$0"}</td><td>${sg(x.netC)?CLP(sg(x.netC)):"$0"}</td><td>${CLP(sg(x.net))}</td><td>${x.benef?CLP(-x.benef):"$0"}</td></tr></tfoot></table></div>`;
-  h+=`<p class="hint">Cada torneo muestra lo que gana cada participante. A la derecha se acumula el mes: <b>Neto = Premios ganados − Premios que paga ± Corte</b> (entre participantes). La <b>Beneficencia</b> es un pago especial aparte: no entra en el neto. Verde: recibe · Rojo: debe pagar.${cerr?"":" Mientras el mes sigue en curso, los montos son provisorios."}</p>`;
+    h+=`<td class="tt">${x.gP[i]?CLP(x.gP[i]):"$0"}</td><td class="tt ${x.pP[i]?"neg":""}">${x.pP[i]?CLP(-x.pP[i]):"$0"}</td><td class="tt ${cls(x.netC[i])}">${x.netC[i]?CLP(x.netC[i]):"$0"}</td><td class="nt ${cls(x.net[i])}">${CLP(x.net[i])}</td></tr>`;});
+  h+=`</tbody><tfoot><tr><td class="sk">REPARTO</td>`+x.det.map(({p})=>`<td>${p?CLP(sg(p.recP)):"·"}</td>`).join("")+`<td>${CLP(sg(x.gP))}</td><td>${sg(x.pP)?CLP(-sg(x.pP)):"$0"}</td><td>${sg(x.netC)?CLP(sg(x.netC)):"$0"}</td><td>${CLP(sg(x.net))}</td></tr></tfoot></table></div>`;
+  h+=`<p class="hint">Cada torneo muestra lo que gana cada participante. A la derecha se acumula el mes: <b>Neto = Premios ganados − Premios que paga ± Corte</b> (entre participantes). Verde: recibe · Rojo: debe pagar.${cerr?"":" Mientras el mes sigue en curso, los montos son provisorios."}</p>`;
   const co=x.det.filter(({p})=>p&&p.corte&&((p.corte.pagan||[]).length||(p.corte.benef||[]).length));
-  if(co.length)h+=`<p class="hint"><b>Corte del mes:</b> `+co.map(({t,p})=>{const c=p.corte,g=(c.ganan||[]).length,pa=new Set([...idx(c.pagan),...idx(c.benef)]).size,b=(c.benef||[]).length;return g?`${esc(t.n)} (${pa} pagan · ${g} ganan${b?` · ${b} a beneficencia`:""})`:`${esc(t.n)} (sin bono: nadie paga)`;}).join(" · ")+`.</p>`;
+  if(co.length)h+=`<p class="hint"><b>Corte del mes:</b> `+co.map(({t,p})=>{const c=p.corte,g=(c.ganan||[]).length,pa=new Set([...idx(c.pagan),...idx(c.benef)]).size;return g?`${esc(t.n)} (${pa} pagan · ${g} ganan)`:`${esc(t.n)} (sin bono: nadie paga)`;}).join(" · ")+`.</p>`;
   h+=`<h2>Quién le paga a quién en ${esc(mn)}</h2><div class="card">${tablaTransf(x.net)}</div>`;
   h+=`<p class="hint">Es la liquidación con menos transferencias posible para dejar a todos en cero.${cerr?"":" Como el mes sigue en curso, puede cambiar."}</p>`;
-  if(x.benef)h+=`<h2>Pago especial: Beneficencia · ${esc(mn)}</h2><div class="card">`+ps.map((p,i)=>x.bn[i]?`<div class="xfer">${av(i)}<span><b style="margin:0;font-size:1rem">${esc(p)}</b> aporta a beneficencia</span><b class="neg">${CLP(x.bn[i])}</b></div>`:"").join("")+`<div class="xfer"><span>Total del mes</span><b>${CLP(x.benef)}</b></div></div>`;
-  h+=`<h2>Acumulado de la temporada</h2><div class="card scroll"><table><tr><th>Participante</th><th class="n">Premios</th><th class="n">Corte</th><th class="n">Total</th><th class="n">Beneficencia</th></tr>`;
-  ord(N,i=>tot[i]).forEach(i=>{h+=`<tr><td><div class="who">${av(i)}${esc(ps[i])}</div></td><td class="n ${cls(tp[i])}">${CLP(tp[i])}</td><td class="n ${cls(tc[i])}">${CLP(tc[i])}</td><td class="n tot ${cls(tot[i])}">${CLP(tot[i])}</td><td class="n ${tb[i]?"neg":""}">${tb[i]?CLP(-tb[i]):"$0"}</td></tr>`;});
-  h+=`</table></div><p class="hint">Suma de todos los meses con resultados.${sg(tb)?` Beneficencia acumulada de la temporada: <b>${CLP(sg(tb))}</b>.`:""}</p>`;
+  h+=`<h2>Acumulado de la temporada</h2><div class="card scroll"><table><tr><th>Participante</th><th class="n">Premios</th><th class="n">Corte</th><th class="n">Total</th></tr>`;
+  ord(N,i=>tot[i]).forEach(i=>{h+=`<tr><td><div class="who">${av(i)}${esc(ps[i])}</div></td><td class="n ${cls(tp[i])}">${CLP(tp[i])}</td><td class="n ${cls(tc[i])}">${CLP(tc[i])}</td><td class="n tot ${cls(tot[i])}">${CLP(tot[i])}</td></tr>`;});
+  h+=`</table></div><p class="hint">Suma de todos los meses con resultados.</p>`;
   h+=`<details class="calc"><summary>Liquidación acumulada de la temporada (todos los meses)</summary><div style="margin-top:8px">${tablaTransf(tot)}</div><p class="hint">Úsala solo si no has liquidado mes a mes; si ya pagaron algún mes, descuéntalo.</p></details>`;
-  const pr=pg.premios||{},cf=pg.corte||{},cu=cf.cuota||2000,bf=cf.beneficencia===undefined?2000:cf.beneficencia;
-  h+=`<details class="calc"><summary>Cómo se calcula</summary><p>En cada torneo se pagan dos premios: <b>Ganador</b> (1° de la polla) y <b>Campeón</b> (dueño del jugador que ganó el torneo real). Si es la misma persona recibe ambos; si son distintas, cada una recibe el suyo. Cada premio lo pagan en partes iguales todos los demás participantes.</p><table><tr><th>Clase</th><th class="n">Ganador</th><th class="n">Campeón</th></tr>`+Object.keys(pr).map(c=>`<tr><td><span class="cb" style="--c:${ccol(c)}">${esc(c)}</span></td><td class="n">${CLP(pr[c][0])}</td><td class="n">${CLP(pr[c][1])}</td></tr>`).join("")+`</table><p><b>Corte:</b> si el torneo tiene corte, los participantes que lo pasan con sus 4 jugadores reciben un bono. Lo pagan los demás: cada uno una cuota fija de ${CLP(cu)}. Las cuotas se juntan y se reparten en partes iguales entre quienes lo reciben; con 6 participantes el reparto es siempre exacto (en los torneos de 2026, con 5 participantes, cada parte se redondeaba a ${CLP(cf.redondeo||100)}). Si nadie lo pasa con sus 4 jugadores, no se paga nada.</p><p><b>Beneficencia:</b> quien no pasa ninguno de sus 4 jugadores paga además ${CLP(bf)} extra a beneficencia. Es un pago especial que se acumula aparte y no entra en el neto entre participantes.</p><p><b>Neto del mes = premios recibidos − premios que le toca pagar + bono de corte recibido − cuotas de corte.</b></p></details>`;
+  const pr=pg.premios||{},cf=pg.corte||{},cu=cf.cuota||2000;
+  h+=`<details class="calc"><summary>Cómo se calcula</summary><p>En cada torneo se pagan dos premios: <b>Ganador</b> (1° de la polla) y <b>Campeón</b> (dueño del jugador que ganó el torneo real). Si es la misma persona recibe ambos; si son distintas, cada una recibe el suyo. Cada premio lo pagan en partes iguales todos los demás participantes.</p><table><tr><th>Clase</th><th class="n">Ganador</th><th class="n">Campeón</th></tr>`+Object.keys(pr).map(c=>`<tr><td><span class="cb" style="--c:${ccol(c)}">${esc(c)}</span></td><td class="n">${CLP(pr[c][0])}</td><td class="n">${CLP(pr[c][1])}</td></tr>`).join("")+`</table><p><b>Corte:</b> si el torneo tiene corte, los participantes que lo pasan con sus 4 jugadores reciben un bono. Lo pagan los demás: cada uno una cuota fija de ${CLP(cu)}. Las cuotas se juntan y se reparten en partes iguales entre quienes lo reciben; con 6 participantes el reparto es siempre exacto (en los torneos de 2026, con 5 participantes, cada parte se redondeaba a ${CLP(cf.redondeo||100)}). Si nadie lo pasa con sus 4 jugadores, no se paga nada.</p><p><b>Neto del mes = premios recibidos − premios que le toca pagar + bono de corte recibido − cuotas de corte.</b></p></details>`;
   $("pagos").innerHTML=h;
 }
 let regListo=false;
@@ -857,7 +871,7 @@ const CUOTAS_URL=DRAFT_URL.replace(/draft$/,"cuotas");
 const ESTADO={preparando:"En preparación","en curso":"En curso",pausado:"En pausa",terminado:"Terminado ✅"};
 let DRAFTS={},DR={id:null,d:null,yo:null,admin:false,err:"",msg:"",filtro:"",todos:false,skew:0,como:"",firma:""},drInt=null,drRel=null;
 function aplicarDrafts(){if(!D)return;D.torneos.forEach(t=>{const s=DRAFTS[t.id];if(s)t.sel=Object.assign({},t.sel,s);});memo={};}
-async function cargarDrafts(){try{const r=await fetch(DRAFT_URL+"?todos=1");const j=await r.json();if(j.ok){DRAFTS=j.drafts||{};aplicarDrafts();}}catch(e){}}
+async function cargarDrafts(){if(TEMP)return;try{const r=await fetch(DRAFT_URL+"?todos=1");const j=await r.json();if(j.ok){DRAFTS=j.drafts||{};aplicarDrafts();}}catch(e){}}
 function selDe(d){const s={};(d.picks||[]).forEach(x=>(s[x.p]=s[x.p]||[]).push(x.j));return s;}
 function drRecibir(j){if("d" in j)DR.d=j.d;if(j.yo!==undefined)DR.yo=j.yo;if(j.admin!==undefined)DR.admin=!!j.admin;if(j.tokens)DR.tokens=j.tokens;if(j.avisos)DR.avisos=j.avisos;if(j.cfgAvisos)DR.cfgAvisos=j.cfgAvisos;if(j.misAvisos)DR.misAvisos=j.misAvisos;if(j.modoAvisos)DR.modoAvisos=j.modoAvisos;if(j.grupoAvisos!==undefined)DR.grupoAvisos=j.grupoAvisos;if(j.grupos)DR.grupos=j.grupos;if(j.estadoGreen!==undefined)DR.estadoGreen=j.estadoGreen;DR.err="";if(DR.admin&&D&&DR.tokens&&!DR.pidioLinks&&D.participantes.some(p=>!DR.tokens[p])){DR.pidioLinks=true;setTimeout(()=>drPost({accion:"links",participantes:D.participantes}),0);}if(j.d){DR.skew=(j.d.ahora||Date.now())-Date.now();DRAFTS[DR.id]=selDe(j.d);aplicarDrafts();}}
 async function drCargar(){
@@ -1099,14 +1113,17 @@ async function cargar(inicial){
 async function iniciar(){
   try{D=window.__DATOS__?window.__DATOS__.D:await dato("datos","__D");}
   catch(e){$("status").textContent="No se pudieron cargar los datos. Abre la página publicada en GitHub Pages, o espera a que Actions genere data/datos.js y haz Pull.";return;}
-  document.title="Distinguidos PGA Tour "+(D.temporada||"");$("año").textContent=D.temporada||"";
+  const nomT=D.nombre||("Temporada "+(D.temporada||""));
+  document.title="Distinguidos PGA Tour · "+nomT;$("año").textContent=nomT;temporadas();
+  if(TEMP){ABRIR_DRAFT=false;const bd=document.querySelector('nav button[data-v="d"]');if(bd)bd.style.display="none";
+    document.querySelector("main").insertAdjacentHTML("afterbegin",`<div class="arch">📦 Estás viendo el archivo de la <b>${esc(nomT)}</b> (solo consulta). Para volver, toca el botón de la temporada actual arriba.</div>`);}
   cur=elegir();DR.id=cur;iniciarDraftUI();cargarDrafts().then(()=>{const v=vista();if(v&&v!=="d")show(v);});
   document.querySelector("nav").addEventListener("click",e=>{const b=e.target.closest("button");if(b)show(b.dataset.v);});
   $("chips").addEventListener("click",e=>{const b=e.target.closest("[data-id]");if(b){cur=b.dataset.id;renderTorneo();}});
   $("pagos").addEventListener("click",e=>{const b=e.target.closest("[data-mes]");if(b){mesSel=b.dataset.mes;renderPagos();}});
   $("lista").addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b){cur=b.dataset.open;show("t");scrollTo(0,0);}});
   await cargar(true);show(ABRIR_DRAFT?"d":"t");
-  if(!window.__DATOS__){setInterval(()=>{cargar(false);cargarDrafts();},300000);vivo();setInterval(()=>{if(document.visibilityState==="visible")vivo();},60000);}
+  if(!window.__DATOS__&&!TEMP){setInterval(()=>{cargar(false);cargarDrafts();},300000);vivo();setInterval(()=>{if(document.visibilityState==="visible")vivo();},60000);}
 }
 iniciar();
 </script>

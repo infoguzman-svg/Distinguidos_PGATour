@@ -78,7 +78,7 @@ for r in filas("Puestos manuales"):
 
 # --- Pagos (opcional): archivo aparte Pagos_AAAA.xlsx con Premios, Corte y Campeones manuales ---
 pagos = {"premios": {"Major": [15000, 5000], "Elite": [10000, 5000], "Top 1": [4000, 3000], "Top 2": [3000, 2000]},
-         "corte": {"cuota": 2000, "redondeo": 100, "beneficencia": 2000}}
+         "corte": {"cuota": 2000, "redondeo": 100}}
 archivos_pagos = sorted(RAIZ.glob("Pagos_*.xlsx"))
 if archivos_pagos:
     wp = openpyxl.load_workbook(archivos_pagos[-1], data_only=True)
@@ -94,13 +94,13 @@ if archivos_pagos:
             etiqueta, valor = txt(wp["Premios"].cell(fila, 5).value).lower(), wp["Premios"].cell(fila, 6).value
             if isinstance(valor, (int, float)) and "cuota" in etiqueta: pagos["corte"]["cuota"] = int(valor)
             if isinstance(valor, (int, float)) and "redondeo" in etiqueta: pagos["corte"]["redondeo"] = int(valor)
-            if isinstance(valor, (int, float)) and "benef" in etiqueta: pagos["corte"]["beneficencia"] = int(valor)
     por_id = {t["id"]: t for t in torneos}
     for r in filas_p("Corte"):
         t = por_id.get(slug(txt(r[0]))); rol = txt(r[2]).lower()
         if not t or not txt(r[1]) or rol[:3] not in ("pag", "gan", "ben"):
             print(f"ADVERTENCIA: fila de Corte no reconocida: {txt(r[0])} / {txt(r[1])} / {rol}"); continue
-        t.setdefault("corte", {"pagan": [], "ganan": [], "benef": []})[{"pag": "pagan", "gan": "ganan", "ben": "benef"}[rol[:3]]].append(txt(r[1]))
+        # (la Beneficencia ya no se usa: si aparece, cuenta solo como "Paga")
+        t.setdefault("corte", {"pagan": [], "ganan": []})[{"pag": "pagan", "gan": "ganan", "ben": "pagan"}[rol[:3]]].append(txt(r[1]))
     for r in filas_p("Campeones manuales"):
         t = por_id.get(slug(txt(r[0])))
         if not t or not txt(r[1]):
@@ -109,10 +109,13 @@ if archivos_pagos:
     print(f"pagos cargados desde {archivos_pagos[-1].name}")
 
 temporada = (re.search(r"(\d{4})", XLSX.stem) or [None, str(dt.date.today().year)])[1]
-datos = {"temporada": temporada, "participantes": participantes, "iconos": iconos, "pagos": pagos, "escalaPos": escala, "clases": clases, "actual": actual, "torneos": torneos}
+nombre_temp = ""
+for r in filas("Temporada"):
+    if "nombre" in txt(r[0]).lower() and txt(r[1]): nombre_temp = txt(r[1])
+datos = {"temporada": temporada, "nombre": nombre_temp or f"Temporada {temporada}", "participantes": participantes, "iconos": iconos, "pagos": pagos, "escalaPos": escala, "clases": clases, "actual": actual, "torneos": torneos}
 (RAIZ / "data").mkdir(exist_ok=True)
 (RAIZ / "data" / "datos.json").write_text(json.dumps(datos, ensure_ascii=False, indent=1), encoding="utf-8")
-print(f"datos.json listo: {len(torneos)} torneos, {len(participantes)} participantes ({XLSX.name})")
+print(f"datos.json listo ({datos['nombre']}): {len(torneos)} torneos, {len(participantes)} participantes ({XLSX.name})")
 
 def escribir_js(nombre, var, obj):
     (RAIZ / "data" / f"{nombre}.js").write_text(f"window.{var}=" + json.dumps(obj, ensure_ascii=False) + ";", encoding="utf-8")
