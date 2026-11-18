@@ -180,6 +180,24 @@ function decidirAviso(st, ahora, cfg, forzar) {
   st.aviso = { ptr: st.ptr, t: ahora, n: nuevo ? 1 : (a.n || 0) + 1 }; st.avisoForzar = false; st.eventos = [];
   return { p: st.slots[st.ptr].p, r: st.slots[st.ptr].r, tipo: nuevo ? (renueva ? "renueva" : "turno") : "recordatorio", eventos: ev, urgente };
 }
+// Mensaje final al grupo: alineaciones de cada participante (en el orden en que eligió). 🤖 = elegido por el sistema.
+const ICONO = { "Cristóbal": "🐐", "Sebastián": "🦡", "Pedro": "🦈", "Cafeta": "🦌", "José Miguel": "🦕", "Benjamín": "⚰️" };
+function textoFin(st, link) {
+  const out = ["🏁 *Hemos finalizado la elección, ¡suerte a todos!* ⛳"];
+  const lim = st.limite ? Date.parse(st.limite) : null;
+  if (lim) {
+    const d = new Date(lim + 24 * 3600000).toLocaleDateString("es-CL", { timeZone: TZ, weekday: "long", day: "numeric" }).replace(",", "");
+    out.push(`*${st.n}* · parte el ${d}`);
+  } else out.push(`*${st.n}*`);
+  let bot = false;
+  for (const p of st.orden || []) {
+    const js = (st.picks || []).filter(x => x.p === p).map(x => { if (x.pre || x.auto) bot = true; return x.j + (x.pre || x.auto ? " 🤖" : ""); });
+    out.push("", `${ICONO[p] || "⛳"} *${p}*`, js.length ? js.join(" · ") : "—");
+  }
+  if (bot) out.push("", "_🤖 = elegido automáticamente_");
+  out.push("", `👉 ${link}`);
+  return out.join("\n");
+}
 function textoAviso(st, av, link) {
   const lim = st.limite ? Date.parse(st.limite) : null, vence = vencimiento(st), pend = pendientes(st);
   const lineas = [];
@@ -189,7 +207,7 @@ function textoAviso(st, av, link) {
     if (e.tipo === "pre") lineas.push(`🤖 *${e.p}* eligió automáticamente a *${e.j}* (de su preselección).`);
     if (e.tipo === "auto") lineas.push(`🤖 A *${e.p}* se le asignó automáticamente a *${e.j}* (mejor cotizado disponible).`);
   }
-  if (av.tipo === "fin") return [...lineas, `🏁 *Draft ${st.n} terminado.* Las alineaciones ya están en la página.`, `👉 ${link}`].join("\n");
+  if (av.tipo === "fin") return textoFin(st, link);
   if (av.tipo === "pendientes") return [...lineas, `⛔ *Draft ${st.n}:* pasaron todos los turnos.`,
     `Pendientes por elegir: ${pend.map(([p, n]) => `*${p}* (${n})`).join(", ")}. Pueden elegir apenas entren (acá estoy); el primero que conteste, elige primero.`,
     ...(st.cierreAt && enLead(st, Date.now()) ? [`⏱️ Hasta las *${horaCL(st.cierreAt)}*; después se completa automáticamente con los mejor cotizados disponibles y el draft se cierra.`] : []), `👉 ${link}`].join("\n");
