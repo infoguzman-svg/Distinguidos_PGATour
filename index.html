@@ -165,6 +165,12 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
 .dr-link a,.dr-wa{color:#128C7E;font-weight:700;text-decoration:none}
 .dr-pasos{margin:6px 0 8px 18px;padding:0}.dr-pasos li{margin:4px 0}
 .dr-consulta{margin-top:10px;padding:10px 12px;border:1px dashed var(--line);border-radius:12px;background:var(--bg)}.dr-consulta textarea{width:100%;font-size:.78rem;border-radius:8px;border:1px solid var(--line);padding:8px;background:var(--card)}
+.dr-j .dr-star{background:var(--card);color:var(--mut);border:1px solid var(--line);padding:5px 9px;font-weight:700}
+.dr-j .dr-star.on{background:var(--lime);color:#000;border-color:var(--lime)}
+.dr-prebox{border:1px dashed var(--lime)}
+.dr-prio{min-width:34px;font:700 .85rem "Space Grotesk",system-ui,sans-serif;color:#7A9A00}
+.dr-j .dr-mv{background:var(--card);color:var(--ink);border:1px solid var(--line);padding:4px 8px;font-size:.75rem}
+.dr-j .dr-mv:disabled{opacity:.3;cursor:default;transform:none}
 .dr-orden{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:6px 0}
 .hint{font-size:.8rem;color:var(--mut);margin-top:10px}
 .rules{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.84rem}
@@ -330,9 +336,10 @@ details.calc{background:var(--card);border:1px solid var(--line);border-radius:1
 <h2>Art. 10 · Turnos y ausencias</h2>
 <ul>
 <li><p><strong>Contingencia.</strong> Un participante con una contingencia puede pedir a otro integrante que haga su elección, dentro de los mismos tiempos acordados.</p></li>
-<li><p><strong>Turno perdido.</strong> Mientras el draft está en curso, nadie elige por el ausente. Si en lead time un participante no elige dentro de sus 10 minutos, pierde su turno y este pasa al siguiente; si pasan otros 10 minutos sin elección, pasa al siguiente, y así sucesivamente.</p></li>
+<li><p><strong>Turno perdido.</strong> Mientras el draft está en curso, nadie elige por el ausente, salvo su propia preselección (ver “Preselección”). Si en lead time un participante no elige dentro de sus 10 minutos, pierde su turno y este pasa al siguiente; si pasan otros 10 minutos sin elección, pasa al siguiente, y así sucesivamente.</p></li>
 <li><p><strong>Regreso.</strong> Cuando el participante ausente vuelve, avisa (“acá estoy”) y elige los jugadores que le falten, entre los que queden en la grilla en ese momento. Al participante que esté eligiendo en ese momento se le renuevan sus 10 minutos. Si hay varios pendientes, elige primero el que conteste primero.</p></li>
 <li><p><strong>Cierre automático.</strong> Al vencer el plazo del último turno, a quien aún no complete su lista se le asignan automáticamente los jugadores mejor cotizados que queden disponibles, de a uno y en el orden del draft, y el draft se cierra.</p></li>
+<li><p><strong>Preselección (elección automática).</strong> Cada participante puede marcar en su perfil de la pestaña Draft hasta 15 jugadores, ordenados según su propia prioridad (del #1 al #15), y activar la elección automática. Cuando le llega su turno, el sistema elige por él al jugador de mayor prioridad de su lista que siga libre. Es una elección del propio participante, hecha por adelantado; nadie más ve su lista. Si ninguno de sus preseleccionados está libre, elige él mismo como siempre.</p></li>
 </ul>
 <h2>Art. 11 · Retiro de una primera elección durante el draft</h2>
 <p>Si, mientras el draft no ha terminado, se retira del torneo por lesión u otra razón <strong>uno de los jugadores elegidos en la primera elección de cualquiera de los 6 participantes</strong>, el draft completo se <strong>resetea</strong> y comienza de nuevo desde el inicio.</p>
@@ -856,8 +863,8 @@ function drRecibir(j){if("d" in j)DR.d=j.d;if(j.yo!==undefined)DR.yo=j.yo;if(j.a
 async function drCargar(){
   if(!D)return;DR.id=DR.id||elegir();
   let firma=DR.firma;
-  try{const r=await fetch(DRAFT_URL+"?t="+encodeURIComponent(DR.id)+"&k="+encodeURIComponent(DADM||DTK||""));const j=await r.json();if(!j.ok)throw new Error(j.error);drRecibir(j);
-    const d=j.d;firma=JSON.stringify(d?[d.picks.length,d.estado,d.ptr,d.pend,d.pool.length,d.limite,d.lead,d.orden,j.yo,j.admin]:[null,j.yo,j.admin]);}
+  try{const r=await fetch(DRAFT_URL+"?t="+encodeURIComponent(DR.id)+"&k="+encodeURIComponent(DADM||DTK||"")+"&kp="+encodeURIComponent(DTK||""));const j=await r.json();if(!j.ok)throw new Error(j.error);drRecibir(j);
+    const d=j.d;firma=JSON.stringify(d?[d.picks.length,d.estado,d.ptr,d.pend,d.pool.length,d.limite,d.lead,d.orden,j.yo,j.admin,d.miPre]:[null,j.yo,j.admin]);}
   catch(e){DR.err=e.message||"No se pudo conectar con el draft";firma="error";}
   if(vista()!=="d")return;
   const foco=document.activeElement;
@@ -867,7 +874,7 @@ async function drCargar(){
   renderDraft();
 }
 async function drPost(o){
-  try{const r=await fetch(DRAFT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(Object.assign({t:DR.id,k:DADM||DTK||""},o))});const j=await r.json();if(!j.ok)throw new Error(j.error);drRecibir(j);DR.msg=o.msg||"";
+  try{const r=await fetch(DRAFT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(Object.assign({t:DR.id,k:DADM||DTK||"",kp:DTK||""},o))});const j=await r.json();if(!j.ok)throw new Error(j.error);drRecibir(j);DR.msg=o.msg||"";
     if(j.envio&&DR.admin)DR.msg=(DR.msg?DR.msg+" · ":"")+(j.envio.ok?"🔔 Aviso por WhatsApp enviado a "+j.envio.p:"No se pudo enviar el aviso a "+j.envio.p+" ("+j.envio.detalle+")");
     if(o.accion==="grupos")DR.msg=(j.grupos||[]).length?"Encontré "+j.grupos.length+" grupo(s) de WhatsApp: elige el del draft.":"No encontré grupos. Revisa que tu WhatsApp esté conectado en Green API y que pertenezcas al grupo.";
     if(j.prueba&&o.accion==="grupo_set")DR.msg=j.prueba.ok?"📲 Grupo «"+o.nombre+"» conectado: enviamos un mensaje de prueba al grupo.":"Grupo guardado, pero el envío de prueba respondió: “"+j.prueba.detalle+"”.";
@@ -946,6 +953,17 @@ function drPanelAdmin(d){
   if(!d.picks.length)h+=`<h4>Fecha límite y tiempo por turno</h4><div class="dr-btns"><input type="datetime-local" id="drLimite" value="${d.limite?aLocal(d.limite):""}"><label>Minutos por turno <input type="number" id="drLead" min="1" value="${d.lead}" style="width:70px"></label><button data-conf="1">Guardar</button></div>`;
   return h+`<p class="hint">¿No eres el administrador en este equipo? <a href="#" data-salir="1">Salir del modo administrador</a>.</p></div>`;
 }
+const enPre=n=>!!(DR.d&&DR.d.miPre&&(DR.d.miPre.lista||[]).some(x=>norm(x)===norm(n)));
+function drPre(d){
+  if(!DR.yo||!d||d.estado==="terminado")return"";
+  const m=d.miPre||{lista:[],activo:false},de={},idx=n=>d.pool.findIndex(x=>norm(x.n)===norm(n));
+  (d.picks||[]).forEach(x=>de[norm(x.j)]=x.p);
+  const L=[...(m.lista||[])],libres=L.filter(n=>!de[norm(n)]).length,sig=L.find(n=>!de[norm(n)]);
+  return `<div class="card dr-adm dr-prebox"><h4>🤖 Mi preselección · elección automática</h4><p class="hint">Marca con ☆ hasta <b>15 jugadores</b> en la lista de abajo. <b>El orden es tu prioridad:</b> el primero que marcas es el #1, el segundo el #2, y así (puedes reordenar con ▲▼). Con la elección automática <b>activada</b>, cuando llegue tu turno el sistema elegirá por ti <b>al de mayor prioridad que siga libre</b>. Si no queda ninguno libre, eliges tú como siempre. Nadie más ve tu preselección.</p>
+  <div class="dr-btns"><button data-preact="1" class="${m.activo?"dr-pri":""}">${m.activo?"✅ Elección automática ACTIVADA":"⏸️ Elección automática desactivada"}</button><span class="hint">${L.length}/15 marcados · ${libres} libres${sig&&m.activo?" · próximo: <b>"+esc(sig)+"</b>":""}</span></div>
+  ${L.length?L.map((n,k)=>{const o=de[norm(n)],jj=d.pool[idx(n)]||{};return `<div class="dr-j${o?" tomado":""}"><span class="dr-prio">#${k+1}</span><span class="dr-nm">${esc(n)}</span><span class="dr-o">${esc(jj.o||"")}</span>${o?`<span class="dr-de" title="${esc(o)}">${avDe(o)}</span>`:""}<button class="dr-mv" data-premv="${k}" data-dir="-1" title="Subir prioridad"${k?"":" disabled"}>▲</button><button class="dr-mv" data-premv="${k}" data-dir="1" title="Bajar prioridad"${k<L.length-1?"":" disabled"}>▼</button><button class="dr-star on" data-pre="${esc(n)}" title="Quitar">✕</button></div>`;}).join(""):"<p class='hint'>Aún no marcas jugadores.</p>"}
+  ${m.activo&&L.length&&!libres?"<p class='dr-err'>⚠️ Todos tus preseleccionados ya fueron elegidos: agrega otros o elige a mano.</p>":""}</div>`;
+}
 function drPintarLista(){
   const d=DR.d;if(!d||!$("drLista"))return;
   const de={};(d.picks||[]).forEach(x=>de[norm(x.j)]=x.p);
@@ -953,7 +971,7 @@ function drPintarLista(){
   const puede=d.estado==="en curso"&&(DR.admin||(DR.yo&&((act&&act.p===DR.yo)||pend>0)));
   const f=norm(DR.filtro);let l=d.pool.map((x,i)=>Object.assign({i},x)).filter(x=>!f||norm(x.n).includes(f));
   const total=l.length;if(!DR.todos&&!f)l=l.slice(0,80);
-  $("drLista").innerHTML=(l.map(x=>{const o=de[norm(x.n)];return `<div class="dr-j${o?" tomado":""}"><span class="dr-n">${x.i+1}</span><span class="dr-nm">${esc(x.n)}</span><span class="dr-o">${esc(x.o||"")}</span>${o?`<span class="dr-de" title="${esc(o)}">${avDe(o)}</span>`:(puede?`<button data-pick="${esc(x.n)}">Elegir</button>`:"")}</div>`;}).join("")||"<p class='hint'>No hay jugadores con ese nombre.</p>")+(total>l.length?`<button class="dr-mas" data-todos="1">Ver los ${total} jugadores</button>`:"");
+  $("drLista").innerHTML=(l.map(x=>{const o=de[norm(x.n)];return `<div class="dr-j${o?" tomado":""}"><span class="dr-n">${x.i+1}</span><span class="dr-nm">${esc(x.n)}</span><span class="dr-o">${esc(x.o||"")}</span>${o?`<span class="dr-de" title="${esc(o)}">${avDe(o)}</span>`:(DR.yo&&d.estado!=="terminado"?`<button class="dr-star${enPre(x.n)?" on":""}" data-pre="${esc(x.n)}" title="${enPre(x.n)?"Quitar de mi preselección":"Agregar a mi preselección"}">${enPre(x.n)?"★":"☆"}</button>`:"")+(puede?`<button data-pick="${esc(x.n)}">Elegir</button>`:"")}</div>`;}).join("")||"<p class='hint'>No hay jugadores con ese nombre.</p>")+(total>l.length?`<button class="dr-mas" data-todos="1">Ver los ${total} jugadores</button>`:"");
 }
 function renderDraft(){
   const el=$("draft");if(!el||!D)return;
@@ -978,10 +996,11 @@ function renderDraft(){
     h+=`<tr><td class="drr">${r+1} ${r%2?"←":"→"}</td>`+d.orden.map(p=>{
       const mios=(d.picks||[]).filter(y=>y.p===p),x=mios[r],n=mios.length;
       const esAct=act&&d.estado==="en curso"&&act.p===p&&n===r;
-      return `<td class="${esAct?"dr-act":""}">${x?`<b>${esc(x.j)}</b>${x.tarde?' <span class="dr-tag">tarde</span>':""}${x.azar?' <span class="dr-tag">azar</span>':""}${x.auto?' <span class="dr-tag">auto</span>':""}`:(esAct?"⏳ eligiendo…":(d.pend[p]&&n===r?'<span class="dr-tag rojo">perdió turno</span>':"·"))}</td>`;}).join("")+"</tr>";
+      return `<td class="${esAct?"dr-act":""}">${x?`<b>${esc(x.j)}</b>${x.tarde?' <span class="dr-tag">tarde</span>':""}${x.azar?' <span class="dr-tag">azar</span>':""}${x.auto?' <span class="dr-tag">auto</span>':""}${x.pre?' <span class="dr-tag">🤖 pre</span>':""}`:(esAct?"⏳ eligiendo…":(d.pend[p]&&n===r?'<span class="dr-tag rojo">perdió turno</span>':"·"))}</td>`;}).join("")+"</tr>";
   }
   h+=`</tbody></table></div>`;
   h+=drAvisos();
+  h+=drPre(d);
   h+=drPanelAdmin(d);
   h+=`<h2>Jugadores del torneo <span class="tag">${d.pool.length} · de mejor a peor cotizado</span></h2>`;
   if(DR.admin&&d.estado==="en curso")h+=`<div class="bar"><span>Elegir como:</span><select id="drComo">${d.orden.map(p=>`<option${(DR.como||(act&&act.p))===p?" selected":""}>${esc(p)}</option>`).join("")}</select></div>`;
@@ -1027,6 +1046,14 @@ function iniciarDraftUI(){
       renderDraft();try{navigator.clipboard.writeText(DR.consulta).catch(()=>{});}catch(err){}}
     else if(s.copiarconsulta){try{navigator.clipboard.writeText(DR.consulta).catch(()=>{});b.textContent="¡Copiada!";}catch(err){}}
     else if(s.cerrarconsulta){DR.consulta="";renderDraft();}
+    else if(s.pre){const m=(DR.d&&DR.d.miPre)||{lista:[],activo:false};let L=[...(m.lista||[])];const ya=L.some(x=>norm(x)===norm(s.pre));
+      if(ya)L=L.filter(x=>norm(x)!==norm(s.pre));else{if(L.length>=15){DR.err="Máximo 15 jugadores en tu preselección: quita uno antes de agregar otro.";renderDraft();return;}L.push(s.pre);}
+      drPost({accion:"preseleccion",lista:L,activo:m.activo,msg:ya?"Quitado de tu preselección: "+s.pre:"Agregado a tu preselección como #"+L.length+": "+s.pre});}
+    else if(s.premv!==undefined){const m=(DR.d&&DR.d.miPre)||{lista:[],activo:false},L=[...(m.lista||[])],k=+s.premv,j=k+(+s.dir);if(j<0||j>=L.length)return;[L[k],L[j]]=[L[j],L[k]];
+      drPost({accion:"preseleccion",lista:L,activo:m.activo,msg:"Prioridad actualizada: #"+(j+1)+" "+L[j]});}
+    else if(s.preact){const m=(DR.d&&DR.d.miPre)||{lista:[],activo:false};if(!m.activo&&!(m.lista||[]).length){DR.err="Primero marca con ☆ al menos un jugador.";renderDraft();return;}
+      if(!m.activo&&!confirm("¿Activar la elección automática? Cuando llegue tu turno se elegirá solo al de mayor prioridad de tu preselección que siga libre."))return;
+      drPost({accion:"preseleccion",lista:m.lista,activo:!m.activo,msg:m.activo?"Elección automática desactivada":"Elección automática activada 🤖"});}
     else if(s.todos){DR.todos=true;drPintarLista();}
     else if(s.salir){e.preventDefault();localStorage.removeItem("dt_admin");DADM=null;DR.admin=false;DR.firma="";drCargar();}
   });

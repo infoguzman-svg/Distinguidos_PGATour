@@ -53,7 +53,7 @@ const ocultar = tel => "…" + String(tel).slice(-4);
 const horaCL = (ms, o) => new Date(ms).toLocaleString("es-CL", Object.assign({ timeZone: TZ, hour: "2-digit", minute: "2-digit" }, o || {}));
 
 // ----- turnos vencidos (lead time), sin proceso aparte -----
-function avanzar(st, ahora) {
+function avanzarTurnos(st, ahora) {
   let cambio = false;
   if (st.estado !== "en curso") return false;
   const lim = st.limite ? Date.parse(st.limite) : null;
@@ -75,6 +75,55 @@ function avanzar(st, ahora) {
 }
 // Completa a cada participante pendiente con los mejor cotizados aún disponibles (la lista está ordenada de mejor a peor),
 // repartiendo de a uno en el orden del draft para que sea parejo.
+function avanzar(st, ahora) {
+  let cambio = false;
+  for (let i = 0; i < 80; i++) {
+    const a = avanzarTurnos(st, ahora), b = autoElegir(st, ahora);
+    if (a || b) cambio = true; else break;
+  }
+  return cambio;
+}
+// Elección automática: si el participante activó su preselección, cuando le toca (o si tiene turnos pendientes)
+// se elige al primero de SU lista (orden de prioridad que él mismo definió, 1 a 15) que siga libre.
+const MAX_PRE = 15;
+function mejorDePre(st, p) {
+  const c = (st.pre || {})[p];
+  if (!c || !c.activo || !(c.lista || []).length) return null;
+  const tom = tomados(st);
+  for (const n of c.lista) {
+    const j = st.pool.find(x => norm(x.n) === norm(n));
+    if (j && !tom.has(norm(j.n))) return j.n;
+  }
+  return null;
+}
+function autoElegir(st, ahora) {
+  if (st.estado !== "en curso") return false;
+  let hubo = false;
+  for (let k = 0; k < 100 && st.ptr < st.slots.length; k++) {
+    const { p, r } = st.slots[st.ptr];
+    if (cuantos(st, p) >= st.rondas) break;
+    const j = mejorDePre(st, p); if (!j) break;
+    const limE = st.limite ? Date.parse(st.limite) : 0, inicio = Math.max(st.turnoDesde || 0, limE);
+    respaldo(st);
+    st.picks.push({ p, j, r, pre: true, t: ahora }); st.ptr++; st.turnoDesde = ahora; hubo = true;
+    (st.eventos = st.eventos || []).push({ tipo: "pre", p, j }); st.log.push({ t: ahora, tipo: "elige (preselección)", p, j });
+    if (st.ptr >= st.slots.length) {
+      st.cierreAt = inicio + st.lead * 60000;
+      if (Object.values(st.pend || {}).some(n => n > 0)) st.eventos.push({ tipo: "cierre" });
+    }
+  }
+  for (const p of st.orden) {
+    while ((st.pend[p] || 0) > 0 && cuantos(st, p) < st.rondas) {
+      const j = mejorDePre(st, p); if (!j) break;
+      respaldo(st);
+      st.picks.push({ p, j, r: null, tarde: true, pre: true, t: ahora }); st.pend[p]--; hubo = true;
+      (st.eventos = st.eventos || []).push({ tipo: "pre", p, j });
+      if (enLead(st, ahora) && st.ptr < st.slots.length) { st.turnoDesde = ahora; st.avisoForzar = true; }
+    }
+  }
+  if (hubo) cerrar(st);
+  return hubo;
+}
 function autocompletar(st, ahora) {
   const libres = st.pool.filter(x => !tomados(st).has(norm(x.n)));
   let hubo = true;
@@ -96,8 +145,9 @@ function cerrar(st) {
   return false;
 }
 function vencimiento(st) { const lim = st.limite ? Date.parse(st.limite) : null; return st.ptr < st.slots.length && st.estado === "en curso" && lim && Date.now() >= lim ? Math.max(st.turnoDesde || 0, lim) + st.lead * 60000 : null; }
-function publico(st) {
-  const o = { ...st }; delete o.hist; delete o.tokens;
+function publico(st, yo) {
+  const o = { ...st }; delete o.hist; delete o.tokens; delete o.pre;
+  o.miPre = yo && st.pre && st.pre[yo] ? st.pre[yo] : { lista: [], activo: false };
   o.actual = st.ptr < st.slots.length ? st.slots[st.ptr] : null;
   o.vence = vencimiento(st); o.ahora = Date.now(); o.puedeDeshacer = !!(st.hist && st.hist.length);
   return o;
@@ -136,6 +186,7 @@ function textoAviso(st, av, link) {
   for (const e of av.eventos || []) {
     if (e.tipo === "pierde") lineas.push(`⛔ *${e.p}* no eligió a tiempo y pierde su turno.`);
     if (e.tipo === "tarde") lineas.push(`✅ *${e.p}* volvió (acá estoy) y eligió a *${e.j}*.`);
+    if (e.tipo === "pre") lineas.push(`🤖 *${e.p}* eligió automáticamente a *${e.j}* (de su preselección).`);
     if (e.tipo === "auto") lineas.push(`🤖 A *${e.p}* se le asignó automáticamente a *${e.j}* (mejor cotizado disponible).`);
   }
   if (av.tipo === "fin") return [...lineas, `🏁 *Draft ${st.n} terminado.* Las alineaciones ya están en la página.`, `👉 ${link}`].join("\n");
@@ -240,6 +291,13 @@ async function accion(b, st, esAdmin, yo) {
       }
       st.log.push({ t: ahora, tipo: "elige", p, j: j.n }); cerrar(st); return st;
     }
+    case "preseleccion": {
+      if (!yo) throw new Error("Abre tu link personal para guardar tu preselección");
+      if (st.estado === "terminado") throw new Error("El draft ya terminó");
+      const lista = [...new Set((b.lista || []).map(String))].map(n => st.pool.find(x => norm(x.n) === norm(n))).filter(Boolean).map(x => x.n).slice(0, MAX_PRE);
+      st.pre = st.pre || {}; st.pre[yo] = { lista, activo: !!b.activo };
+      return st;
+    }
     case "saltar":
       soloAdmin(); if (st.estado !== "en curso" || st.ptr >= st.slots.length) throw new Error("No hay turno que saltar");
       respaldo(st); { const p = st.slots[st.ptr].p; st.pend[p] = (st.pend[p] || 0) + 1; st.ptr++; st.turnoDesde = ahora; st.log.push({ t: ahora, tipo: "salto", p }); (st.eventos = st.eventos || []).push({ tipo: "pierde", p }); if (st.ptr >= st.slots.length) st.cierreAt = ahora + st.lead * 60000; }
@@ -303,7 +361,7 @@ module.exports = async (req, res) => {
       const [vTk, vAv, vCfg, vSt] = (await redis(["MGET", TK, AV, AVC, clave(id)])) || [];
       const tokens = vTk ? JSON.parse(vTk) : {}, cuentas = vAv ? JSON.parse(vAv) : {}, cfg = Object.assign({ cada: 30, desde: 23, hasta: 8 }, vCfg ? JSON.parse(vCfg) : {});
       let st = vSt ? JSON.parse(vSt) : null, raw = vSt || "";
-      const esAdmin = !!(ADMIN && q.k === ADMIN), yo = quien(tokens, q.k);
+      const esAdmin = !!(ADMIN && q.k === ADMIN), yo = quien(tokens, q.k) || quien(tokens, q.kp);
       const extra = esAdmin ? { tokens, avisos: Object.fromEntries(Object.keys(tokens).map(p => [p, cuentas[p] ? ocultar(cuentas[p].tel) : ""])), cfgAvisos: cfg, modoAvisos: MODO } : { modoAvisos: MODO };
       extra.grupoAvisos = cfg.grupo ? cfg.grupo.nombre : null;
       if (yo) extra.misAvisos = cuentas[yo] ? { activo: true, tel: ocultar(cuentas[yo].tel) } : { activo: false };
@@ -313,14 +371,14 @@ module.exports = async (req, res) => {
         const ahora = Date.now(), c = avanzar(st, ahora), av = decidirAviso(st, ahora, cfg, false);
         if ((c || av) && !(await guardar(id, raw, st))) continue;
         if (av) await avisar(av, st, cuentas, tokens, base, cfg);
-        return res.status(200).json({ ok: true, d: publico(st), yo, admin: esAdmin, ...extra });
+        return res.status(200).json({ ok: true, d: publico(st, yo), yo, admin: esAdmin, ...extra });
       }
       return res.status(409).json({ ok: false, error: "Intenta de nuevo" });
     }
     if (req.method === "POST") {
       const b = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
       const esAdmin = !!(ADMIN && b.k === ADMIN);
-      const tokens = await leerJSON(TK, {}), cuentas = await leerJSON(AV, {}), cfg = await config(), yo = quien(tokens, b.k);
+      const tokens = await leerJSON(TK, {}), cuentas = await leerJSON(AV, {}), cfg = await config(), yo = quien(tokens, b.k) || quien(tokens, b.kp);
       const extra = esAdmin ? { tokens, avisos: Object.fromEntries(Object.keys(tokens).map(p => [p, cuentas[p] ? ocultar(cuentas[p].tel) : ""])), cfgAvisos: cfg, modoAvisos: MODO } : { modoAvisos: MODO };
       extra.grupoAvisos = cfg.grupo ? cfg.grupo.nombre : null;
       // ----- grupo de WhatsApp (Green API) -----
@@ -408,12 +466,13 @@ module.exports = async (req, res) => {
           if (!av) return res.status(400).json({ ok: false, error: "No hay un turno en curso" });
         } else {
           nuevo = await accion(b, st, esAdmin, yo);
+          if (b.accion !== "deshacer" && b.accion !== "crear") avanzar(nuevo, Date.now());
           av = decidirAviso(nuevo, Date.now(), cfg, false);
         }
         if (await guardar(id, raw, nuevo)) {
           if (!st) await redis(["SADD", "drafts", id]);
           const envio = av ? await avisar(av, nuevo, cuentas, tokens, base, cfg) : null;
-          return res.status(200).json({ ok: true, d: publico(nuevo), yo, admin: esAdmin, ...extra, envio });
+          return res.status(200).json({ ok: true, d: publico(nuevo, yo), yo, admin: esAdmin, ...extra, envio });
         }
       }
       return res.status(409).json({ ok: false, error: "Otro participante eligió al mismo tiempo; intenta de nuevo" });
