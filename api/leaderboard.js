@@ -77,10 +77,15 @@ module.exports = async (req, res) => {
       const comp = c0.competitors;
       if (!ev || !comp || !comp.length) continue;
       const estado = (ev.status && ev.status.type && ev.status.type.state) || (c0.status && c0.status.type && c0.status.type.state) || null;
+      // Situación según la fuente oficial: suspendido/atrasado (lluvia, tormenta, oscuridad), en juego o terminado
+      const tipos = [ev.status && ev.status.type, c0.status && c0.status.type].filter(Boolean);
+      const txt = tipos.map(t => [t.name, t.description, t.detail, t.shortDetail].join(" ")).join(" ");
+      const situacion = estado === "post" ? "final" : /suspend|delay|postpon|rain|weather|halt|darkness/i.test(txt) ? "suspendido" : estado === "pre" ? "pre" : "vivo";
+      const detalle = (tipos[0] && (tipos[0].detail || tipos[0].description)) || "";
       const pos = posiciones(comp), valores = Object.values(pos);
       const sinEmpezar = estado === "pre" || !valores.length || (valores.length >= 8 && new Set(valores).size === 1);
       res.setHeader("Cache-Control", "public, s-maxage=45, stale-while-revalidate=60");
-      return res.status(200).json({ ok: true, evento: ev.name, estado, sinEmpezar, pos: sinEmpezar ? {} : pos, at: new Date().toISOString() });
+      return res.status(200).json({ ok: true, evento: ev.name, estado, situacion, detalle, sinEmpezar, pos: sinEmpezar ? {} : pos, at: new Date().toISOString() });
     } catch (e) { /* prueba el siguiente intento */ }
   }
   res.setHeader("Cache-Control", "public, s-maxage=20");

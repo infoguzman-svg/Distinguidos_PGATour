@@ -649,7 +649,7 @@ async function vivo(){
     if(!r.ok)return;
     const j=await r.json();
     if(!j.ok||!j.pos||!Object.keys(j.pos).length){delete LIVE[t.id];estado();return;}   // sin datos reales: se usa posiciones.json
-    LIVE[t.id]={pos:j.pos,at:Date.now()};
+    LIVE[t.id]={pos:j.pos,at:Date.now(),sit:j.situacion||"vivo"};
     memo={};estado();show(vista());
   }catch(e){}
 }
@@ -1112,7 +1112,10 @@ function elegir(){
 }
 function estado(){
   const lv=D?LIVE[elegir()]:null;
-  if(lv&&Date.now()-lv.at<240000){$("status").textContent="🔴 En vivo · actualizado "+new Date(lv.at).toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit",second:"2-digit"});return;}
+  if(lv&&Date.now()-lv.at<240000){
+    const hora=new Date(lv.at).toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
+    const et={suspendido:"🟡 Suspendido",final:"🏁 Finalizado"}[lv.sit]||"🟢 En vivo";   // según la fuente oficial (ESPN / PGA Tour)
+    $("status").textContent=et+" · actualizado "+hora;return;}
   const a=POS.actualizado?new Date(POS.actualizado):null;
   $("status").textContent=a&&!isNaN(a)?"Último cambio de posiciones: "+a.toLocaleString("es-CL",{dateStyle:"medium",timeStyle:"short"}):"Torneo fantasy · "+D.participantes.length+" participantes";
 }
