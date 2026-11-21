@@ -12,11 +12,20 @@ function alPar(c) {
   const n = parseInt(s.replace("+", ""), 10);
   return Number.isNaN(n) ? null : n;
 }
+// ¿Ya jugó al menos un hoyo del torneo? null = la fuente no trae ese detalle (entonces no se filtra).
+// Quien todavía no sale a jugar queda sin posición (0 puntos) hasta su primer hoyo.
+function jugo(c) {
+  const ls = c.linescores;
+  if (!Array.isArray(ls)) return null;
+  if (ls.some(r => r && ((Array.isArray(r.linescores) && r.linescores.length) || Number(r.value) > 0))) return true;
+  const s = alPar(c);
+  return s !== null && s !== 0;          // score distinto de par = ya jugó
+}
 function posiciones(competidores) {
   const res = {}, todos = [];
   for (const c of competidores) {
     const k = norm(nombre(c));
-    if (!k) continue;
+    if (!k || jugo(c) === false) continue;
     todos.push([k, alPar(c)]);
     const p = c.status && c.status.position && c.status.position.displayName;
     if (p && /^T?\d+$/.test(String(p))) res[k] = String(p);

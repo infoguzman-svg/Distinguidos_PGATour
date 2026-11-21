@@ -33,12 +33,26 @@ def al_par(c):
     try: return int(s.replace("+", ""))
     except ValueError: return None
 
+def jugo(c):
+    """¿Ya jugó al menos un hoyo? None = la fuente no trae ese detalle (no se filtra).
+    Quien todavía no sale a jugar queda sin posición (0 puntos) hasta su primer hoyo."""
+    ls = c.get("linescores")
+    if not isinstance(ls, list): return None
+    for r in ls:
+        if not isinstance(r, dict): continue
+        if (isinstance(r.get("linescores"), list) and r["linescores"]): return True
+        try:
+            if float(r.get("value") or 0) > 0: return True
+        except (TypeError, ValueError): pass
+    s = al_par(c)
+    return s is not None and s != 0           # score distinto de par = ya jugó
+
 def posiciones(competidores):
     """nombre normalizado -> 'T3' / '1'. Usa la posición que informa la fuente; si falta, la calcula por score."""
     res, todos = {}, []
     for c in competidores:
         k = norm(nombre(c))
-        if not k: continue
+        if not k or jugo(c) is False: continue
         todos.append((k, al_par(c)))
         p = ((c.get("status") or {}).get("position") or {}).get("displayName")
         if p and re.fullmatch(r"T?\d+", str(p)): res[k] = str(p)
