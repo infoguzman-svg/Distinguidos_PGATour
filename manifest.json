@@ -1,0 +1,14 @@
+{
+  "name": "Distinguidos PGA Tour",
+  "short_name": "Distinguidos",
+  "description": "Torneo fantasy de los Distinguidos: draft, posiciones en vivo, tabla general y pagos.",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "lang": "es",
+  "icons": [
+    { "src": "app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "app/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
