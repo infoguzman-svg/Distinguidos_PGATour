@@ -65,6 +65,47 @@ def posiciones(competidores):
         res[k] = ("T" if iguales > 1 else "") + str(menores + 1)
     return res
 
+# ---- Corte (top 65 y empates tras 36 hoyos) y retiros: igual que api/leaderboard.js ----
+CORTE_TOP = 65
+def _hoyos(r): return len(r.get("linescores") or []) if isinstance(r, dict) and isinstance(r.get("linescores"), list) else 0
+def _num(v):
+    try: return float(v or 0)
+    except (TypeError, ValueError): return 0.0
+def _ronda(c, n): return next((r for r in (c.get("linescores") or []) if isinstance(r, dict) and _num(r.get("period")) == n), None)
+def _completa(r): return bool(r) and (_hoyos(r) >= 18 or (not isinstance(r.get("linescores"), list) and _num(r.get("value")) > 0))
+def _apar(v):
+    v = str(v if v is not None else "").strip()
+    if v.upper() in ("E", "EVEN"): return 0
+    try: return int(v.replace("+", ""))
+    except ValueError: return None
+def _de36(c):
+    a, b = _ronda(c, 1), _ronda(c, 2)
+    if not (_completa(a) and _completa(b)): return None
+    x, y = _apar(a.get("displayValue")), _apar(b.get("displayValue"))
+    return None if x is None or y is None else x + y
+def _siguio(c): return any(isinstance(r, dict) and _num(r.get("period")) >= 3 and (_hoyos(r) or _num(r.get("value")) > 0) for r in (c.get("linescores") or []))
+def marcas(comp):
+    m, con_r1 = {}, [c for c in comp if _completa(_ronda(c, 1))]
+    con_r2 = [c for c in comp if _completa(_ronda(c, 2))]
+    alguien_r3 = any(_siguio(c) for c in comp)
+    a_medias = any((lambda r: r and 0 < _hoyos(r) < 18)(_ronda(c, 2)) for c in comp)
+    if not (alguien_r3 or (con_r1 and len(con_r2) >= len(con_r1) * 0.9 and not a_medias)): return m
+    linea = None
+    v36 = sorted(v for v in (_de36(c) for c in con_r2) if v is not None)
+    if len(con_r1) >= 100 and len(v36) > CORTE_TOP: linea = v36[CORTE_TOP - 1]
+    elif alguien_r3:
+        for c in comp:
+            if _siguio(c):
+                v = _de36(c)
+                if v is not None: linea = v if linea is None else max(linea, v)
+    for c in comp:
+        k = norm(nombre(c))
+        if not k: continue
+        v = _de36(c)
+        if _completa(_ronda(c, 1)) and not _ronda(c, 2) and not _siguio(c): m[k] = "WD"
+        elif linea is not None and v is not None and v > linea and not _siguio(c): m[k] = "CUT"
+    return m
+
 def fecha_ev(v):
     try: return dt.date.fromisoformat(str(v)[:10])
     except ValueError: return None
@@ -124,6 +165,7 @@ def main():
         for jugadores in t["sel"].values():
             for j in jugadores:
                 if norm(j) not in todas: print(f"[{t['n']}] no encontrado en el leaderboard: {j}")
+        todas.update(marcas(comp))   # CUT / WD (0 puntos)
         mios = dict(todas)   # se guarda todo el campo: así también sirven las elecciones hechas en el draft de la web
         if actual["torneos"].get(t["id"]) != mios:
             actual["torneos"][t["id"]] = mios; cambio = True

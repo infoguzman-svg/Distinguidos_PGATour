@@ -87,8 +87,13 @@ tr:last-child td{border-bottom:0}
 @media(max-width:560px){.lb td.lbp{max-width:250px;font-size:.84rem}.lb td.lbp .ps{min-width:32px!important}.lb .own .av{width:22px;height:22px}.lb th,.lb td{padding:8px 5px}}
 .lb .own .av{width:24px;height:24px;font-size:.78rem;margin:0}
 .lb tr.mine td{background:#f4fbdc}
-.lb tr.cutl td{border-top:2px dashed #b9b29b}
-.lb tr.cut td{color:var(--mut)}
+.lb tr.cutsep td{background:#2a0d10;color:#fff;text-align:center;font-weight:700;font-size:.82rem;padding:10px;position:static}
+.lb tr.cut{background:linear-gradient(90deg,#fbd5d5,#fff4f4)}
+.lb tr.cut td{background:transparent}
+.lb tr.cut td.lbp{background:#fbd5d5}
+.lb tr.cut.mine{background:linear-gradient(90deg,#f6b8b8,#fde6e6)}.lb tr.cut.mine td.lbp{background:#f6b8b8}
+.pc.cut{background:#c8102e;color:#fff}
+.lu tr.cutrow{background:linear-gradient(90deg,#fbd5d5,#fff4f4)}.lu tr.cutrow td{color:#8a1020}
 .thead{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .thead h3{margin:0;font-size:1.25rem}
 .thead span{color:var(--mut);font-size:.85rem}
@@ -770,8 +775,9 @@ function renderLB(){
   let primeraCut=true;
   j.filas.forEach(f=>{
     const ow=dueños[f.k]||[];if(LB.solo&&!ow.length)return;
-    const cut=f.pos==="CUT",cls=[ow.length?"mine":"",cut?"cut":"",cut&&primeraCut&&!LB.solo?"cutl":""].filter(Boolean).join(" ");if(cut)primeraCut=false;
-    h+=`<tr${cls?` class="${cls}"`:""}><td class="lbp"><span class="ps" style="display:inline-block;min-width:42px">${esc(f.pos||"—")}</span>${ow.length?`<span class="own">${ow.map(i=>av(i)).join("")}</span>`:""}${f.flag?`<img class="fl" src="${esc(f.flag)}" alt="" loading="lazy">`:""}${esc(f.n)}</td>`
+    const cut=f.pos==="CUT"||f.pos==="WD",cls=[ow.length?"mine":"",cut?"cut":""].filter(Boolean).join(" ");
+    if(cut&&primeraCut){primeraCut=false;h+=`<tr class="cutsep"><td colspan="9">✂️ No pasaron el corte${j.corte?` (${esc(j.corte)})`:""}</td></tr>`;}
+    h+=`<tr${cls?` class="${cls}"`:""}><td class="lbp"><span class="ps" style="display:inline-block;min-width:42px${cut?";color:#c8102e":""}">${esc(f.pos||"—")}</span>${ow.length?`<span class="own">${ow.map(i=>av(i)).join("")}</span>`:""}${f.flag?`<img class="fl" src="${esc(f.flag)}" alt="" loading="lazy">`:""}${esc(f.n)}</td>`
       +`<td${un(f.tot)}>${esc(f.tot||"—")}</td><td>${esc(f.thru||(cut?"":"—"))}</td><td${un(f.hoy)}>${esc(f.hoy||"—")}</td>`
       +f.r.map(x=>`<td>${esc(x||"-")}</td>`).join("")+`<td>${esc(f.golpes||"-")}</td></tr>`;
   });
@@ -795,7 +801,7 @@ function renderTorneo(){
   if(t.puestos)h+=`<p class="hint">Este torneo se cargó solo con el puesto final de cada participante (sin detalle de jugadores).</p>`;
   else{
     h+=`<h2>Alineaciones</h2><div class="grid">`+ord(ps.length,i=>r.place[i]>0?100-r.place[i]:-1).map(i=>{
-      const rows=(t.sel[ps[i]]||[]).map(n=>{const x=pos(t,n),p=parse(x.v);return `<tr><td>${esc(n)}</td><td class="n"><span class="pc ${pcls(p)}">${x.v?esc(x.v):"–"}</span>${x.man?" ✎":""}</td><td class="n">${pts(p)}</td></tr>`;}).join("");
+      const rows=(t.sel[ps[i]]||[]).map(n=>{const x=pos(t,n),p=parse(x.v),fu=/^(CUT|WD|MC|DQ)$/i.test(x.v);return `<tr${fu?' class="cutrow"':""}><td>${esc(n)}</td><td class="n"><span class="pc ${fu?"cut":pcls(p)}">${x.v?esc(x.v):"–"}</span>${x.man?" ✎":""}</td><td class="n">${pts(p)}</td></tr>`;}).join("");
       const pl=r.place[i];
       return `<div class="card lu"><h4><span class="who">${av(i)}${esc(ps[i])}</span><em>${pl>0&&pl<=3?MED[pl-1]+" ":""}${r.tot[i]} pts</em></h4><table><tr><th>Jugador</th><th class="n">Pos.</th><th class="n">Pts</th></tr>${rows}</table></div>`;}).join("")+`</div>`;
     h+=`<p class="hint">Las posiciones se actualizan solas desde el leaderboard. ✎ marca una posición corregida a mano.</p>`;
