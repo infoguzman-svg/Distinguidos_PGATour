@@ -70,6 +70,25 @@ tr:last-child td{border-bottom:0}
 .chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:7px 13px;font:inherit;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:7px}
 .chip i{width:9px;height:9px;border-radius:50%;background:var(--c)}
 .chip.on{background:var(--g1);color:#fff;border-color:var(--g1)}
+.chip.lbb{background:#000;color:var(--lime);border-color:#000;font-weight:700}
+.chip.lbb.on{background:var(--lime);color:#000;border-color:var(--lime)}
+.lbtop{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.lbtop h3{margin:0;font-size:1.2rem}.lbtop small{color:var(--mut)}
+.lbsolo{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:6px 12px;font:inherit;font-size:.8rem;cursor:pointer}
+.lbsolo.on{background:var(--g1);color:#fff;border-color:var(--g1)}
+.lb th,.lb td{text-align:center;padding:9px 7px}
+.lb thead th{border-bottom:2px solid #000;color:var(--ink)}
+.lb th.lbp,.lb td.lbp{text-align:left;position:sticky;left:0;background:var(--card);z-index:1}
+.lb td.lbp{font-weight:600;max-width:270px;overflow:hidden;text-overflow:ellipsis}
+.lb td.ps{font-weight:700;text-align:left}
+.lb .fl{height:12px;width:18px;object-fit:cover;border-radius:2px;margin-right:7px;vertical-align:-1px}
+.lb .un{color:#c8102e;font-weight:700}
+.lb .own{display:inline-flex;gap:3px;margin-right:7px;vertical-align:middle}
+@media(max-width:560px){.lb td.lbp{max-width:250px;font-size:.84rem}.lb td.lbp .ps{min-width:32px!important}.lb .own .av{width:22px;height:22px}.lb th,.lb td{padding:8px 5px}}
+.lb .own .av{width:24px;height:24px;font-size:.78rem;margin:0}
+.lb tr.mine td{background:#f4fbdc}
+.lb tr.cutl td{border-top:2px dashed #b9b29b}
+.lb tr.cut td{color:var(--mut)}
 .thead{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .thead h3{margin:0;font-size:1.25rem}
 .thead span{color:var(--mut);font-size:.85rem}
@@ -719,12 +738,49 @@ function chart(){
   cum.forEach((c,i)=>{s+=`<polyline fill="none" stroke="${COL[i%COL.length]}" stroke-width="2.5" stroke-linejoin="round" points="${c.map((v,k)=>x(k)+","+y(v)).join(" ")}"/><circle cx="${x(tr.length)}" cy="${y(c[tr.length])}" r="4" fill="${COL[i%COL.length]}"/>`;});
   return s+`</svg><div class="leg">`+ps.map((p,i)=>`<span><i style="background:${COL[i%COL.length]}"></i>${icoHtml(i)} ${esc(p)} ${cum[i][tr.length]}</span>`).join("")+`</div><div class="hint">Puntos de liga acumulados (eje horizontal: torneos jugados).</div>`;
 }
+// Cinta: solo el torneo actual (+ el que se esté mirando desde la pestaña Torneos) y el botón "PGA Tour en vivo"
+let LB={on:false,data:null,at:0,err:"",solo:false,id:null},lbInt=null;
 function renderChips(){
-  $("chips").innerHTML=D.torneos.map(t=>`<button class="chip${t.id===cur?" on":""}" data-id="${esc(t.id)}" style="--c:${ccol(t.c)}"><i></i>${esc(t.m?t.m+" · ":"")}${esc(t.n)}</button>`).join("");
-  const on=$("chips").querySelector(".on");if(on&&on.scrollIntoView)on.scrollIntoView({inline:"center",block:"nearest"});
+  const act=elegir(),ids=[act];if(cur&&cur!==act)ids.push(cur);
+  $("chips").innerHTML=ids.map(id=>{const t=get(id);if(!t)return"";return `<button class="chip${id===cur&&!LB.on?" on":""}" data-id="${esc(t.id)}" style="--c:${ccol(t.c)}"><i></i>${esc(t.m?t.m+" · ":"")}${esc(t.n)}</button>`;}).join("")
+    +(TEMP||!get(act)?"":`<button class="chip lbb${LB.on?" on":""}" data-lb="1">📡 PGA Tour en vivo</button>`);
+}
+async function lbCargar(){
+  const t=get(elegir());if(!t||!t.ini||!t.fin)return;
+  try{
+    const r=await fetch(API+"?n="+encodeURIComponent(t.n)+"&ini="+t.ini+"&fin="+t.fin+"&full=1");
+    const j=await r.json();
+    if(!j.ok||!j.filas){LB.err="El leaderboard oficial todavía no publica este torneo.";LB.data=null;}
+    else{LB.data=j;LB.err="";LB.at=Date.now();LB.id=t.id;}
+  }catch(e){LB.err="No se pudo conectar con el leaderboard. Se reintenta en 1 minuto.";}
+  if(LB.on&&vista()==="t")renderTorneo();
+}
+const trDet=d=>String(d).replace(/Round/gi,"Ronda").replace(/Play Suspended|Suspended/gi,"suspendida").replace(/In Progress/gi,"en juego").replace(/Play Complete|Complete/gi,"terminada").replace(/Delayed/gi,"atrasada").replace(/Final/gi,"final");
+function renderLB(){
+  const t=get(elegir()),ps=D.participantes,dueños={};
+  ps.forEach((p,i)=>((t&&t.sel&&t.sel[p])||[]).forEach(n=>{(dueños[norm(n)]=dueños[norm(n)]||[]).push(i);}));
+  if(!lbInt)lbInt=setInterval(()=>{if(LB.on&&vista()==="t"&&document.visibilityState==="visible")lbCargar();},60000);
+  if(!LB.data||LB.id!==(t&&t.id)){if(!LB.err)lbCargar();$("torneo").innerHTML=`<div class="aviso">${LB.err?esc(LB.err):"Cargando el leaderboard oficial…"}</div>`;return;}
+  const j=LB.data,sit={suspendido:"🟡 Suspendido",final:"🏁 Finalizado",pre:"⏳ Por comenzar"}[j.situacion]||"🟢 En vivo";
+  const hora=new Date(LB.at).toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
+  const nuestros=j.filas.filter(f=>dueños[f.k]).length;
+  let h=`<div class="lbtop"><div><h3>${esc(t.n)}</h3><small>${sit}${j.detalle?" · "+esc(trDet(j.detalle)):""} · actualizado ${hora} · fuente ESPN / PGA Tour</small></div><button class="lbsolo${LB.solo?" on":""}" data-solo="1">${LB.solo?"✓ ":""}Solo nuestros jugadores (${nuestros})</button></div>`;
+  h+=`<div class="card scroll" style="padding:4px 6px"><table class="lb"><thead><tr><th class="lbp">Pos · Jugador</th><th>Total</th><th>Thru</th><th>Ronda</th><th>R1</th><th>R2</th><th>R3</th><th>R4</th><th>Golpes</th></tr></thead><tbody>`;
+  const un=v=>/^-\d/.test(v)?' class="un"':"";
+  let primeraCut=true;
+  j.filas.forEach(f=>{
+    const ow=dueños[f.k]||[];if(LB.solo&&!ow.length)return;
+    const cut=f.pos==="CUT",cls=[ow.length?"mine":"",cut?"cut":"",cut&&primeraCut&&!LB.solo?"cutl":""].filter(Boolean).join(" ");if(cut)primeraCut=false;
+    h+=`<tr${cls?` class="${cls}"`:""}><td class="lbp"><span class="ps" style="display:inline-block;min-width:42px">${esc(f.pos||"—")}</span>${ow.length?`<span class="own">${ow.map(i=>av(i)).join("")}</span>`:""}${f.flag?`<img class="fl" src="${esc(f.flag)}" alt="" loading="lazy">`:""}${esc(f.n)}</td>`
+      +`<td${un(f.tot)}>${esc(f.tot||"—")}</td><td>${esc(f.thru||(cut?"":"—"))}</td><td${un(f.hoy)}>${esc(f.hoy||"—")}</td>`
+      +f.r.map(x=>`<td>${esc(x||"-")}</td>`).join("")+`<td>${esc(f.golpes||"-")}</td></tr>`;
+  });
+  h+=`</tbody></table></div><p class="hint">Los íconos muestran a quién pertenece cada jugador. Se actualiza solo cada minuto. Los puntos del torneo se ven en el botón del torneo, a la izquierda del botón en vivo.</p>`;
+  $("torneo").innerHTML=h;
 }
 function renderTorneo(){
   renderChips();
+  if(LB.on){renderLB();return;}
   const t=get(cur);if(!t){$("torneo").innerHTML="";return;}
   const r=calc(t),ps=D.participantes,sc=D.clases[t.c]||[0,0,0];
   let h=`<div class="thead"><div><h3>${esc(t.n)}</h3><span>${esc(t.ini?t.ini:t.m||"")}</span></div><div><span class="cb" style="--c:${ccol(t.c)}">${esc(t.c)}</span> <span>${sc.map((v,k)=>MED[k]+" "+v).join(" · ")} pts liga</span></div></div>`;
@@ -1133,9 +1189,11 @@ async function iniciar(){
     document.querySelector("main").insertAdjacentHTML("afterbegin",`<div class="arch">📦 Estás viendo el archivo de la <b>${esc(nomT)}</b> (solo consulta). Para volver, toca el botón de la temporada actual arriba.</div>`);}
   cur=elegir();DR.id=cur;iniciarDraftUI();cargarDrafts().then(()=>{const v=vista();if(v&&v!=="d")show(v);});
   document.querySelector("nav").addEventListener("click",e=>{const b=e.target.closest("button");if(b)show(b.dataset.v);});
-  $("chips").addEventListener("click",e=>{const b=e.target.closest("[data-id]");if(b){cur=b.dataset.id;renderTorneo();}});
+  $("chips").addEventListener("click",e=>{const l=e.target.closest("[data-lb]");if(l){LB.on=true;LB.err="";cur=elegir();renderTorneo();return;}
+    const b=e.target.closest("[data-id]");if(b){LB.on=false;cur=b.dataset.id;renderTorneo();}});
+  $("torneo").addEventListener("click",e=>{if(e.target.closest("[data-solo]")){LB.solo=!LB.solo;renderTorneo();}});
   $("pagos").addEventListener("click",e=>{const b=e.target.closest("[data-mes]");if(b){mesSel=b.dataset.mes;renderPagos();}});
-  $("lista").addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b){cur=b.dataset.open;show("t");scrollTo(0,0);}});
+  $("lista").addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b){cur=b.dataset.open;LB.on=false;show("t");scrollTo(0,0);}});
   await cargar(true);show(ABRIR_DRAFT?"d":"t");
   if(!window.__DATOS__&&!TEMP){setInterval(()=>{cargar(false);cargarDrafts();},300000);vivo();setInterval(()=>{if(document.visibilityState==="visible")vivo();},60000);}
 }

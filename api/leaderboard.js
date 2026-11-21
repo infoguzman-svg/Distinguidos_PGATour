@@ -40,6 +40,40 @@ function posiciones(competidores) {
   }
   return res;
 }
+// ---- Leaderboard completo (para la vista "PGA Tour en vivo") ----
+const aPar = v => { v = String(v === undefined || v === null ? "" : v).trim(); if (/^(e|even)$/i.test(v)) return 0; const n = parseInt(v.replace("+", ""), 10); return Number.isNaN(n) ? null : n; };
+const hoyos = r => (r && Array.isArray(r.linescores) ? r.linescores.length : 0);
+function filas(comp, pos) {
+  // ronda en juego = la mayor ronda en que alguien ya jugó al menos un hoyo
+  let R = 0;
+  for (const c of comp) for (const r of c.linescores || []) if (hoyos(r) || Number(r.value) > 0) R = Math.max(R, Number(r.period) || 0);
+  // línea de corte (desde la ronda 3): peor score de 36 hoyos entre los que ya salieron a jugar la ronda 3 o 4
+  let linea = null;
+  const de36 = c => { const ls = c.linescores || [], a = ls.find(r => r.period === 1), b = ls.find(r => r.period === 2); const x = a && aPar(a.displayValue), y = b && aPar(b.displayValue); return x === null || y === null || x === undefined || y === undefined ? null : x + y; };
+  const siguio = c => (c.linescores || []).some(r => Number(r.period) >= 3 && (hoyos(r) || Number(r.value) > 0));
+  if (R >= 3) for (const c of comp) if (siguio(c)) { const v = de36(c); if (v !== null) linea = linea === null ? v : Math.max(linea, v); }
+  return comp.map((c, i) => {
+    const ls = c.linescores || [], k = norm(nombre(c));
+    const ronda = n => ls.find(r => Number(r.period) === n);
+    const actual = ronda(R), h = hoyos(actual);
+    const rs = [1, 2, 3, 4].map(n => { const r = ronda(n); if (!r) return ""; const v = Number(r.value); return v > 0 && (hoyos(r) >= 18 || !Array.isArray(r.linescores) || n < R) ? String(Math.round(v)) : ""; });
+    const golpes = ls.reduce((t, r) => t + (Number(r.value) > 0 ? Number(r.value) : 0), 0);
+    const cut = linea !== null && !siguio(c) && de36(c) !== null && de36(c) > linea;
+    const jug = jugo(c);
+    let thru = "";
+    if (cut) thru = "";
+    else if (h >= 18) thru = "F";
+    else if (h > 0) thru = String(h);
+    else if (actual && Number(actual.value) > 0) thru = "F";
+    const s = alPar(c);
+    return {
+      n: nombre(c), k, o: Number(c.order) || i + 1,
+      pos: cut ? "CUT" : (pos[k] || ""), tot: jug === false ? "" : (s === null ? "" : s === 0 ? "E" : (s > 0 ? "+" + s : String(s))),
+      thru, hoy: actual && (h > 0) ? String(actual.displayValue || "") : "", r: rs, golpes: golpes ? String(Math.round(golpes)) : "",
+      flag: (c.athlete && c.athlete.flag && c.athlete.flag.href) || ""
+    };
+  }).sort((a, b) => (a.pos === "CUT") - (b.pos === "CUT") || (!a.pos) - (!b.pos) || (parseInt(String(a.pos).replace(/\D/g, ""), 10) || 999) - (parseInt(String(b.pos).replace(/\D/g, ""), 10) || 999) || a.o - b.o);
+}
 const dia = v => { const d = new Date(String(v).slice(0, 10) + "T00:00:00Z"); return isNaN(d) ? null : d; };
 function elegirEvento(evs, nombreTorneo, ini, fin) {
   const nt = norm(nombreTorneo);
@@ -85,7 +119,8 @@ module.exports = async (req, res) => {
       const pos = posiciones(comp), valores = Object.values(pos);
       const sinEmpezar = estado === "pre" || !valores.length || (valores.length >= 8 && new Set(valores).size === 1);
       res.setHeader("Cache-Control", "public, s-maxage=45, stale-while-revalidate=60");
-      return res.status(200).json({ ok: true, evento: ev.name, estado, situacion, detalle, sinEmpezar, pos: sinEmpezar ? {} : pos, at: new Date().toISOString() });
+      const extra = q.full ? { filas: filas(comp, sinEmpezar ? {} : pos) } : {};
+      return res.status(200).json({ ok: true, evento: ev.name, estado, situacion, detalle, sinEmpezar, pos: sinEmpezar ? {} : pos, ...extra, at: new Date().toISOString() });
     } catch (e) { /* prueba el siguiente intento */ }
   }
   res.setHeader("Cache-Control", "public, s-maxage=20");
