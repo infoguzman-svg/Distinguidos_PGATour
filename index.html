@@ -70,6 +70,7 @@ tr:last-child td{border-bottom:0}
 .chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:7px 13px;font:inherit;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:7px}
 .chip i{width:9px;height:9px;border-radius:50%;background:var(--c)}
 .chip.on{background:var(--g1);color:#fff;border-color:var(--g1)}
+.gm td.sub{font-size:.72rem;font-weight:700;color:var(--mut);line-height:1.35}.gm td.sub span{font-size:.85rem;color:#1d4ed8}
 .chip.lbb{background:#000;color:var(--lime);border-color:#000;font-weight:700}
 .chip.lbb.on{background:var(--lime);color:#000;border-color:var(--lime)}
 .lbtop{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
@@ -839,10 +840,13 @@ function pagosTorneo(t){
   const cam=t.campeones?idx(t.campeones):(t.puestos?[]:todos.filter(i=>(t.sel[ps[i]]||[]).some(n=>parse(pos(t,n).v)===1)));
   // cadaUno (desde la Pre-Temporada 2027): cada uno de los demás paga el premio COMPLETO al ganador (si hay empate, se reparte entre los ganadores).
   // Temporada 2026: el premio se dividía en partes iguales entre los que pagan.
-  const repartir=(S,monto)=>{if(!S.length||!monto)return;const pagan=act.filter(i=>!S.includes(i));if(!pagan.length)return;
-    if(pg.cadaUno){pagan.forEach(i=>payP[i]+=monto);S.forEach(i=>recP[i]+=monto*pagan.length/S.length);}
-    else{S.forEach(i=>recP[i]+=monto/S.length);pagan.forEach(i=>payP[i]+=monto/pagan.length);}};
-  repartir(gan,pr[0]);repartir(cam,pr[1]);
+  const recG=z(),recK=z();      // lo recibido por el premio de Ganador (torneo) y por el de Campeón, por separado
+  const repartir=(S,monto,R)=>{if(!S.length||!monto)return;const pagan=act.filter(i=>!S.includes(i));if(!pagan.length)return;
+    if(pg.cadaUno){pagan.forEach(i=>payP[i]+=monto);S.forEach(i=>{recP[i]+=monto*pagan.length/S.length;R[i]+=monto*pagan.length/S.length;});}
+    else{S.forEach(i=>{recP[i]+=monto/S.length;R[i]+=monto/S.length;});pagan.forEach(i=>payP[i]+=monto/pagan.length);}};
+  repartir(gan,pr[0],recG);repartir(cam,pr[1],recK);
+  // monto del premio "a su nombre" (lo que se muestra en la columna del torneo): Ganador + Campeón según la clase; si hay empate se divide
+  const prem=z();if(act.length>1){gan.forEach(i=>prem[i]+=pr[0]/gan.length);cam.forEach(i=>prem[i]+=pr[1]/cam.length);}
   let co=t.corte;
   if(!co&&!t.puestos){                               // corte automático: sale del leaderboard (CUT / WD) cuando no está cargado a mano en el Excel
     const fuera=i=>(t.sel[ps[i]]||[]).some(n=>/^(CUT|WD|MC|DQ)$/i.test(pos(t,n).v));
@@ -857,7 +861,7 @@ function pagosTorneo(t){
       else{const c1=Math.ceil(cu/G_.length/rd)*rd;P_.forEach(i=>payC[i]+=c1*G_.length);G_.forEach(i=>recC[i]+=c1*P_.length);}   // torneos de 2026 (5 participantes)
     }
   }
-  return{recP,payP,recC,payC,gan,cam,pr,corte:co||null};
+  return{recP,payP,recC,payC,recG,recK,prem,gan,cam,pr,corte:co||null};
 }
 function meses(){
   const o=[],mp={},ps=D.participantes,z=()=>ps.map(()=>0);
@@ -890,16 +894,18 @@ function renderPagos(){
   const sg=a=>a.reduce((s,v)=>s+v,0);
   let h=`<h2>Pagos de ${esc(mn)} <span class="cerr ${cerr?"ok":""}">${cerr?"Mes cerrado":"Mes en curso · se acumula con cada torneo"}</span></h2>`;
   h+=`<div class="chips">`+vis.map(y=>`<button class="chip${y.m===mesSel?" on":""}" data-mes="${esc(y.m)}"><i style="--c:#c6f613"></i>${esc(y.m)}${y.cerrado?" 🔒":" ⏳"}</button>`).join("")+`</div>`;
-  h+=`<div class="card scroll"><table class="gm"><thead><tr><th class="sk">TORNEO</th>`+x.det.map(({t})=>`<th class="tc" style="--c:${ccol(t.c)}">${esc(t.c)}</th>`).join("")+`<th rowspan="4" class="tt">Premios<br>ganados</th><th rowspan="4" class="tt">Premios<br>que paga</th><th rowspan="4" class="tt">Corte</th><th rowspan="4" class="nt">Neto<br>del mes</th></tr>`;
-  h+=`<tr><th class="sk" style="background:var(--soft);color:var(--ink)"></th>`+x.det.map(({t})=>`<th class="tn">${esc(t.n)}</th>`).join("")+`</tr>`;
+  // Una columna por torneo con el premio a nombre de cada uno (Ganador + Campeón según la clase). A la derecha: Premios ganados → Cortes → Premios que paga → Neto del mes.
   const nm=a=>a.length?a.map(i=>esc(ps[i])).join(", "):"–";
+  h+=`<div class="card scroll"><table class="gm"><thead><tr><th class="sk">TORNEO</th>`+x.det.map(({t})=>`<th class="tc" style="--c:${ccol(t.c)}">${esc(t.c)}</th>`).join("")
+    +`<th rowspan="4" class="tt">Premios<br>ganados</th><th rowspan="4" class="tt">Cortes</th><th rowspan="4" class="tt">Premios<br>que paga</th><th rowspan="4" class="nt">Neto<br>del mes</th></tr>`;
+  h+=`<tr><th class="sk" style="background:var(--soft);color:var(--ink)"></th>`+x.det.map(({t})=>`<th class="tn">${esc(t.n)}</th>`).join("")+`</tr>`;
   h+=`<tr><th class="sk" style="background:var(--card);color:var(--ink)">⛳ Ganador</th>`+x.det.map(({p})=>`<td class="wr">${p?nm(p.gan):"·"}</td>`).join("")+`</tr>`;
   h+=`<tr><th class="sk" style="background:var(--card);color:var(--ink)">👑 Campeón</th>`+x.det.map(({p})=>`<td class="wr">${p?nm(p.cam):"·"}</td>`).join("")+`</tr></thead><tbody>`;
   ps.forEach((_,i)=>{
-    h+=`<tr><td class="sk"><div class="who">${av(i)}${esc(ps[i])}</div></td>`+x.det.map(({p})=>`<td>${p&&p.recP[i]>0?`<b class="pos">${CLP(p.recP[i])}</b>`:`<span class="mut">${p?"$0":"·"}</span>`}</td>`).join("");
-    h+=`<td class="tt">${x.gP[i]?CLP(x.gP[i]):"$0"}</td><td class="tt ${x.pP[i]?"neg":""}">${x.pP[i]?CLP(-x.pP[i]):"$0"}</td><td class="tt ${cls(x.netC[i])}">${x.netC[i]?CLP(x.netC[i]):"$0"}</td><td class="nt ${cls(x.net[i])}">${CLP(x.net[i])}</td></tr>`;});
-  h+=`</tbody><tfoot><tr><td class="sk">REPARTO</td>`+x.det.map(({p})=>`<td>${p?CLP(sg(p.recP)):"·"}</td>`).join("")+`<td>${CLP(sg(x.gP))}</td><td>${sg(x.pP)?CLP(-sg(x.pP)):"$0"}</td><td>${sg(x.netC)?CLP(sg(x.netC)):"$0"}</td><td>${CLP(sg(x.net))}</td></tr></tfoot></table></div>`;
-  h+=`<p class="hint">Cada torneo muestra lo que gana cada participante. A la derecha se acumula el mes: <b>Neto = Premios ganados − Premios que paga ± Corte</b> (entre participantes). Verde: recibe · Rojo: debe pagar.${cerr?"":" Mientras el mes sigue en curso, los montos son provisorios."}</p>`;
+    h+=`<tr><td class="sk"><div class="who">${av(i)}${esc(ps[i])}</div></td>`+x.det.map(({p})=>`<td>${p&&p.prem[i]>0?`<b class="pos">${CLP(p.prem[i])}</b>`:`<span class="mut">${p?"$0":"·"}</span>`}</td>`).join("");
+    h+=`<td class="tt">${x.gP[i]?`<b class="pos">${CLP(x.gP[i])}</b>`:"$0"}</td><td class="tt ${cls(x.netC[i])}">${x.netC[i]?(x.netC[i]>0?"+":"")+CLP(x.netC[i]):"$0"}</td><td class="tt ${x.pP[i]?"neg":""}">${x.pP[i]?CLP(-x.pP[i]):"$0"}</td><td class="nt ${cls(x.net[i])}">${CLP(x.net[i])}</td></tr>`;});
+  h+=`</tbody><tfoot><tr><td class="sk">PREMIO</td>`+x.det.map(({p})=>`<td>${p?CLP(sg(p.prem)):"·"}</td>`).join("")+`<td>${CLP(sg(x.gP))}</td><td>${sg(x.netC)?CLP(sg(x.netC)):"$0"}</td><td>${sg(x.pP)?CLP(-sg(x.pP)):"$0"}</td><td>${CLP(sg(x.net))}</td></tr></tfoot></table></div>`;
+  h+=`<p class="hint">En cada torneo aparece el premio a nombre de cada uno: Ganador + Campeón según la clase (si es ambos, se suman; ej. Top 2: $3.000 + $2.000 = $5.000). ${pg.cadaUno?"Cada uno de los demás le paga ese monto, por eso <b>Premios ganados</b> es el premio × los que pagan. ":""}A la derecha se acumula el mes: <b>Neto = Premios ganados ± Cortes − Premios que paga</b>. Cortes: verde = lo que recibe del bono de corte · rojo = lo que paga.${cerr?"":" Mientras el mes sigue en curso, los montos son provisorios."}</p>`;
   const co=x.det.filter(({p})=>p&&p.corte&&((p.corte.pagan||[]).length||(p.corte.benef||[]).length));
   if(co.length)h+=`<p class="hint"><b>Corte del mes:</b> `+co.map(({t,p})=>{const c=p.corte,g=(c.ganan||[]).length,pa=new Set([...idx(c.pagan),...idx(c.benef)]).size;return g?`${esc(t.n)} (${pa} pagan · ${g} ganan)`:`${esc(t.n)} (sin bono: nadie paga)`;}).join(" · ")+`.</p>`;
   h+=`<h2>Quién le paga a quién en ${esc(mn)}</h2><div class="card">${tablaTransf(x.net)}</div>`;
