@@ -837,9 +837,18 @@ function pagosTorneo(t){
   const act=todos.filter(i=>t.puestos?ixT>=pri[i]:(t.sel[ps[i]]||[]).length>0);   // activos en este torneo
   const gan=todos.filter(i=>r.place[i]===1);
   const cam=t.campeones?idx(t.campeones):(t.puestos?[]:todos.filter(i=>(t.sel[ps[i]]||[]).some(n=>parse(pos(t,n).v)===1)));
-  const repartir=(S,monto)=>{if(!S.length||!monto)return;const pagan=act.filter(i=>!S.includes(i));S.forEach(i=>recP[i]+=monto/S.length);pagan.forEach(i=>payP[i]+=monto/pagan.length);};
+  // cadaUno (desde la Pre-Temporada 2027): cada uno de los demás paga el premio COMPLETO al ganador (si hay empate, se reparte entre los ganadores).
+  // Temporada 2026: el premio se dividía en partes iguales entre los que pagan.
+  const repartir=(S,monto)=>{if(!S.length||!monto)return;const pagan=act.filter(i=>!S.includes(i));if(!pagan.length)return;
+    if(pg.cadaUno){pagan.forEach(i=>payP[i]+=monto);S.forEach(i=>recP[i]+=monto*pagan.length/S.length);}
+    else{S.forEach(i=>recP[i]+=monto/S.length);pagan.forEach(i=>payP[i]+=monto/pagan.length);}};
   repartir(gan,pr[0]);repartir(cam,pr[1]);
-  const co=t.corte;
+  let co=t.corte;
+  if(!co&&!t.puestos){                               // corte automático: sale del leaderboard (CUT / WD) cuando no está cargado a mano en el Excel
+    const fuera=i=>(t.sel[ps[i]]||[]).some(n=>/^(CUT|WD|MC|DQ)$/i.test(pos(t,n).v));
+    const conJug=act.filter(i=>(t.sel[ps[i]]||[]).length);
+    if(conJug.some(fuera))co={ganan:conJug.filter(i=>!fuera(i)).map(i=>ps[i]),pagan:conJug.filter(fuera).map(i=>ps[i]),auto:1};
+  }
   if(co){
     const cfg=pg.corte||{},cu=cfg.cuota||2000,rd=cfg.redondeo||100;
     const G_=idx(co.ganan),P_=[...new Set([...idx(co.pagan),...idx(co.benef)])].filter(i=>!G_.includes(i));
@@ -900,7 +909,7 @@ function renderPagos(){
   h+=`</table></div><p class="hint">Suma de todos los meses con resultados.</p>`;
   h+=`<details class="calc"><summary>Liquidación acumulada de la temporada (todos los meses)</summary><div style="margin-top:8px">${tablaTransf(tot)}</div><p class="hint">Úsala solo si no has liquidado mes a mes; si ya pagaron algún mes, descuéntalo.</p></details>`;
   const pr=pg.premios||{},cf=pg.corte||{},cu=cf.cuota||2000;
-  h+=`<details class="calc"><summary>Cómo se calcula</summary><p>En cada torneo se pagan dos premios: <b>Ganador</b> (1° de la polla) y <b>Campeón</b> (dueño del jugador que ganó el torneo real). Si es la misma persona recibe ambos; si son distintas, cada una recibe el suyo. Cada premio lo pagan en partes iguales todos los demás participantes.</p><table><tr><th>Clase</th><th class="n">Ganador</th><th class="n">Campeón</th></tr>`+Object.keys(pr).map(c=>`<tr><td><span class="cb" style="--c:${ccol(c)}">${esc(c)}</span></td><td class="n">${CLP(pr[c][0])}</td><td class="n">${CLP(pr[c][1])}</td></tr>`).join("")+`</table><p><b>Corte:</b> si el torneo tiene corte, los participantes que lo pasan con sus 4 jugadores reciben un bono. Lo pagan los demás: cada uno una cuota fija de ${CLP(cu)}. Las cuotas se juntan y se reparten en partes iguales entre quienes lo reciben; con 6 participantes el reparto es siempre exacto (en los torneos de 2026, con 5 participantes, cada parte se redondeaba a ${CLP(cf.redondeo||100)}). Si nadie lo pasa con sus 4 jugadores, no se paga nada.</p><p><b>Neto del mes = premios recibidos − premios que le toca pagar + bono de corte recibido − cuotas de corte.</b></p></details>`;
+  h+=`<details class="calc"><summary>Cómo se calcula</summary><p>En cada torneo se pagan dos premios: <b>Ganador</b> (1° de la polla) y <b>Campeón</b> (dueño del jugador que ganó el torneo real). Si es la misma persona recibe ambos; si son distintas, cada una recibe el suyo. ${pg.cadaUno?"<b>Cada uno de los demás participantes le paga el premio completo</b> al que lo gana (ej.: Top 2 ganador $3.000 → cada uno paga $3.000). Si hay empate, lo que se junta se reparte entre los empatados.":"Cada premio lo pagan en partes iguales todos los demás participantes."}</p><table><tr><th>Clase</th><th class="n">Ganador</th><th class="n">Campeón</th></tr>`+Object.keys(pr).map(c=>`<tr><td><span class="cb" style="--c:${ccol(c)}">${esc(c)}</span></td><td class="n">${CLP(pr[c][0])}</td><td class="n">${CLP(pr[c][1])}</td></tr>`).join("")+`</table><p><b>Corte:</b> si el torneo tiene corte, los participantes que lo pasan con sus 4 jugadores reciben un bono. Lo pagan los demás: cada uno una cuota fija de ${CLP(cu)}. Las cuotas se juntan y se reparten en partes iguales entre quienes lo reciben; con 6 participantes el reparto es siempre exacto (en los torneos de 2026, con 5 participantes, cada parte se redondeaba a ${CLP(cf.redondeo||100)}). Si nadie lo pasa con sus 4 jugadores, no se paga nada. El corte se toma solo del leaderboard oficial (jugadores <b>CUT</b>/<b>WD</b>); si se carga a mano en la hoja Corte del Excel, manda lo del Excel.</p><p><b>Neto del mes = premios recibidos − premios que le toca pagar + bono de corte recibido − cuotas de corte.</b></p></details>`;
   $("pagos").innerHTML=h;
 }
 let regListo=false;

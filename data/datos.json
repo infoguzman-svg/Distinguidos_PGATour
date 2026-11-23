@@ -32,7 +32,8 @@
   "corte": {
    "cuota": 2000,
    "redondeo": 100
-  }
+  },
+  "cadaUno": true
  },
  "escalaPos": [
   [

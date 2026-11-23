@@ -94,6 +94,7 @@ if archivos_pagos:
             etiqueta, valor = txt(wp["Premios"].cell(fila, 5).value).lower(), wp["Premios"].cell(fila, 6).value
             if isinstance(valor, (int, float)) and "cuota" in etiqueta: pagos["corte"]["cuota"] = int(valor)
             if isinstance(valor, (int, float)) and "redondeo" in etiqueta: pagos["corte"]["redondeo"] = int(valor)
+            if "completo" in etiqueta: pagos["cadaUno"] = txt(valor).strip().lower() in ("sí", "si", "s", "x", "1", "true")   # cada uno paga el premio completo
     por_id = {t["id"]: t for t in torneos}
     for r in filas_p("Corte"):
         t = por_id.get(slug(txt(r[0]))); rol = txt(r[2]).lower()
