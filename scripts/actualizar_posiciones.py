@@ -84,6 +84,15 @@ def _de36(c):
     x, y = _apar(a.get("displayValue")), _apar(b.get("displayValue"))
     return None if x is None or y is None else x + y
 def _siguio(c): return any(isinstance(r, dict) and _num(r.get("period")) >= 3 and (_hoyos(r) or _num(r.get("value")) > 0) for r in (c.get("linescores") or []))
+def desempate_playoff(comp, pos):
+    """Torneo terminado con varios T1: el ganador es el primero según 'order' de la fuente oficial; los demás quedan T2."""
+    t1 = [c for c in comp if pos.get(norm(nombre(c))) == "T1"]
+    if len(t1) < 2: return
+    ords = [(_num(c.get("order")) or 999, i) for i, c in enumerate(t1)]
+    o, gi = min(ords)
+    if o >= 999: return
+    for i, c in enumerate(t1): pos[norm(nombre(c))] = "1" if i == gi else ("T2" if len(t1) > 2 else "2")
+
 def marcas(comp):
     m, con_r1 = {}, [c for c in comp if _completa(_ronda(c, 1))]
     con_r2 = [c for c in comp if _completa(_ronda(c, 2))]
@@ -165,6 +174,7 @@ def main():
         for jugadores in t["sel"].values():
             for j in jugadores:
                 if norm(j) not in todas: print(f"[{t['n']}] no encontrado en el leaderboard: {j}")
+        if estado == "post": desempate_playoff(comp, todas)   # ganador del playoff = 1, el resto T2
         todas.update(marcas(comp))   # CUT / WD (0 puntos)
         mios = dict(todas)   # se guarda todo el campo: así también sirven las elecciones hechas en el draft de la web
         if actual["torneos"].get(t["id"]) != mios:

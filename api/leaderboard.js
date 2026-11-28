@@ -40,6 +40,14 @@ function posiciones(competidores) {
   }
   return res;
 }
+// Playoff: con el torneo terminado, si hay varios "T1" el ganador es el primero que ordena la fuente oficial (order); el resto queda T2.
+function desempatePlayoff(comp, pos) {
+  const t1 = comp.filter(c => pos[norm(nombre(c))] === "T1");
+  if (t1.length < 2) return;
+  const gan = t1.reduce((a, c) => (Number(c.order) || 999) < (Number(a.order) || 999) ? c : a);
+  if (!Number(gan.order)) return;                                          // sin orden oficial no se adivina
+  for (const c of t1) pos[norm(nombre(c))] = c === gan ? "1" : (t1.length > 2 ? "T2" : "2");
+}
 // ---- Leaderboard completo (para la vista "PGA Tour en vivo") ----
 const aPar = v => { v = String(v === undefined || v === null ? "" : v).trim(); if (/^(e|even)$/i.test(v)) return 0; const n = parseInt(v.replace("+", ""), 10); return Number.isNaN(n) ? null : n; };
 const hoyos = r => (r && Array.isArray(r.linescores) ? r.linescores.length : 0);
@@ -136,6 +144,7 @@ module.exports = async (req, res) => {
       const situacion = estado === "post" ? "final" : /suspend|delay|postpon|rain|weather|halt|darkness/i.test(txt) ? "suspendido" : estado === "pre" ? "pre" : "vivo";
       const detalle = (tipos[0] && (tipos[0].detail || tipos[0].description)) || "";
       const pos = posiciones(comp), valores = Object.values(pos);
+      if (estado === "post") desempatePlayoff(comp, pos);                    // torneo terminado: el ganador del playoff queda 1 y los demás empatados T2
       const { m: mk, linea } = marcas(comp);
       for (const k in mk) pos[k] = mk[k];                                   // CUT / WD: 0 puntos, igual que en el leaderboard oficial
       const sinEmpezar = estado === "pre" || !valores.length || (valores.length >= 8 && new Set(valores).size === 1);
