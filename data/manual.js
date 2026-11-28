@@ -1,1 +1,1 @@
-window.__M={"torneos": {}};
+window.__M={"torneos": {"the-rsm-classic": {"Marco Penge": "1", "Max Greyserman": "T2", "Michael Thorbjornsen": "T2", "Haotong Li": "T2"}}};
